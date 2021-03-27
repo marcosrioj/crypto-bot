@@ -16,10 +16,10 @@ namespace CryptoBot.Migrations
                     From = table.Column<int>(type: "int", nullable: false),
                     To = table.Column<int>(type: "int", nullable: false),
                     Action = table.Column<int>(type: "int", nullable: false),
-                    Average = table.Column<decimal>(type: "decimal(18,18)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,18)", nullable: false),
-                    Executed = table.Column<decimal>(type: "decimal(18,18)", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,18)", nullable: false),
+                    Average = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    Executed = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatorUserId = table.Column<long>(type: "bigint", nullable: true)
                 },
@@ -35,7 +35,7 @@ namespace CryptoBot.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Currency = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,18)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
                     MomentReference = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatorUserId = table.Column<long>(type: "bigint", nullable: true)

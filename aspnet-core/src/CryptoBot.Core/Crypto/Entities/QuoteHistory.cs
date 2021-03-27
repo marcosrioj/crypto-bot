@@ -9,7 +9,7 @@ namespace CryptoBot.Crypto.Entities
     {
         public ECurrency Currency { get; set; }
 
-        [Column(TypeName = "decimal(18, 18)")]
+        [Column(TypeName = "decimal(18, 8)")]
         public decimal Price { get; set; }
 
         public Guid MomentReference { get; set; }

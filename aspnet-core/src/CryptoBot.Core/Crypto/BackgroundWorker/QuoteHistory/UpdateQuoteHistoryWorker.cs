@@ -60,21 +60,26 @@ namespace CryptoBot.Crypto.BackgroundWorker.QuoteHistory
 
                 foreach (var coin in coins)
                 {
-                    var curencyCoin = coin.ToString().ToUpper();
-                    var pair = $"{curencyCoin}{baseCoin}";
-
-                    var bookPrice = client.Spot.Market.GetBookPrice(pair);
-                    var bestAskPrice = bookPrice.Data.BestAskPrice;
-
-                    await _quoteHistoryRepository.InsertAsync(new Entities.QuoteHistory
-                    {
-                        Price = bestAskPrice,
-                        Currency = coin,
-                        CreatorUserId = 2,
-                        MomentReference = momentRef
-                    });
+                    Task task = AddQuoteHistory(baseCoin, client, momentRef, coin);
                 }
             }
+        }
+
+        private async Task AddQuoteHistory(string baseCoin, BinanceClient client, Guid momentRef, ECurrency coin)
+        {
+            var curencyCoin = coin.ToString().ToUpper();
+            var pair = $"{curencyCoin}{baseCoin}";
+
+            var bookPrice = client.Spot.Market.GetBookPrice(pair);
+            var bestAskPrice = bookPrice.Data.BestAskPrice;
+
+            await _quoteHistoryRepository.InsertAsync(new Entities.QuoteHistory
+            {
+                Price = bestAskPrice,
+                Currency = coin,
+                CreatorUserId = 2,
+                MomentReference = momentRef
+            });
         }
 
         private static void Test()

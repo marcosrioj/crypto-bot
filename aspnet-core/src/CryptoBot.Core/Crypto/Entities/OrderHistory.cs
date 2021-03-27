@@ -12,16 +12,16 @@ namespace CryptoBot.Crypto.Entities
 
         public EOrderAction Action { get; set; }
 
-        [Column(TypeName = "decimal(18, 18)")]
+        [Column(TypeName = "decimal(18, 8)")]
         public decimal Average { get; set; }
 
-        [Column(TypeName = "decimal(18, 18)")]
+        [Column(TypeName = "decimal(18, 8)")]
         public decimal Price { get; set; }
 
-        [Column(TypeName = "decimal(18, 18)")]
+        [Column(TypeName = "decimal(18, 8)")]
         public decimal Executed { get; set; }
 
-        [Column(TypeName = "decimal(18, 18)")]
+        [Column(TypeName = "decimal(18, 8)")]
         public decimal Amount { get; set; }
     }
 }

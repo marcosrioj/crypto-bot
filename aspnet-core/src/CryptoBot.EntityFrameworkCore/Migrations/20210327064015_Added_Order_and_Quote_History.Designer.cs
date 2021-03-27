@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    [Migration("20210327061823_Added_Order_and_Quote_History")]
+    [Migration("20210327064015_Added_Order_and_Quote_History")]
     partial class Added_Order_and_Quote_History
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1540,10 +1540,10 @@ namespace CryptoBot.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,18)");
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<decimal>("Average")
-                        .HasColumnType("decimal(18,18)");
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
@@ -1552,13 +1552,13 @@ namespace CryptoBot.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("Executed")
-                        .HasColumnType("decimal(18,18)");
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<int>("From")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,18)");
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<int>("To")
                         .HasColumnType("int");
@@ -1588,7 +1588,7 @@ namespace CryptoBot.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,18)");
+                        .HasColumnType("decimal(18,8)");
 
                     b.HasKey("Id");
 
