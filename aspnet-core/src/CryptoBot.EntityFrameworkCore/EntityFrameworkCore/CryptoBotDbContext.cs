@@ -2,17 +2,20 @@
 using Abp.Zero.EntityFrameworkCore;
 using CryptoBot.Authorization.Roles;
 using CryptoBot.Authorization.Users;
+using CryptoBot.Crypto.Entities;
 using CryptoBot.MultiTenancy;
 
 namespace CryptoBot.EntityFrameworkCore
 {
     public class CryptoBotDbContext : AbpZeroDbContext<Tenant, Role, User, CryptoBotDbContext>
     {
-        /* Define a DbSet for each entity of the application */
-        
+        public DbSet<OrderHistory> OrderHistories { get; set; }
+        public DbSet<QuotationHistory> QuotationHistories { get; set; }
+
         public CryptoBotDbContext(DbContextOptions<CryptoBotDbContext> options)
             : base(options)
         {
+
         }
     }
 }
