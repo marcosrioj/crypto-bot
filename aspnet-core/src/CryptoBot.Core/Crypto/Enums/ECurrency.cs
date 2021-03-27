@@ -2,10 +2,10 @@
 {
     public enum ECurrency
     {
-        Btc,
-        Eth,
-        Bnb,
-        One,
-        Ankr
+        Btc = 0,
+        Eth = 1,
+        Bnb = 2,
+        One = 3,
+        Ankr = 4
     }
 }

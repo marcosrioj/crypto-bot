@@ -7,5 +7,9 @@
         public const string ConnectionStringName = "Default";
 
         public const bool MultiTenancyEnabled = true;
+
+        public const string BaseCoinName = "USDT";
+
+        public const long DefaultUserId = 2;
     }
 }

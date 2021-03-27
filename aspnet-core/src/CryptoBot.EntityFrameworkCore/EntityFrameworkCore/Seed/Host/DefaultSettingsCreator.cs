@@ -31,16 +31,23 @@ namespace CryptoBot.EntityFrameworkCore.Seed.Host
 
             // Languages
             AddSettingIfNotExists(LocalizationSettingNames.DefaultLanguage, "en", tenantId);
+
+            //Binance General
+            AddSettingIfNotExists(CryptoBotNames.ActiveCurrencies, "BTC,ETH,BNB,ONE,ANKR");
+
+            //Binance Marcos
+            AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 2);
+            AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 2);
         }
 
-        private void AddSettingIfNotExists(string name, string value, int? tenantId = null)
+        private void AddSettingIfNotExists(string name, string value, int? tenantId = null, long? userId = null)
         {
-            if (_context.Settings.IgnoreQueryFilters().Any(s => s.Name == name && s.TenantId == tenantId && s.UserId == null))
+            if (_context.Settings.IgnoreQueryFilters().Any(s => s.Name == name && s.TenantId == tenantId && s.UserId == userId))
             {
                 return;
             }
 
-            _context.Settings.Add(new Setting(tenantId, null, name, value));
+            _context.Settings.Add(new Setting(tenantId, userId, name, value));
             _context.SaveChanges();
         }
     }
