@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    [Migration("20210327041114_Added_Order_and_Quotation_History")]
-    partial class Added_Order_and_Quotation_History
+    [Migration("20210327043254_Added_Order_and_Quote_History")]
+    partial class Added_Order_and_Quote_History
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1568,7 +1568,7 @@ namespace CryptoBot.Migrations
                     b.ToTable("OrderHistories");
                 });
 
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.QuotationHistory", b =>
+            modelBuilder.Entity("CryptoBot.Crypto.Entities.QuoteHistory", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()

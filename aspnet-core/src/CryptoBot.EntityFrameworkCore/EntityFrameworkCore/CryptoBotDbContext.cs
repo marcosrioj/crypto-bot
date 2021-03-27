@@ -10,7 +10,7 @@ namespace CryptoBot.EntityFrameworkCore
     public class CryptoBotDbContext : AbpZeroDbContext<Tenant, Role, User, CryptoBotDbContext>
     {
         public DbSet<OrderHistory> OrderHistories { get; set; }
-        public DbSet<QuotationHistory> QuotationHistories { get; set; }
+        public DbSet<QuoteHistory> QuotationHistories { get; set; }
 
         public CryptoBotDbContext(DbContextOptions<CryptoBotDbContext> options)
             : base(options)

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CryptoBot.Migrations
 {
-    public partial class Added_Order_and_Quotation_History : Migration
+    public partial class Added_Order_and_Quote_History : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
