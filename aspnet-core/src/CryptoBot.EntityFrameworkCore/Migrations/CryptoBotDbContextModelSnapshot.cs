@@ -1538,10 +1538,10 @@ namespace CryptoBot.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,18)");
 
                     b.Property<decimal>("Average")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,18)");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
@@ -1550,13 +1550,13 @@ namespace CryptoBot.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("Executed")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,18)");
 
                     b.Property<int>("From")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,18)");
 
                     b.Property<int>("To")
                         .HasColumnType("int");
@@ -1586,7 +1586,7 @@ namespace CryptoBot.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,18)");
 
                     b.HasKey("Id");
 
