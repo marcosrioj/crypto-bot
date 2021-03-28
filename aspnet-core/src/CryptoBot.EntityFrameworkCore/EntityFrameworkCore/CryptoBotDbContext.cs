@@ -11,6 +11,8 @@ namespace CryptoBot.EntityFrameworkCore
     {
         public DbSet<OrderHistory> OrderHistories { get; set; }
         public DbSet<QuoteHistory> QuotationHistories { get; set; }
+        public DbSet<ComparativeHistorical> ComparativeHistoricals { get; set; }
+        public DbSet<ComparativeHistoricalDetail> ComparativeHistoricalDetails { get; set; }
 
         public CryptoBotDbContext(DbContextOptions<CryptoBotDbContext> options)
             : base(options)
