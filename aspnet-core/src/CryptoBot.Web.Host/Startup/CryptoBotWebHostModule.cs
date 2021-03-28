@@ -5,6 +5,7 @@ using Abp.Reflection.Extensions;
 using CryptoBot.Configuration;
 using Abp.Threading.BackgroundWorkers;
 using CryptoBot.Crypto.BackgroundWorker.QuoteHistory;
+using CryptoBot.Crypto.BackgroundWorker.ComparativeHistorical;
 
 namespace CryptoBot.Web.Host.Startup
 {
@@ -34,7 +35,8 @@ namespace CryptoBot.Web.Host.Startup
         public override void PostInitialize()
         {
             var workManager = IocManager.Resolve<IBackgroundWorkerManager>();
-            workManager.Add(IocManager.Resolve<UpdateQuoteHistoryWorker>());
+            workManager.Add(IocManager.Resolve<AddQuoteHistoryPerSecondWorker>());
+            workManager.Add(IocManager.Resolve<ComparativeHistoricalDailyWorker>());
         }
     }
 }

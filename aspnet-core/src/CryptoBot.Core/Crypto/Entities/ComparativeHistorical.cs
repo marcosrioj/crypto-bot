@@ -8,6 +8,8 @@ namespace CryptoBot.Crypto.Entities
 {
     public class ComparativeHistorical : CreationAuditedEntity<long>
     {
+        public Guid GroupId { get; set; }
+
         public EApproachTrading ApproachTrading { get; set; }
 
         public ECurrency Currency { get; set; }

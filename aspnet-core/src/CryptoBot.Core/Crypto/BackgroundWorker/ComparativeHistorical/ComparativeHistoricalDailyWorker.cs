@@ -7,16 +7,16 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Crypto.BackgroundWorker.QuoteHistory
+namespace CryptoBot.Crypto.BackgroundWorker.ComparativeHistorical
 {
-    public class UpdateQuoteHistoryWorker : AsyncPeriodicBackgroundWorkerBase, ISingletonDependency
+    public class ComparativeHistoricalDailyWorker : AsyncPeriodicBackgroundWorkerBase, ISingletonDependency
     {
-        private readonly ILogger<UpdateQuoteHistoryWorker> _logger;
+        private readonly ILogger<ComparativeHistoricalDailyWorker> _logger;
         private readonly IQuoteService _quoteService;
 
-        public UpdateQuoteHistoryWorker(
+        public ComparativeHistoricalDailyWorker(
             AbpAsyncTimer timer,
-            ILogger<UpdateQuoteHistoryWorker> logger,
+            ILogger<ComparativeHistoricalDailyWorker> logger,
             IQuoteService quoteService)
             : base(timer)
         {

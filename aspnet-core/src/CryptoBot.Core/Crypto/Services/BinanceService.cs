@@ -33,6 +33,11 @@ namespace CryptoBot.Crypto.Services
             return _binanceClient.Spot.Market.GetBookPrice(pair);
         }
 
+        public WebCallResult<IEnumerable<IBinanceKline>> GetKlines(string pair, KlineInterval interval, int limit = 100, DateTime? startTime = null, DateTime? endTime = null)
+        {
+            return _binanceClient.Spot.Market.GetKlines(pair, interval, startTime, endTime, limit);
+        }
+
         private void Samples()
         {
             SetBinanceClients(2);
