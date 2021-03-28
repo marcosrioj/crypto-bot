@@ -27,11 +27,10 @@ namespace CryptoBot.Crypto.Services
 
                 foreach (var activeCurrency in activeCurrenciesSplited)
                 {
-                    var activeCurrencyTrimmed = activeCurrency.Trim().ToLower();
-                    if (activeCurrencyTrimmed.Length > 2)
+                    var activeCurrencyTrimmed = activeCurrency.Trim().ToUpper();
+                    if (activeCurrencyTrimmed.Length >= 2)
                     {
-                        var coinEnumValue = string.Concat(char.ToUpper(activeCurrencyTrimmed[0]), activeCurrencyTrimmed.Substring(1));
-                        var coinEnum = (ECurrency)Enum.Parse(typeof(ECurrency), coinEnumValue);
+                        var coinEnum = (ECurrency)Enum.Parse(typeof(ECurrency), activeCurrencyTrimmed);
 
                         if (Enum.IsDefined(typeof(ECurrency), coinEnum))
                         {
@@ -44,7 +43,7 @@ namespace CryptoBot.Crypto.Services
             }
             else
             {
-                return new ECurrency[] { ECurrency.Btc, ECurrency.Eth };
+                return new ECurrency[] { ECurrency.BTC, ECurrency.ETH };
             }
         }
     }
