@@ -37,7 +37,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.ComparativeHistorical
                 var interval = KlineInterval.OneMinute;
                 var limitOfDetails = 10;
 
-                [var result = await _comparativeHistoricalService.GenerateGroupComparativeHistorical(
+                var result = await _comparativeHistoricalService.GenerateGroupComparativeHistorical(
                     approachTrading,
                     currency,
                     interval,
