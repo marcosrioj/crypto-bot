@@ -35,6 +35,8 @@ namespace CryptoBot.Crypto.Services
 
         public WebCallResult<IEnumerable<IBinanceKline>> GetKlines(string pair, KlineInterval interval, int limit = 100, DateTime? startTime = null, DateTime? endTime = null)
         {
+            SetBinanceClients();
+
             return _binanceClient.Spot.Market.GetKlines(pair, interval, startTime, endTime, limit);
         }
 

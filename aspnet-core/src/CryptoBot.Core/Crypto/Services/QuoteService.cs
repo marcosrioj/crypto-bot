@@ -32,8 +32,8 @@ namespace CryptoBot.Crypto.Services
 
             foreach (var coin in coins)
             {
-                var curencyCoin = coin.ToString().ToUpper();
-                var pair = $"{curencyCoin}{CryptoBotConsts.BaseCoinName}";
+                var currencyCoin = coin.ToString().ToUpper();
+                var pair = $"{currencyCoin}{CryptoBotConsts.BaseCoinName}";
 
                 var bookPrice = _binanceService.GetBookPrice(pair);
                 var bestAskPrice = bookPrice.Data.BestAskPrice;

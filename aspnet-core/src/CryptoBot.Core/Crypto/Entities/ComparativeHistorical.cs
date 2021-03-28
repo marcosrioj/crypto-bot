@@ -10,17 +10,9 @@ namespace CryptoBot.Crypto.Entities
     {
         public Guid GroupId { get; set; }
 
-        public EApproachTrading ApproachTrading { get; set; }
+        public DateTime? StartDateTime { get; set; }
 
-        public ECurrency Currency { get; set; }
-
-        public DateTime StartDateTime { get; set; }
-
-        public DateTime EndDateTime { get; set; }
-
-        public KlineInterval Interval { get; set; }
-
-        public int LimitOfDetails { get; set; }
+        public DateTime? EndDateTime { get; set; }
 
         public List<ComparativeHistoricalDetail> Details { get; set; }
     }

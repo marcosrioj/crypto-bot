@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    [Migration("20210328044813_Added_ComparativeHistorical")]
-    partial class Added_ComparativeHistorical
+    [Migration("20210328153628_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1536,28 +1536,19 @@ namespace CryptoBot.Migrations
                         .HasColumnType("bigint")
                         .UseIdentityColumn();
 
-                    b.Property<int>("ApproachTrading")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
                     b.Property<long?>("CreatorUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("Currency")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDateTime")
+                    b.Property<DateTime?>("EndDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Interval")
-                        .HasColumnType("int");
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("LimitOfDetails")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartDateTime")
+                    b.Property<DateTime?>("StartDateTime")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -1579,16 +1570,45 @@ namespace CryptoBot.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<decimal>("PercentageGainFromFirstDetail")
-                        .HasColumnType("decimal(3,3)");
+                        .HasColumnType("decimal(8,8)");
 
                     b.Property<decimal>("PercentageGainFromPreviousDetail")
-                        .HasColumnType("decimal(3,3)");
+                        .HasColumnType("decimal(8,8)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ComparativeHistoricalId");
 
                     b.ToTable("ComparativeHistoricalDetails");
+                });
+
+            modelBuilder.Entity("CryptoBot.Crypto.Entities.GroupComparativeHistorical", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ApproachTrading")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatorUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Interval")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LimitOfDetails")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GroupComparativeHistoricals");
                 });
 
             modelBuilder.Entity("CryptoBot.Crypto.Entities.OrderHistory", b =>

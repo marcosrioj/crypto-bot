@@ -1534,31 +1534,19 @@ namespace CryptoBot.Migrations
                         .HasColumnType("bigint")
                         .UseIdentityColumn();
 
-                    b.Property<int>("ApproachTrading")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
                     b.Property<long?>("CreatorUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("Currency")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDateTime")
+                    b.Property<DateTime?>("EndDateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Interval")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LimitOfDetails")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartDateTime")
+                    b.Property<DateTime?>("StartDateTime")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -1579,11 +1567,14 @@ namespace CryptoBot.Migrations
                     b.Property<long>("ComparativeHistoricalId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTime>("Moment")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal>("PercentageGainFromFirstDetail")
-                        .HasColumnType("decimal(3,3)");
+                        .HasColumnType("decimal(8,8)");
 
                     b.Property<decimal>("PercentageGainFromPreviousDetail")
-                        .HasColumnType("decimal(3,3)");
+                        .HasColumnType("decimal(8,8)");
 
                     b.HasKey("Id");
 
@@ -1598,14 +1589,23 @@ namespace CryptoBot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("ApproachTrading")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
                     b.Property<long?>("CreatorUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Interval")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LimitOfDetails")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
