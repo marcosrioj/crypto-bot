@@ -90,8 +90,6 @@ namespace CryptoBot.Crypto.Services
             DateTime? startTime = null,
             DateTime? endTime = null)
         {
-            IEnumerable<ECurrency> coins = await _currencyService.GetActiveCurrencies();
-
             var ch = new ComparativeHistorical
             {
                 GroupId = groupCh.Id,

@@ -15,16 +15,19 @@ namespace CryptoBot.Crypto.BackgroundWorker.ComparativeHistorical
     {
         private readonly ILogger<ComparativeHistoricalDailyWorker> _logger;
         private readonly IComparativeHistoricalService _comparativeHistoricalService;
+        private readonly ICurrencyService _currencyService;
 
         public ComparativeHistoricalDailyWorker(
             AbpAsyncTimer timer,
             ILogger<ComparativeHistoricalDailyWorker> logger,
-            IComparativeHistoricalService comparativeHistoricalService)
+            IComparativeHistoricalService comparativeHistoricalService,
+            ICurrencyService currencyService)
             : base(timer)
         {
             Timer.Period = 10000;
             _logger = logger;
             _comparativeHistoricalService = comparativeHistoricalService;
+            _currencyService = currencyService;
         }
 
         [UnitOfWork]
@@ -33,16 +36,19 @@ namespace CryptoBot.Crypto.BackgroundWorker.ComparativeHistorical
             try
             {
                 var approachTrading = EApproachTrading.SimplePriceVariation;
-                var currency = ECurrency.ANKR;
                 var interval = KlineInterval.OneMinute;
                 var limitOfDetails = 10;
+                var coins = await _currencyService.GetActiveCurrencies();
 
-                var result = await _comparativeHistoricalService.GenerateGroupComparativeHistorical(
-                    approachTrading,
-                    currency,
-                    interval,
-                    limitOfDetails
-                    );
+                foreach (var coin in coins)
+                {
+                    await _comparativeHistoricalService.GenerateGroupComparativeHistorical(
+                                        approachTrading,
+                                        coin,
+                                        interval,
+                                        limitOfDetails
+                                        );
+                }
             }
             catch (Exception ex)
             {
