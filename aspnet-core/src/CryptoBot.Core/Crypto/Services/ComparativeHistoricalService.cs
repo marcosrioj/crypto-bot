@@ -18,20 +18,17 @@ namespace CryptoBot.Crypto.Services
         private readonly IComparativeHistoricalDetailRepository _chdRepository;
         private readonly IRepository<GroupComparativeHistorical, Guid> _gchRepository;
         private readonly IBinanceService _binanceService;
-        private readonly ICurrencyService _currencyService;
 
         public ComparativeHistoricalService(
             IRepository<ComparativeHistorical, long> chRepository,
             IRepository<GroupComparativeHistorical, Guid> gchRepository,
             IComparativeHistoricalDetailRepository chdRepository,
-            IBinanceService binanceService,
-            ICurrencyService currencyService)
+            IBinanceService binanceService)
         {
             _chRepository = chRepository;
             _gchRepository = gchRepository;
             _chdRepository = chdRepository;
             _binanceService = binanceService;
-            _currencyService = currencyService;
         }
 
         public async Task<Guid?> GenerateGroupComparativeHistorical(
