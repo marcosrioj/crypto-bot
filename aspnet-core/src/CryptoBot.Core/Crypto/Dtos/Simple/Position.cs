@@ -1,4 +1,4 @@
-﻿namespace CryptoBot.Crypto.Ia.Dtos
+﻿namespace CryptoBot.Crypto.Dtos.Simple
 {
     public record Position
     {

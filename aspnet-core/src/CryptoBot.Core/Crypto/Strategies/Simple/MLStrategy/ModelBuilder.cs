@@ -1,9 +1,9 @@
-﻿using Microsoft.ML;
-using Microsoft.ML.Transforms.TimeSeries;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.ML;
+using Microsoft.ML.Transforms.TimeSeries;
 
-namespace CryptoBot.Crypto.Ia.Strategies.MLStrategy
+namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy
 {
     public class ModelBuilder
     {

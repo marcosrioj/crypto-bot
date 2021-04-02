@@ -10,7 +10,7 @@ namespace CryptoBot.Crypto.Entities
 
         public ECurrency To { get; set; }
 
-        public EOrderAction Action { get; set; }
+        public EWhatToDo Action { get; set; }
 
         [Column(TypeName = "decimal(18, 8)")]
         public decimal Average { get; set; }

@@ -1,8 +1,9 @@
 ﻿namespace CryptoBot.Crypto.Enums
 {
-    public enum EOrderAction
+    public enum EWhatToDo
     {
         Buy,
+        Hold,
         Sell
     }
 }

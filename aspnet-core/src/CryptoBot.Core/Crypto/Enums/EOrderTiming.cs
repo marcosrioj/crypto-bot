@@ -1,4 +1,4 @@
-﻿namespace CryptoBot.Crypto.Ia.Enums
+﻿namespace CryptoBot.Crypto.Enums
 {
     public enum EOrderTiming
     {

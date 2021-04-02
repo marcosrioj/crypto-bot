@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CryptoBot.Crypto.Ia.Dtos;
+using CryptoBot.Crypto.Dtos.Simple;
 
-namespace CryptoBot.Crypto.Ia.Strategies.MLStrategy
+namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy
 {
     public class MLStrategy : IStrategy
     {

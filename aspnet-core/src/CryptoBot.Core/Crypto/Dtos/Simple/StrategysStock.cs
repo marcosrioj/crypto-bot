@@ -1,6 +1,6 @@
-﻿using CryptoBot.Crypto.Ia.Enums;
+﻿using CryptoBot.Crypto.Enums;
 
-namespace CryptoBot.Crypto.Ia.Dtos
+namespace CryptoBot.Crypto.Dtos.Simple
 {
     public record StrategysStock
     {
