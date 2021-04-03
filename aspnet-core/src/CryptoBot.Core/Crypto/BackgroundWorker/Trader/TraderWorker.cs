@@ -34,6 +34,11 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
         [UnitOfWork]
         protected override async Task DoWorkAsync()
         {
+            await Test1();
+        }
+
+        private async Task Test2()
+        {
             try
             {
                 var initialWallet = 1000;
@@ -41,8 +46,8 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var limitOfDetailsToLearnAndTest = 100000;
 
                 await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy, ECurrency.ONG, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest);
-                //await _traderTestService.RegressionTest(EStrategy.SimpleMicrotrendStrategy, ECurrency.ONG, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest);
-                //await _traderTestService.RegressionTest(EStrategy.SimpleMicrotrendStrategy, ECurrency.ONG, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest);
+                await _traderTestService.RegressionTest(EStrategy.SimpleMicrotrendStrategy, ECurrency.ONG, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest);
+                await _traderTestService.RegressionTest(EStrategy.SimpleMeanReversionStrategy, ECurrency.ONG, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest);
             }
             catch (Exception e)
             {
@@ -57,7 +62,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             try
             {
                 var initialWallet = 1000;
-                var limitOfDetailsToLearnAndTest = 1000;
+                var limitOfDetailsToLearnAndTest = 5000;
                 var limitOfDetailsToTest = 120;
                 var interval = KlineInterval.FifteenMinutes;
 
