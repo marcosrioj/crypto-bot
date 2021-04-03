@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.ML;
 using Microsoft.ML.Transforms.TimeSeries;
 
-namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy
+namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
 {
     public class ModelBuilder
     {

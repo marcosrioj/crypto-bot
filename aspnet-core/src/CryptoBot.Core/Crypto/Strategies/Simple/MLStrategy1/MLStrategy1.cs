@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Binance.Net.Interfaces;
 
-namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy
+namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
 {
-    public class MLStrategy : ISimpleStrategy
+    public class MLStrategy1 : ISimpleStrategy
     {
         public Task<bool?> ShouldBuyStock(IList<IBinanceKline> historicalData)
         {

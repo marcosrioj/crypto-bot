@@ -16,7 +16,7 @@ namespace CryptoBot.Crypto.Services
         Task<EWhatToDo> WhatToDo(
             EStrategy strategy,
             ECurrency currency,
-            IBinanceKline? actualStock = null);
+            IBinanceKline? sampleStock = null);
 
         void SetData(ECurrency currency, KlineInterval interval, DateTime? startTime, DateTime? endTime,
             int limitOfDetails);

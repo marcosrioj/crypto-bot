@@ -10,9 +10,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using CryptoBot.Crypto.Dtos.Simple;
 using CryptoBot.Crypto.Strategies;
+using CryptoBot.Crypto.Strategies.Normal.MLStrategy1;
+using CryptoBot.Crypto.Strategies.Normal.MLStrategy2;
 using CryptoBot.Crypto.Strategies.Simple.MeanReversionStrategy;
 using CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy;
-using CryptoBot.Crypto.Strategies.Simple.MLStrategy;
+using CryptoBot.Crypto.Strategies.Simple.MLStrategy1;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -38,18 +40,25 @@ namespace CryptoBot.Crypto.Services
         public async Task<EWhatToDo> WhatToDo(
             EStrategy strategy,
             ECurrency currency,
-            IBinanceKline? actualStock = null)
+            IBinanceKline? sampleStock = null)
         {
             switch (strategy)
             {
-                case EStrategy.NormalMlStrategy:
-                    if (actualStock == null)
+                case EStrategy.NormalMlStrategy1:
+                    if (sampleStock == null)
                     {
                         throw new Exception("NormalMlStrategy must to have the actual stock");
                     }
-                    return await WhatToDoByNormalMlStrategy(currency, actualStock);
+                    return await WhatToDoByNormalMlStrategy2(currency, sampleStock);
 
-                case EStrategy.SimpleMlStrategy:
+                case EStrategy.NormalMlStrategy2:
+                    if (sampleStock == null)
+                    {
+                        throw new Exception("NormalMlStrategy2 must to have the actual stock");
+                    }
+                    return await WhatToDoByNormalMlStrategy2(currency, sampleStock);
+
+                case EStrategy.SimpleMlStrategy1:
                     return await WhatToDoBySimpleMlStrategy(currency);
 
                 case EStrategy.SimpleMeanReversionStrategy:
@@ -118,7 +127,7 @@ namespace CryptoBot.Crypto.Services
 
         private async Task<EWhatToDo> WhatToDoBySimpleMlStrategy(ECurrency currency)
         {
-            var strategy = new MLStrategy();
+            var strategy = new Strategies.Simple.MLStrategy1.MLStrategy1();
             var result = await strategy.ShouldBuyStock(_inputData[currency]);
 
             if (result.HasValue)
@@ -135,11 +144,11 @@ namespace CryptoBot.Crypto.Services
             return await Task.FromResult(EWhatToDo.Hold);
         }
 
-        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy(ECurrency currency, IBinanceKline actualStock)
+        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy1(ECurrency currency, IBinanceKline sampleStock)
         {
-            var strategy = new Strategies.Normal.MLStrategy.MLStrategy();
+            var strategy = new Strategies.Normal.MLStrategy1.MLStrategy1();
 
-            var result = await strategy.ShouldBuyStock(_inputData[currency], actualStock);
+            var result = await strategy.ShouldBuyStock(_inputData[currency], sampleStock);
 
             if (result)
             {
@@ -150,6 +159,20 @@ namespace CryptoBot.Crypto.Services
             return await Task.FromResult(EWhatToDo.Hold);
         }
 
+        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy2(ECurrency currency, IBinanceKline sampleStock)
+        {
+            var strategy = new MLStrategy2();
+
+            var result = await strategy.ShouldBuyStock(_inputData[currency], sampleStock);
+
+            if (result)
+            {
+                return await Task.FromResult(EWhatToDo.Buy);
+            }
+
+            //TODO: Create logic to sell
+            return await Task.FromResult(EWhatToDo.Hold);
+        }
 
         public void LogFull(string message)
         {

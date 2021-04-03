@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Dtos.Normal;
-using CryptoBot.Crypto.Dtos.Simple;
-using CryptoBot.Crypto.Enums;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using static Microsoft.ML.DataOperationsCatalog;
 
-namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy
+namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 {
-    public class MLStrategy : INormalStrategy
+    public class MLStrategy1 : INormalStrategy
     {
-        public Task<bool> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline actualStock)
+        public Task<bool> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline sampleStock)
         {
             // Cria o contexto que trabalhará com aprendizado de máquina.
             MLContext context = new MLContext();
@@ -30,7 +27,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy
 
             //PrintMetrics(metrics);
 
-            return Task.FromResult(PredictPrice(context, model, actualStock));
+            return Task.FromResult(PredictPrice(context, model, sampleStock));
         }
 
         private static TrainTestData Sanitize(MLContext context, IList<IBinanceKline> historicalData)
@@ -120,7 +117,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy
         //    Console.WriteLine("--------------------------------------------------");
         //}
 
-        private static bool PredictPrice(MLContext context, ITransformer model, IBinanceKline actualStock)
+        private static bool PredictPrice(MLContext context, ITransformer model, IBinanceKline sampleStock)
         {
             PredictionEngine<StockInfo, StockInfoPrediction> predictor = context.Model
             .CreatePredictionEngine<StockInfo, StockInfoPrediction>(model);
@@ -128,21 +125,20 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy
 
             var actualInput = new StockInfo
             {
-                Close = 0,
-                Date = actualStock.CloseTime,
-                High = (float)actualStock.High,
-                Low = (float)actualStock.Low,
-                Open = (float)actualStock.Open,
-                BaseVolume = (float)actualStock.BaseVolume,
-                QuoteVolume = (float)actualStock.QuoteVolume,
-                TakerBuyBaseVolume = (float)actualStock.TakerBuyBaseVolume,
-                TakerBuyQuoteVolume = (float)actualStock.TakerBuyQuoteVolume,
-                TradeCount = actualStock.TradeCount
+                Date = sampleStock.CloseTime,
+                High = (float)sampleStock.High,
+                Low = (float)sampleStock.Low,
+                Open = (float)sampleStock.Open,
+                BaseVolume = (float)sampleStock.BaseVolume,
+                QuoteVolume = (float)sampleStock.QuoteVolume,
+                TakerBuyBaseVolume = (float)sampleStock.TakerBuyBaseVolume,
+                TakerBuyQuoteVolume = (float)sampleStock.TakerBuyQuoteVolume,
+                TradeCount = sampleStock.TradeCount
             };
 
             StockInfoPrediction prediction = predictor.Predict(actualInput);
 
-            return prediction.Close > (float)actualStock.Close;
+            return prediction.Close > (float)sampleStock.Close;
 
             //foreach (StockInfo stock in stocks)
             //{

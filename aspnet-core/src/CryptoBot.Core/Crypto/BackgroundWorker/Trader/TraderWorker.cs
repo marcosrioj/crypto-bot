@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using CryptoBot.Crypto.Dtos.Simple;
 using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services.Dtos;
-using CryptoBot.Crypto.Strategies.Simple.MLStrategy;
 
 namespace CryptoBot.Crypto.BackgroundWorker.Trader
 {
@@ -34,7 +33,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
         [UnitOfWork]
         protected override async Task DoWorkAsync()
         {
-            await Test2();
+            await Test1();
         }
 
         private async Task Test2()
@@ -43,11 +42,12 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             {
                 var initialWallet = 1000;
                 var interval = KlineInterval.FifteenMinutes;
-                var limitOfDetailsToLearnAndTest = 5000;
+                var limitOfDetailsToLearnAndTest = 1000;
                 var limitOfDetailsToTest = 120;
 
-                await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
-                await _traderTestService.RegressionTest(EStrategy.NormalMlStrategy, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
+                await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy1, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
+                await _traderTestService.RegressionTest(EStrategy.NormalMlStrategy1, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
+                await _traderTestService.RegressionTest(EStrategy.NormalMlStrategy2, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
                 await _traderTestService.RegressionTest(EStrategy.SimpleMicrotrendStrategy, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
                 await _traderTestService.RegressionTest(EStrategy.SimpleMeanReversionStrategy, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
             }

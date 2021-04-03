@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services.Dtos;
+using JetBrains.Annotations;
 
 
 namespace CryptoBot.Crypto.Services
@@ -18,6 +19,8 @@ namespace CryptoBot.Crypto.Services
     {
         private readonly ITraderService _traderService;
         private readonly IBinanceService _binanceService;
+
+        private IBinanceKline _sampleStock;
 
         public TraderTestService(
             ITraderService traderService,
@@ -38,16 +41,15 @@ namespace CryptoBot.Crypto.Services
             var result = new List<CompleteRegressionTestOutputDto>();
 
             var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
-            //var strategies = new List<EStrategy>()
-            //    {EStrategy.SimpleMlStrategy, EStrategy.SimpleMeanReversionStrategy, EStrategy.SimpleMicrotrendStrategy};
-
             var strategies = new List<EStrategy>()
-                {EStrategy.NormalMlStrategy};
-
+                {EStrategy.SimpleMlStrategy1, EStrategy.NormalMlStrategy1, EStrategy.NormalMlStrategy2, EStrategy.SimpleMeanReversionStrategy, EStrategy.SimpleMicrotrendStrategy};
+            
             var logName = DateTime.Now.ToString("complete-regression-test-TraderTestServiceErrors-yyyy-MM-dd-HH-mm-ss-K");
 
             foreach (var currency in allCurrencies)
             {
+                SetSampleStock(currency);
+
                 foreach (var strategy in strategies)
                 {
                     try
@@ -86,6 +88,11 @@ namespace CryptoBot.Crypto.Services
             DateTime? startTime = null,
             DateTime? endTime = null)
         {
+            if (_sampleStock == null)
+            {
+                SetSampleStock(currency);
+            }
+
             var dataToLearnAndTest = _binanceService.GetData(currency, interval, startTime, endTime, limitOfDetailsToLearnAndTest);
 
             var limitOfDetailsToLearn = dataToLearnAndTest.Count - limitOfDetailsToTest;
@@ -118,9 +125,9 @@ namespace CryptoBot.Crypto.Services
             decimal tradingWalletPrice,
             ELogLevel logLevel)
         {
-            var actualStock = dataToLearn.Last();
+            var result = await _traderService.WhatToDo(strategy, currency, _sampleStock);
 
-            var result = await _traderService.WhatToDo(strategy, currency, actualStock);
+            var actualStock = dataToLearn.Last();
 
             var percFuturuValueDiff = (futureStock.Close / actualStock.Close) - 1;
 
@@ -141,7 +148,7 @@ namespace CryptoBot.Crypto.Services
                 var firstValue = dataToLearn.First();
                 dataToLearn.Remove(firstValue);
                 dataToLearn.Add(futureStock);
-                
+
                 return await RegressionTestExec(
                     ++index, strategy, currency, dataToLearn, dataToTest, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel);
             }
@@ -151,6 +158,12 @@ namespace CryptoBot.Crypto.Services
                 FinalTradingWallet = tradingWalletPrice,
                 FinalWallet = walletPrice
             };
+        }
+
+        private void SetSampleStock(ECurrency currency)
+        {
+            var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}");
+            _sampleStock = sampleStock;
         }
     }
 }
