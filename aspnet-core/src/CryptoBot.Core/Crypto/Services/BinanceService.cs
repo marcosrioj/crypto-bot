@@ -61,7 +61,7 @@ namespace CryptoBot.Crypto.Services
 
             if (klinesResult.Success)
             {
-                inputData.AddRange(klinesResult.Data); ;
+                inputData.AddRange(klinesResult.Data);
 
                 var itemsToDo = limitOfDetails - CryptoBotConsts.BinanceApiItemLimit;
 
