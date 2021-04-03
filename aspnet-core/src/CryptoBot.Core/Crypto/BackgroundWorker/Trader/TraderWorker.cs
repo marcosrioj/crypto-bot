@@ -46,9 +46,10 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var limitOfDetailsToLearnAndTest = 5000;
                 var limitOfDetailsToTest = 120;
 
-                await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy, ECurrency.ADAUP, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
-                await _traderTestService.RegressionTest(EStrategy.SimpleMicrotrendStrategy, ECurrency.ADAUP, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
-                await _traderTestService.RegressionTest(EStrategy.SimpleMeanReversionStrategy, ECurrency.ADAUP, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
+                await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
+                await _traderTestService.RegressionTest(EStrategy.NormalMlStrategy, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
+                await _traderTestService.RegressionTest(EStrategy.SimpleMicrotrendStrategy, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
+                await _traderTestService.RegressionTest(EStrategy.SimpleMeanReversionStrategy, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
             }
             catch (Exception e)
             {
@@ -105,5 +106,6 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 LogHelper.Log($"Worker error: TraderWorker - Message: {ex.Message}", $"{logName}-ERROR");
             }
         }
+
     }
 }

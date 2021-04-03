@@ -38,8 +38,11 @@ namespace CryptoBot.Crypto.Services
             var result = new List<CompleteRegressionTestOutputDto>();
 
             var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
+            //var strategies = new List<EStrategy>()
+            //    {EStrategy.SimpleMlStrategy, EStrategy.SimpleMeanReversionStrategy, EStrategy.SimpleMicrotrendStrategy};
+
             var strategies = new List<EStrategy>()
-                {EStrategy.SimpleMlStrategy, EStrategy.SimpleMeanReversionStrategy, EStrategy.SimpleMicrotrendStrategy};
+                {EStrategy.NormalMlStrategy};
 
             var logName = DateTime.Now.ToString("complete-regression-test-TraderTestServiceErrors-yyyy-MM-dd-HH-mm-ss-K");
 
@@ -115,9 +118,9 @@ namespace CryptoBot.Crypto.Services
             decimal tradingWalletPrice,
             ELogLevel logLevel)
         {
-            var result = await _traderService.WhatToDo(strategy, currency);
-
             var actualStock = dataToLearn.Last();
+
+            var result = await _traderService.WhatToDo(strategy, currency, actualStock);
 
             var percFuturuValueDiff = (futureStock.Close / actualStock.Close) - 1;
 

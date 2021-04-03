@@ -15,6 +15,8 @@ namespace CryptoBot.Crypto.Services
 
         WebCallResult<IEnumerable<IBinanceKline>> GetKlines(string pair, KlineInterval interval, int limit = 100, DateTime? startTime = null, DateTime? endTime = null);
 
+        IBinanceKline GetKline(string pair);
+
         List<IBinanceKline> GetData(
             ECurrency currency,
             KlineInterval interval,

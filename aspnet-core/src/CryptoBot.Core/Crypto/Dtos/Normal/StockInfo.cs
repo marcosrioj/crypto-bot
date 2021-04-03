@@ -1,0 +1,40 @@
+﻿using Microsoft.ML.Data;
+using System;
+
+namespace CryptoBot.Crypto.Dtos.Normal
+{
+    public class StockInfo
+    {
+        [LoadColumn(0)]
+        public DateTime Date { get; set; }
+
+        [LoadColumn(1)]
+        public float Open { get; set; }
+
+        [LoadColumn(2)]
+        public float High { get; set; }
+
+        [LoadColumn(3)]
+        public float Low { get; set; }
+
+        [LoadColumn(4)]
+        public float Close { get; set; }
+
+        [LoadColumn(5)]
+        public float BaseVolume { get; set; }
+
+        [LoadColumn(6)]
+        public float QuoteVolume { get; set; }
+
+        [LoadColumn(7)]
+        public float TradeCount { get; set; }
+
+        [LoadColumn(8)]
+        public float TakerBuyBaseVolume { get; set; }
+
+        [LoadColumn(9)]
+        public float TakerBuyQuoteVolume { get; set; }
+    }
+
+
+}

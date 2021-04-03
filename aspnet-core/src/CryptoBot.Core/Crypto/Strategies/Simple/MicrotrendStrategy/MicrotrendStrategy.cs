@@ -7,11 +7,11 @@ using CryptoBot.Crypto.Enums;
 
 namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
 {
-    public class MicrotrendStrategy : IStrategy
+    public class MicrotrendStrategy : ISimpleStrategy
     {
-        public Task<bool?> ShouldBuyStock(IList<StockInput> historicalData)
+        public Task<bool?> ShouldBuyStock(IList<IBinanceKline> historicalData)
         {
-            var last3Values = historicalData.Skip(historicalData.Count - 3).Take(3).Select(x => x.ClosingPrice).ToList();
+            var last3Values = historicalData.Skip(historicalData.Count - 3).Take(3).Select(x => x.Close).ToList();
 
             //Default to hold
             var result = (bool?)null;
@@ -28,18 +28,6 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
             }
 
             return Task.FromResult(result);
-        }
-
-        public async Task<bool?> ShouldBuyStock(IList<IBinanceKline> historicalData, ECurrency currency)
-        {
-            var customHistoricalData = historicalData.Select(x => new StockInput
-            {
-                ClosingPrice = x.Close,
-                StockSymbol = currency.ToString(),
-                Time = x.CloseTime
-            }).ToList();
-
-            return await ShouldBuyStock(customHistoricalData);
         }
     }
 }

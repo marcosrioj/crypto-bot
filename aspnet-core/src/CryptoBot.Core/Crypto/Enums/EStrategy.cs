@@ -9,6 +9,8 @@
         SimpleMicrotrendStrategy,
 
         // Risk: 🐲 🐲 🐲 Possible reward: 💰
-        SimpleMlStrategy
+        SimpleMlStrategy,
+
+        NormalMlStrategy
     }
 }

@@ -43,6 +43,16 @@ namespace CryptoBot.Crypto.Services
             return _binanceClient.Spot.Market.GetKlines(pair, interval, startTime, endTime, limit);
         }
 
+        public IBinanceKline GetKline(string pair)
+        {
+            SetBinanceClients();
+
+            var result = _binanceClient.Spot.Market.GetKlines(pair, KlineInterval.OneMinute, limit: 1);
+
+            return result.Data.FirstOrDefault();
+        }
+
+
         public List<IBinanceKline> GetData(
             ECurrency currency,
             KlineInterval interval,
