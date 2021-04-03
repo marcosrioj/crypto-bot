@@ -1,28 +1,25 @@
-﻿using System;
-using Abp.Domain.Services;
+﻿using Abp.Domain.Services;
+using Binance.Net.Enums;
 using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Enums;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Binance.Net.Enums;
-using CryptoBot.Crypto.Enums;
 
 namespace CryptoBot.Crypto.Services
 {
     public interface ITraderService : IDomainService
     {
         Task<EWhatToDo> WhatToDo(
-            ECurrency currency,
-            KlineInterval interval,
-            DateTime? startTime = null,
-            DateTime? endTime = null,
-            int limitOfDetails = 1000);
+            ECurrency currency);
 
         Task<EWhatToDo> WhatToDo(
             EStrategy strategy,
-            ECurrency currency,
-            KlineInterval interval,
-            DateTime? startTime = null,
-            DateTime? endTime = null,
-            int limitOfDetails = 1000);
+            ECurrency currency);
+
+        void SetData(ECurrency currency, KlineInterval interval, DateTime? startTime, DateTime? endTime,
+            int limitOfDetails);
+
+        void SetData(ECurrency currency, List<IBinanceKline> inputData);
     }
 }

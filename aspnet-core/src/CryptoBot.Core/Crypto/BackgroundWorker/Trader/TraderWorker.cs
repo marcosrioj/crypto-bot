@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CryptoBot.Crypto.Dtos.Simple;
+using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Strategies.Simple.MLStrategy;
 
 namespace CryptoBot.Crypto.BackgroundWorker.Trader
@@ -20,16 +21,19 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
     {
         private readonly ILogger<TraderWorker> _logger;
         private readonly IBinanceService _binanceService;
+        private readonly ITraderTestService _traderTestService;
 
         public TraderWorker(
             AbpAsyncTimer timer,
             ILogger<TraderWorker> logger,
-            IBinanceService binanceService)
+            IBinanceService binanceService,
+            ITraderTestService traderTestService)
             : base(timer)
         {
             Timer.Period = 1000;
             _logger = logger;
             _binanceService = binanceService;
+            _traderTestService = traderTestService;
         }
 
         [UnitOfWork]
@@ -39,7 +43,8 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             {
                 //if (DateTime.Now.Second == 0)
                 //{
-                await Test2();
+                //await Test2();
+                await Test3();
                 //}
             }
             catch (Exception ex)
@@ -48,40 +53,10 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             }
         }
 
-        private async Task Test1()
-        {
-            var interval = KlineInterval.OneMinute;
-            var limitOfDetails = 120;
-            var coin = ECurrency.ANKR;
-            var pair = $"{coin}{CryptoBotConsts.BaseCoinName}";
-
-            var klinesResult = _binanceService.GetKlines(pair, interval, limitOfDetails);
-
-            if (klinesResult.Success)
-            {
-                var input = klinesResult.Data.Select(x => new StockInput
-                {
-                    ClosingPrice = x.Close,
-                    StockSymbol = coin.ToString(),
-                    Time = x.CloseTime
-                }).ToList();
-
-                var stg = new MLStrategy();
-                var result = await stg.ShouldBuyStock(input);
-
-                if (result.HasValue)
-                {
-                    var message =
-                        $"TraderWorker - {coin} - {DateTime.Now:yyyy'-'MM'-'dd'T'HH':'mm':'ss}, Price:,{klinesResult.Data.Last().Close},Buy:,{result.Value}";
-                    CustomLog(message);
-                }
-            }
-        }
-
         private async Task Test2()
         {
             var interval = KlineInterval.FifteenMinutes;
-            var limitOfDetails = 240;
+            var limitOfDetails = 1000;
             var coin = ECurrency.BTC;
             var pair = $"{coin}{CryptoBotConsts.BaseCoinName}";
 
@@ -98,17 +73,8 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 
                 var stg = new MLStrategy();
 
-                //var inputs = input
-                //    //.Select((x, i) => new { Index = i, Value = x })
-                //    //.GroupBy(x => x.Index / 120)
-                //    //.Select(x => x.Select(y => y.Value).ToList())
-                //    .ToList();
-
-                //var input1 = inputs.First();
-                //var inputForTest1 = inputs.Last();
-
-                var input1 = input.Take(120).ToList();
-                var inputForTest1 = input.Skip(120).Take(120).ToList();
+                var input1 = input.Take(880).ToList();
+                var inputForTest1 = input.Skip(880).Take(120).ToList();
 
                 var walletPrice = 1000;
                 var walletInvestingPrice = 1000;
@@ -116,11 +82,20 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var futureValueCoin = inputForTest1.First();
                 inputForTest1.Remove(futureValueCoin);
 
-                CustomLog($"\nTrader Worker - Coin: {coin}, InitialWallet: {walletPrice:C2}, InitialWalletInvesting: {walletInvestingPrice:C2}, Interval: {interval}");
+                LogHelper.Log($"\nTrader Worker - Coin: {coin}, InitialWallet: {walletPrice:C2}, InitialWalletInvesting: {walletInvestingPrice:C2}, Interval: {interval}", "trader_worker_test");
 
                 await Test2Check(
                     1, futureValueCoin, walletPrice, walletInvestingPrice, stg, input1, inputForTest1);
             }
+        }
+
+        private async Task Test3()
+        {
+            await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy, ECurrency.BTC, KlineInterval.FifteenMinutes,
+                1000, ELogLevel.FullLog, 1000);
+
+            await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy, ECurrency.BTC, KlineInterval.FifteenMinutes,
+                1000, ELogLevel.FullLog, 10000);
         }
 
         private async Task Test2Check(int index, StockInput futuruValueCoin, decimal walletPrice, decimal walletInvestingPrice, MLStrategy stg, List<StockInput> input1, List<StockInput> futureValues)
@@ -152,7 +127,8 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 
                 var message =
                     $"{i} - ActualPrice: {actualValue}, FuturePrice: {futuruValueCoin.ClosingPrice}, PercDiff: {percFuturuValueDiffStr}, {action}, Result: {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureWalletInvesting: {newWalletInvestingPriceStr}";
-                CustomLog(message);
+
+                LogHelper.Log(message, "trader_worker_test");
 
                 if (futureValues.Count > 0)
                 {
@@ -168,13 +144,5 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             }
         }
 
-
-        public void CustomLog(string message)
-        {
-            using (StreamWriter writer = new StreamWriter("trader_worker_test.log", true, System.Text.Encoding.UTF8))
-            {
-                writer.WriteLine(message);
-            }
-        }
     }
 }

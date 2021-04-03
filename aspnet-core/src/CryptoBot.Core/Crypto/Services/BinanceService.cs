@@ -11,6 +11,9 @@ using CryptoExchange.Net.Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Helpers;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -38,6 +41,55 @@ namespace CryptoBot.Crypto.Services
             SetBinanceClients();
 
             return _binanceClient.Spot.Market.GetKlines(pair, interval, startTime, endTime, limit);
+        }
+
+        public List<IBinanceKline> GetData(
+            ECurrency currency,
+            KlineInterval interval,
+            DateTime? startTime,
+            DateTime? endTime,
+            int limitOfDetails)
+        {
+            var inputData = new List<IBinanceKline>();
+            var pair = $"{currency}{CryptoBotConsts.BaseCoinName}";
+
+            var initialLimitOfDetails = limitOfDetails > CryptoBotConsts.BinanceApiItemLimit
+                ? CryptoBotConsts.BinanceApiItemLimit
+                : limitOfDetails;
+
+            var klinesResult = GetKlines(pair, interval, initialLimitOfDetails, startTime, endTime);
+
+            if (klinesResult.Success)
+            {
+                inputData.AddRange(klinesResult.Data); ;
+
+                var itemsToDo = limitOfDetails - CryptoBotConsts.BinanceApiItemLimit;
+
+                while (itemsToDo > 0)
+                {
+                    var newLimitOfDetails = itemsToDo > CryptoBotConsts.BinanceApiItemLimit
+                        ? CryptoBotConsts.BinanceApiItemLimit
+                        : itemsToDo;
+
+                    var endTimeItem = inputData.First().OpenTime.AddSeconds(-1);
+                    var startTimeItem = DatetimeHelper.GetDateMinusIntervalMultipliedByLimit(endTimeItem, interval, newLimitOfDetails);
+
+                    var klinesResultItem = GetKlines(pair, interval, newLimitOfDetails, startTimeItem, endTimeItem);
+
+                    if (klinesResultItem.Success)
+                    {
+                        inputData.InsertRange(0, klinesResultItem.Data);
+
+                        itemsToDo = itemsToDo - CryptoBotConsts.BinanceApiItemLimit;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            return inputData;
         }
 
         private void Samples()

@@ -18,39 +18,27 @@ namespace CryptoBot.Crypto.Services
 {
     public class TraderService : DomainService, ITraderService
     {
-        private readonly ISettingManager _settingManager;
         private readonly IBinanceService _binanceService;
 
-        private IEnumerable<IBinanceKline> _inputData;
+        private Dictionary<ECurrency, List<IBinanceKline>> _inputData;
 
         public TraderService(
-            ISettingManager settingManager,
             IBinanceService binanceService)
         {
-            _settingManager = settingManager;
             _binanceService = binanceService;
+            _inputData = new Dictionary<ECurrency, List<IBinanceKline>>();
         }
 
         public Task<EWhatToDo> WhatToDo(
-            ECurrency currency,
-            KlineInterval interval,
-            DateTime? startTime = null,
-            DateTime? endTime = null,
-            int limitOfDetails = 1000)
+            ECurrency currency)
         {
             return Task.FromResult(EWhatToDo.Buy);
         }
 
         public async Task<EWhatToDo> WhatToDo(
             EStrategy strategy,
-            ECurrency currency,
-            KlineInterval interval,
-            DateTime? startTime = null,
-            DateTime? endTime = null,
-            int limitOfDetails = 1000)
+            ECurrency currency)
         {
-            SetData(currency, interval, startTime, endTime, limitOfDetails);
-
             switch (strategy)
             {
                 case EStrategy.SimpleMlStrategy:
@@ -64,6 +52,21 @@ namespace CryptoBot.Crypto.Services
 
                 default:
                     throw new Exception("Strategy not found");
+            }
+        }
+
+        public void SetData(ECurrency currency, KlineInterval interval, DateTime? startTime, DateTime? endTime, int limitOfDetails)
+        {
+            var inputData = _binanceService.GetData(currency, interval, startTime, endTime, limitOfDetails);
+
+            SetData(currency, inputData);
+        }
+
+        public void SetData(ECurrency currency, List<IBinanceKline> inputData)
+        {
+            if (inputData != null)
+            {
+                _inputData[currency] = inputData;
             }
         }
 
@@ -124,25 +127,9 @@ namespace CryptoBot.Crypto.Services
             return await Task.FromResult(EWhatToDo.Hold);
         }
 
-        private void SetData(ECurrency currency, KlineInterval interval, DateTime? startTime, DateTime? endTime,
-            int limitOfDetails)
-        {
-            var pair = $"{currency}{CryptoBotConsts.BaseCoinName}";
-
-            if (_inputData == null)
-            {
-                var klinesResult = _binanceService.GetKlines(pair, interval, limitOfDetails, startTime, endTime);
-
-                if (klinesResult.Success)
-                {
-                    _inputData = klinesResult.Data;
-                }
-            }
-        }
-
         private async Task<bool?> ShouldBuyStockBySimple(IStrategy strategy, ECurrency currency)
         {
-            var input = _inputData.Select(x => new StockInput
+            var input = _inputData[currency].Select(x => new StockInput
             {
                 ClosingPrice = x.Close,
                 StockSymbol = currency.ToString(),

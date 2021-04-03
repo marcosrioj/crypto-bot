@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Dtos.Simple;
+using CryptoBot.Crypto.Enums;
 
 namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy
 {
@@ -18,6 +20,18 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy
             var result = model.Predict();
 
             return Task.FromResult((bool?)(result.ForecastedPriceDiffrence[0] > 0));
+        }
+
+        public async Task<bool?> ShouldBuyStock(IList<IBinanceKline> historicalData, ECurrency currency)
+        {
+            var customHistoricalData = historicalData.Select(x => new StockInput
+            {
+                ClosingPrice = x.Close,
+                StockSymbol = currency.ToString(),
+                Time = x.CloseTime
+            }).ToList();
+
+            return await ShouldBuyStock(customHistoricalData);
         }
     }
 }

@@ -5,6 +5,7 @@ using Binance.Net.Objects.Spot.MarketData;
 using CryptoExchange.Net.Objects;
 using System;
 using System.Collections.Generic;
+using CryptoBot.Crypto.Enums;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -13,5 +14,12 @@ namespace CryptoBot.Crypto.Services
         WebCallResult<BinanceBookPrice> GetBookPrice(string pair);
 
         WebCallResult<IEnumerable<IBinanceKline>> GetKlines(string pair, KlineInterval interval, int limit = 100, DateTime? startTime = null, DateTime? endTime = null);
+
+        List<IBinanceKline> GetData(
+            ECurrency currency,
+            KlineInterval interval,
+            DateTime? startTime,
+            DateTime? endTime,
+            int limitOfDetails);
     }
 }

@@ -11,5 +11,7 @@
         public const string BaseCoinName = "USDT";
 
         public const long DefaultUserId = 2;
+
+        public const int BinanceApiItemLimit = 1000;
     }
 }
