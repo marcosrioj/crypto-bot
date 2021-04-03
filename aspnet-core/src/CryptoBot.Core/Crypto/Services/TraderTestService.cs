@@ -97,7 +97,7 @@ namespace CryptoBot.Crypto.Services
 
             if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.MainLog)
             {
-                LogHelper.Log($"\nRegressionTest - Coin: {currency}, InitialWallet: {initialWallet:C2}, Interval: {interval}, Strategy: {strategy}, ItemsLearned: {limitOfDetailsToLearn} (Requested {limitOfDetailsToLearnAndTest})", "regression_test");
+                LogHelper.Log($"\nRegressionTest - Coin: {currency}, InitialWallet: {initialWallet:C2}, Interval: {interval}, Strategy: {strategy}, ItemsLearned: {limitOfDetailsToLearn} (Requested {limitOfDetailsToLearnAndTest}), ItemsTested: {limitOfDetailsToTest}", "regression_test");
             }
 
             return await RegressionTestExec(
