@@ -18,7 +18,7 @@ namespace CryptoBot.Crypto.Services
             DateTime? startTime = null,
             DateTime? endTime = null);
 
-        Task<RegressionTestOutputDto> RegressionTest(
+        Task<List<RegressionTestOutputDto>> RegressionTest(
             EStrategy strategy,
             ECurrency currency,
             KlineInterval interval,

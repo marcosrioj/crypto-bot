@@ -14,7 +14,7 @@ namespace CryptoBot.Crypto.Helpers
             }
         }
 
-        public static void LogRegressionItemTest(int index, IBinanceKline futureStock, decimal newWalletInvestingPrice,
+        public static string CreateRegressionItemMessage(int index, IBinanceKline futureStock, decimal newWalletInvestingPrice,
             decimal newWalletPrice, EWhatToDo result, decimal percFuturuValueDiff, IBinanceKline actualStock)
         {
             var resultTrade = newWalletInvestingPrice > newWalletPrice ? "winner".PadRight(6, ' ') : "loser".PadRight(6, ' ');
@@ -32,9 +32,7 @@ namespace CryptoBot.Crypto.Helpers
 
             var dateStr = actualStock.CloseTime.ToString("yyyy-MM-dd HH:mm:ss K").PadLeft(21, ' ');
 
-            var message =
-                $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, PercDiff: {percFuturuValueDiffStr}, {action}, Result: {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureWalletInvesting: {newWalletInvestingPriceStr}";
-            LogHelper.Log(message, "regression_test");
+            return $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, PercDiff: {percFuturuValueDiffStr}, {action}, Result: {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureWalletInvesting: {newWalletInvestingPriceStr}";
         }
     }
 }

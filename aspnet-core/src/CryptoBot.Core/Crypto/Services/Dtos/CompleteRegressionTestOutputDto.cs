@@ -1,4 +1,5 @@
-﻿using CryptoBot.Crypto.Enums;
+﻿using System.Collections.Generic;
+using CryptoBot.Crypto.Enums;
 
 namespace CryptoBot.Crypto.Services.Dtos
 {
@@ -6,7 +7,7 @@ namespace CryptoBot.Crypto.Services.Dtos
     {
         public ECurrency Currency { get; set; }
         public EStrategy Strategy { get; set; }
-        public decimal FinalWallet { get; set; }
-        public decimal FinalTradingWallet { get; set; }
+
+        public List<RegressionTestOutputDto> Results { get; set; }
     }
 }

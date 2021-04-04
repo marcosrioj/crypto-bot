@@ -6,6 +6,7 @@ using CryptoBot.Crypto.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Helpers;
@@ -63,8 +64,7 @@ namespace CryptoBot.Crypto.Services
                         {
                             Currency = currency,
                             Strategy = strategy,
-                            FinalTradingWallet = regressionTestResult.FinalTradingWallet,
-                            FinalWallet = regressionTestResult.FinalWallet
+                            Results = regressionTestResult
                         });
                     }
                     catch (Exception e)
@@ -77,13 +77,13 @@ namespace CryptoBot.Crypto.Services
             return result;
         }
 
-        public async Task<RegressionTestOutputDto> RegressionTest(
+        public async Task<List<RegressionTestOutputDto>> RegressionTest(
             EStrategy strategy,
             ECurrency currency,
             KlineInterval interval,
             decimal initialWallet,
             ELogLevel logLevel = ELogLevel.NoLog,
-            int limitOfDetailsToLearnAndTest = 1000,
+            int limitOfDetailsToLearnAndTest = 240,
             int limitOfDetailsToTest = 120,
             DateTime? startTime = null,
             DateTime? endTime = null)
@@ -110,11 +110,45 @@ namespace CryptoBot.Crypto.Services
                 LogHelper.Log($"\nRegressionTest - Coin: {currency}, InitialWallet: {initialWallet:C2}, Interval: {interval}, Strategy: {strategy}, ItemsLearned: {limitOfDetailsToLearn} (Requested {limitOfDetailsToLearnAndTest}), ItemsTested: {limitOfDetailsToTest}", "regression_test");
             }
 
-            return await RegressionTestExec(
-                1, strategy, currency, dataToLearn, dataToTest, fisrtStockToTest, initialWallet, initialWallet, logLevel);
+            var result = new List<RegressionTestOutputDto>();
+
+            await RegressionTestExec(
+                1, strategy, currency, dataToLearn, dataToTest, fisrtStockToTest, initialWallet, initialWallet, logLevel, result);
+
+            if (logLevel == ELogLevel.FullLog)
+            {
+                var i = 1;
+                var success = 0m;
+                var failed = 0m;
+                var message = new StringBuilder();
+                foreach (var item in result)
+                {
+                    if (item.FuturePercDiff > 0 && item.WhatToDo == EWhatToDo.Buy
+                        || item.FuturePercDiff <= 0 && item.WhatToDo != EWhatToDo.Buy)
+                    {
+                        ++success;
+                    }
+                    else
+                    {
+                        ++failed;
+                    }
+
+                    message.AppendLine(LogHelper.CreateRegressionItemMessage(i, item.FutureStock, item.TradingWallet, item.Wallet, item.WhatToDo, item.FuturePercDiff, item.ActualStock));
+                    ++i;
+                }
+
+                var successResult = failed != 0 && success != 0 ? success / (success + failed) : 0;
+                var failedResult = failed != 0 && success != 0 ? failed / (success + failed) : 0;
+
+                message.AppendLine($"\nRegressionTest Finished - Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})");
+
+                LogHelper.Log(message.ToString(), "regression_test");
+            }
+
+            return result;
         }
 
-        private async Task<RegressionTestOutputDto> RegressionTestExec(
+        private async Task RegressionTestExec(
             int index,
             EStrategy strategy,
             ECurrency currency,
@@ -123,9 +157,10 @@ namespace CryptoBot.Crypto.Services
             IBinanceKline futureStock,
             decimal walletPrice,
             decimal tradingWalletPrice,
-            ELogLevel logLevel)
+            ELogLevel logLevel,
+            List<RegressionTestOutputDto> result)
         {
-            var result = await _traderService.WhatToDo(strategy, currency, _sampleStock);
+            var resultTraderService = await _traderService.WhatToDo(strategy, currency, _sampleStock);
 
             var actualStock = dataToLearn.Last();
 
@@ -133,12 +168,17 @@ namespace CryptoBot.Crypto.Services
 
             var newWalletPrice = walletPrice * (percFuturuValueDiff + 1);
 
-            var newTradingWalletPrice = result == EWhatToDo.Buy ? tradingWalletPrice * (percFuturuValueDiff + 1) : tradingWalletPrice;
+            var newTradingWalletPrice = resultTraderService == EWhatToDo.Buy ? tradingWalletPrice * (percFuturuValueDiff + 1) : tradingWalletPrice;
 
-            if (logLevel == ELogLevel.FullLog)
+            result.Add(new RegressionTestOutputDto
             {
-                LogHelper.LogRegressionItemTest(index, futureStock, newTradingWalletPrice, newWalletPrice, result, percFuturuValueDiff, actualStock);
-            }
+                ActualStock = actualStock,
+                FutureStock = futureStock,
+                TradingWallet = newTradingWalletPrice,
+                Wallet = newWalletPrice,
+                WhatToDo = resultTraderService,
+                FuturePercDiff = percFuturuValueDiff
+            });
 
             if (dataToTest.Count > 0)
             {
@@ -149,15 +189,9 @@ namespace CryptoBot.Crypto.Services
                 dataToLearn.Remove(firstValue);
                 dataToLearn.Add(futureStock);
 
-                return await RegressionTestExec(
-                    ++index, strategy, currency, dataToLearn, dataToTest, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel);
+                await RegressionTestExec(
+                    ++index, strategy, currency, dataToLearn, dataToTest, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel, result);
             }
-
-            return new RegressionTestOutputDto
-            {
-                FinalTradingWallet = tradingWalletPrice,
-                FinalWallet = walletPrice
-            };
         }
 
         private void SetSampleStock(ECurrency currency)

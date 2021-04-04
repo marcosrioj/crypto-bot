@@ -33,7 +33,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
         [UnitOfWork]
         protected override async Task DoWorkAsync()
         {
-            await Test1();
+            await Test2();
         }
 
         private async Task Test2()
@@ -42,7 +42,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             {
                 var initialWallet = 1000;
                 var interval = KlineInterval.FifteenMinutes;
-                var limitOfDetailsToLearnAndTest = 1000;
+                var limitOfDetailsToLearnAndTest = 240;
                 var limitOfDetailsToTest = 120;
 
                 await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy1, ECurrency.BTC, interval, initialWallet, ELogLevel.FullLog, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
@@ -81,9 +81,11 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                     {
                         var currencyStr = item.Currency.ToString().PadRight(7, ' ');
                         var strategyStr = item.Strategy.ToString().PadRight(27, ' ');
-                        var newWalletPriceStr = $"{item.FinalWallet:C2}".PadRight(9, ' ');
-                        var newWalletInvestingPriceStr = $"{item.FinalTradingWallet:C2}".PadRight(9, ' ');
-                        var percDiff = item.FinalTradingWallet / item.FinalWallet;
+                        var lastWalletPrice = item.Results.Last().Wallet;
+                        var lastWalletInvesting = item.Results.Last().TradingWallet;
+                        var newWalletPriceStr = $"{lastWalletPrice:C2}".PadRight(9, ' ');
+                        var newWalletInvestingPriceStr = $"{lastWalletInvesting:C2}".PadRight(9, ' ');
+                        var percDiff = lastWalletInvesting / lastWalletPrice;
                         var percDiffStr = $"{percDiff:P2}";
 
                         if (currency == null || currency != item.Currency)
