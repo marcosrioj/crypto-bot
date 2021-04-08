@@ -42,7 +42,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             try
             {
                 var initialWallet = 1000;
-                var interval = KlineInterval.ThirtyMinutes;
+                var interval = KlineInterval.FifteenMinutes;
                 var limitOfDataToLearnAndTest = 1000;
                 var strategy = EStrategy.SimpleMlStrategy1;
 
@@ -87,12 +87,12 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var successResult = failed != 0 && success != 0 ? success / (success + failed) : 0;
                 var failedResult = failed != 0 && success != 0 ? failed / (success + failed) : 0;
 
-                var percTotalStr = $"{percTotal:P2}".PadLeft(7, ' ');
+                var percTotalStr = $"{percTotal/result.Count():P2}".PadLeft(7, ' ');
                 var totalWalletStr = $"{walletTotal:C2}".PadLeft(10, ' ');
                 var totalTradindWalletStr = $"{tradingWalletTotal:C2}".PadLeft(10, ' ');
                 var initialWalletStr = $"{result.Count() * initialWallet:C2}".PadLeft(10, ' ');
 
-                finalResult.AppendLine($"PercEarn: {percTotalStr}, FinalWallet: {totalWalletStr}, FinalTradingWallet: {totalTradindWalletStr}");
+                finalResult.AppendLine($"PercEarn: {percTotalStr}, InitialWallet: {initialWalletStr}, FinalWallet: {totalWalletStr}, FinalTradingWallet: {totalTradindWalletStr}");
                 finalResult.AppendLine($"Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})");
                 finalResult.AppendLine($"TimeExecution: {seconds} seconds");
 
