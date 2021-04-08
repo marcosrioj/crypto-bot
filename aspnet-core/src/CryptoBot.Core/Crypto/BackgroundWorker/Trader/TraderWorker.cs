@@ -75,7 +75,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 
                     var percFuturuValueDiffStr = $"{item.FuturePercDiff:P2}".PadLeft(7, ' ');
 
-                    finalResult.AppendLine($"Currency: {item.Currency}, FuturePercDiff: {percFuturuValueDiffStr}, Score: {item.WhatToDo.Score}");
+                    finalResult.AppendLine($"Currency: {item.Currency.ToString().PadLeft(5, ' ')}, FuturePercDiff: {percFuturuValueDiffStr}, Score: {item.WhatToDo.Score}");
                 }
                 var successResult = failed != 0 && success != 0 ? success / (success + failed) : 0;
                 var failedResult = failed != 0 && success != 0 ? failed / (success + failed) : 0;
