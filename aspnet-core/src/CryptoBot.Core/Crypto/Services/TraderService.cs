@@ -15,6 +15,7 @@ using CryptoBot.Crypto.Strategies.Normal.MLStrategy2;
 using CryptoBot.Crypto.Strategies.Simple.MeanReversionStrategy;
 using CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy;
 using CryptoBot.Crypto.Strategies.Simple.MLStrategy1;
+using CryptoBot.Crypto.Services.Dtos;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -22,75 +23,57 @@ namespace CryptoBot.Crypto.Services
     {
         private readonly IBinanceService _binanceService;
 
-        private Dictionary<ECurrency, List<IBinanceKline>> _inputData;
-
         public TraderService(
             IBinanceService binanceService)
         {
             _binanceService = binanceService;
-            _inputData = new Dictionary<ECurrency, List<IBinanceKline>>();
         }
 
         public Task<EWhatToDo> WhatToDo(
-            ECurrency currency)
+            RegressionTestDataOutput data)
         {
             return Task.FromResult(EWhatToDo.Buy);
         }
 
         public async Task<EWhatToDo> WhatToDo(
             EStrategy strategy,
-            ECurrency currency,
-            IBinanceKline? sampleStock = null)
+            RegressionTestDataOutput data)
         {
             switch (strategy)
             {
                 case EStrategy.NormalMlStrategy1:
-                    if (sampleStock == null)
+                    if (data.SampleStockToTest == null)
                     {
                         throw new Exception("NormalMlStrategy must to have the actual stock");
                     }
-                    return await WhatToDoByNormalMlStrategy1(currency, sampleStock);
+                    return await WhatToDoByNormalMlStrategy1(data);
 
                 case EStrategy.NormalMlStrategy2:
-                    if (sampleStock == null)
+                    if (data.SampleStockToTest == null)
                     {
                         throw new Exception("NormalMlStrategy2 must to have the actual stock");
                     }
-                    return await WhatToDoByNormalMlStrategy2(currency, sampleStock);
+                    return await WhatToDoByNormalMlStrategy2(data);
 
                 case EStrategy.SimpleMlStrategy1:
-                    return await WhatToDoBySimpleMlStrategy1(currency);
+                    return await WhatToDoBySimpleMlStrategy1(data);
 
                 case EStrategy.SimpleMeanReversionStrategy:
-                    return await WhatToDoBySimpleMeanReversionStrategy(currency);
+                    return await WhatToDoBySimpleMeanReversionStrategy(data);
 
                 case EStrategy.SimpleMicrotrendStrategy:
-                    return await WhatToDoBySimpleMicrotrendStrategy(currency);
+                    return await WhatToDoBySimpleMicrotrendStrategy(data);
 
                 default:
                     throw new Exception("Strategy not found");
             }
         }
 
-        public void SetData(ECurrency currency, KlineInterval interval, DateTime? startTime, DateTime? endTime, int limitOfDetails)
-        {
-            var inputData = _binanceService.GetData(currency, interval, startTime, endTime, limitOfDetails);
 
-            SetData(currency, inputData);
-        }
-
-        public void SetData(ECurrency currency, List<IBinanceKline> inputData)
-        {
-            if (inputData != null)
-            {
-                _inputData[currency] = inputData;
-            }
-        }
-
-        private async Task<EWhatToDo> WhatToDoBySimpleMeanReversionStrategy(ECurrency currency)
+        private async Task<EWhatToDo> WhatToDoBySimpleMeanReversionStrategy(RegressionTestDataOutput data)
         {
             var strategy = new MeanReversionStrategy();
-            var result = await strategy.ShouldBuyStock(_inputData[currency]);
+            var result = await strategy.ShouldBuyStock(data.DataToLearn);
 
             if (result.HasValue)
             {
@@ -106,10 +89,10 @@ namespace CryptoBot.Crypto.Services
             return await Task.FromResult(EWhatToDo.Hold);
         }
 
-        private async Task<EWhatToDo> WhatToDoBySimpleMicrotrendStrategy(ECurrency currency)
+        private async Task<EWhatToDo> WhatToDoBySimpleMicrotrendStrategy(RegressionTestDataOutput data)
         {
             var strategy = new MicrotrendStrategy();
-            var result = await strategy.ShouldBuyStock(_inputData[currency]);
+            var result = await strategy.ShouldBuyStock(data.DataToLearn);
 
             if (result.HasValue)
             {
@@ -125,10 +108,10 @@ namespace CryptoBot.Crypto.Services
             return await Task.FromResult(EWhatToDo.Hold);
         }
 
-        private async Task<EWhatToDo> WhatToDoBySimpleMlStrategy1(ECurrency currency)
+        private async Task<EWhatToDo> WhatToDoBySimpleMlStrategy1(RegressionTestDataOutput data)
         {
             var strategy = new Strategies.Simple.MLStrategy1.MLStrategy1();
-            var result = await strategy.ShouldBuyStock(_inputData[currency]);
+            var result = await strategy.ShouldBuyStock(data.DataToLearn);
 
             if (result.HasValue)
             {
@@ -144,11 +127,11 @@ namespace CryptoBot.Crypto.Services
             return await Task.FromResult(EWhatToDo.Hold);
         }
 
-        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy1(ECurrency currency, IBinanceKline sampleStock)
+        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy1(RegressionTestDataOutput data)
         {
             var strategy = new Strategies.Normal.MLStrategy1.MLStrategy1();
 
-            var result = await strategy.ShouldBuyStock(_inputData[currency], sampleStock);
+            var result = await strategy.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
 
             if (result)
             {
@@ -159,11 +142,11 @@ namespace CryptoBot.Crypto.Services
             return await Task.FromResult(EWhatToDo.Hold);
         }
 
-        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy2(ECurrency currency, IBinanceKline sampleStock)
+        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy2(RegressionTestDataOutput data)
         {
             var strategy = new MLStrategy2();
 
-            var result = await strategy.ShouldBuyStock(_inputData[currency], sampleStock);
+            var result = await strategy.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
 
             if (result)
             {

@@ -20,12 +20,15 @@ namespace CryptoBot.Crypto.Services
 
         Task<List<RegressionTestOutputDto>> RegressionTest(
             EStrategy strategy,
+            RegressionTestDataOutput data,
+            ELogLevel logLevel = ELogLevel.NoLog);
+
+        RegressionTestDataOutput GetRegressionDataTest(
             ECurrency currency,
             KlineInterval interval,
             decimal initialWallet,
-            ELogLevel logLevel = ELogLevel.NoLog,
-            int limitOfDetailsToLearnAndTest = 1000,
-            int limitOfDetailsToTest = 120,
+            int limitOfDataToLearnAndTest = 240,
+            int limitOfDataToTest = 120,
             DateTime? startTime = null,
             DateTime? endTime = null);
     }

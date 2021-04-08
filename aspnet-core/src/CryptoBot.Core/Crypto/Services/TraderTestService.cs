@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services.Dtos;
-using JetBrains.Annotations;
 
 
 namespace CryptoBot.Crypto.Services
@@ -34,8 +33,8 @@ namespace CryptoBot.Crypto.Services
         public async Task<IEnumerable<CompleteRegressionTestOutputDto>> CompleteRegressionTest(
             KlineInterval interval,
             decimal initialWallet,
-            int limitOfDetailsToLearnAndTest = 1000,
-            int limitOfDetailsToTest = 120,
+            int limitOfDataToLearnAndTest = 1000,
+            int limitOfDataToTest = 120,
             DateTime? startTime = null,
             DateTime? endTime = null)
         {
@@ -49,16 +48,13 @@ namespace CryptoBot.Crypto.Services
 
             foreach (var currency in allCurrencies)
             {
-                SetSampleStock(currency);
+                var data = GetRegressionDataTest(currency, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest, startTime, endTime);
 
                 foreach (var strategy in strategies)
                 {
                     try
                     {
-                        var regressionTestResult = await RegressionTest(
-                            strategy, currency, interval, initialWallet,
-                            ELogLevel.NoLog, limitOfDetailsToLearnAndTest,
-                            limitOfDetailsToTest, startTime, endTime);
+                        var regressionTestResult = await RegressionTest(strategy, data, ELogLevel.NoLog);
 
                         result.Add(new CompleteRegressionTestOutputDto
                         {
@@ -79,41 +75,24 @@ namespace CryptoBot.Crypto.Services
 
         public async Task<List<RegressionTestOutputDto>> RegressionTest(
             EStrategy strategy,
-            ECurrency currency,
-            KlineInterval interval,
-            decimal initialWallet,
-            ELogLevel logLevel = ELogLevel.NoLog,
-            int limitOfDetailsToLearnAndTest = 240,
-            int limitOfDetailsToTest = 120,
-            DateTime? startTime = null,
-            DateTime? endTime = null)
+            RegressionTestDataOutput data,
+            ELogLevel logLevel = ELogLevel.NoLog)
         {
-            if (_sampleStock == null)
-            {
-                SetSampleStock(currency);
-            }
-
-            var dataToLearnAndTest = _binanceService.GetData(currency, interval, startTime, endTime, limitOfDetailsToLearnAndTest);
-
-            var limitOfDetailsToLearn = dataToLearnAndTest.Count - limitOfDetailsToTest;
-            var dataToLearn = dataToLearnAndTest.Take(limitOfDetailsToLearn).ToList();
-            var dataToTest = dataToLearnAndTest.Skip(limitOfDetailsToLearn).Take(limitOfDetailsToTest).ToList();
-
-            _traderService.SetData(currency, dataToLearn);
+            var newData = data.Clone();
 
             //Prepare the first stock to test
-            var fisrtStockToTest = dataToTest.First();
-            dataToTest.Remove(fisrtStockToTest);
+            var fisrtStockToTest = newData.DataToTest.First();
+            newData.DataToTest.Remove(fisrtStockToTest);
 
             if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.MainLog)
             {
-                LogHelper.Log($"\nRegressionTest - Coin: {currency}, InitialWallet: {initialWallet:C2}, Interval: {interval}, Strategy: {strategy}, ItemsLearned: {limitOfDetailsToLearn} (Requested {limitOfDetailsToLearnAndTest}), ItemsTested: {limitOfDetailsToTest}", "regression_test");
+                LogHelper.Log($"\nRegressionTest - Coin: {newData.Currency}, InitialWallet: {newData.InitialWallet:C2}, Interval: {newData.Interval}, Strategy: {strategy}, ItemsLearned: {newData.LimitOfDataToLearn} (Requested {newData.LimitOfDataToLearnAndTest}), ItemsTested: {newData.LimitOfDataToTest}", "regression_test");
             }
 
             var result = new List<RegressionTestOutputDto>();
 
             await RegressionTestExec(
-                1, strategy, currency, dataToLearn, dataToTest, fisrtStockToTest, initialWallet, initialWallet, logLevel, result);
+                1, strategy, newData, fisrtStockToTest, newData.InitialWallet, newData.InitialWallet, logLevel, result);
 
             if (logLevel == ELogLevel.FullLog)
             {
@@ -148,21 +127,48 @@ namespace CryptoBot.Crypto.Services
             return result;
         }
 
+        public RegressionTestDataOutput GetRegressionDataTest(
+            ECurrency currency,
+            KlineInterval interval,
+            decimal initialWallet,
+            int limitOfDataToLearnAndTest = 240,
+            int limitOfDataToTest = 120,
+            DateTime? startTime = null,
+            DateTime? endTime = null)
+        {
+            var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}");
+            var dataToLearnAndTest = _binanceService.GetData(currency, interval, startTime, endTime, limitOfDataToLearnAndTest);
+            var limitOfDataToLearn = dataToLearnAndTest.Count - limitOfDataToTest;
+            var dataToLearn = dataToLearnAndTest.Take(limitOfDataToLearn).ToList();
+            var dataToTest = dataToLearnAndTest.Skip(limitOfDataToLearn).Take(limitOfDataToTest).ToList();
+
+            return new RegressionTestDataOutput
+            {
+                Currency = currency,
+                DataToLearn = dataToLearn,
+                DataToTest = dataToTest,
+                SampleStockToTest = sampleStock,
+                Interval = interval,
+                LimitOfDataToLearn = limitOfDataToLearn,
+                LimitOfDataToLearnAndTest = limitOfDataToLearnAndTest,
+                LimitOfDataToTest = limitOfDataToTest,
+                InitialWallet = initialWallet
+            };
+        }
+
         private async Task RegressionTestExec(
             int index,
             EStrategy strategy,
-            ECurrency currency,
-            List<IBinanceKline> dataToLearn,
-            List<IBinanceKline> dataToTest,
+            RegressionTestDataOutput data,
             IBinanceKline futureStock,
             decimal walletPrice,
             decimal tradingWalletPrice,
             ELogLevel logLevel,
             List<RegressionTestOutputDto> result)
         {
-            var resultTraderService = await _traderService.WhatToDo(strategy, currency, _sampleStock);
+            var resultTraderService = await _traderService.WhatToDo(strategy, data);
 
-            var actualStock = dataToLearn.Last();
+            var actualStock = data.DataToLearn.Last();
 
             var percFuturuValueDiff = (futureStock.Close / actualStock.Close) - 1;
 
@@ -180,24 +186,18 @@ namespace CryptoBot.Crypto.Services
                 FuturePercDiff = percFuturuValueDiff
             });
 
-            if (dataToTest.Count > 0)
+            if (data.DataToTest.Count > 0)
             {
-                var nextStockToTest = dataToTest.First();
-                dataToTest.Remove(nextStockToTest);
+                var nextStockToTest = data.DataToTest.First();
+                data.DataToTest.Remove(nextStockToTest);
 
-                var firstValue = dataToLearn.First();
-                dataToLearn.Remove(firstValue);
-                dataToLearn.Add(futureStock);
+                var firstValue = data.DataToLearn.First();
+                data.DataToLearn.Remove(firstValue);
+                data.DataToLearn.Add(futureStock);
 
                 await RegressionTestExec(
-                    ++index, strategy, currency, dataToLearn, dataToTest, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel, result);
+                    ++index, strategy, data, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel, result);
             }
-        }
-
-        private void SetSampleStock(ECurrency currency)
-        {
-            var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}");
-            _sampleStock = sampleStock;
         }
     }
 }
