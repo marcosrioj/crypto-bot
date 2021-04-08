@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Services.Dtos;
 
 namespace CryptoBot.Crypto.Helpers
 {
@@ -15,13 +16,15 @@ namespace CryptoBot.Crypto.Helpers
         }
 
         public static string CreateRegressionItemMessage(int index, IBinanceKline futureStock, decimal newWalletInvestingPrice,
-            decimal newWalletPrice, EWhatToDo result, decimal percFuturuValueDiff, IBinanceKline actualStock)
+            decimal newWalletPrice, WhatToDoOutput result, decimal percFuturuValueDiff, IBinanceKline actualStock)
         {
             var resultTrade = newWalletInvestingPrice > newWalletPrice ? "winner".PadRight(6, ' ') : "loser".PadRight(6, ' ');
 
-            string action = result == EWhatToDo.Buy
+            string action = result.WhatToDo == EWhatToDo.Buy
                 ? "BUY".PadRight(8, ' ')
                 : "DONT BUY".PadRight(8, ' ');
+
+            var score = $"{result.Score}".PadLeft(5, ' ');
 
             var i = index.ToString().PadLeft(5, ' ');
 
@@ -32,7 +35,7 @@ namespace CryptoBot.Crypto.Helpers
 
             var dateStr = actualStock.CloseTime.ToString("yyyy-MM-dd HH:mm:ss K").PadLeft(21, ' ');
 
-            return $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, Diff: {percFuturuValueDiffStr}, {action}, {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureTradingWallet: {newWalletInvestingPriceStr}";
+            return $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, Diff: {percFuturuValueDiffStr}, {action} {score}, {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureTradingWallet: {newWalletInvestingPriceStr}";
         }
     }
 }

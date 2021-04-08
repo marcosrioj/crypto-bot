@@ -11,9 +11,9 @@ namespace CryptoBot.Crypto.Services
 {
     public interface ITraderService : IDomainService
     {
-        Task<EWhatToDo> WhatToDo(RegressionTestDataOutput data);
+        Task<WhatToDoOutput> WhatToDo(RegressionTestDataOutput data);
 
-        Task<EWhatToDo> WhatToDo(
+        Task<WhatToDoOutput> WhatToDo(
             EStrategy strategy,
             RegressionTestDataOutput data);
     }

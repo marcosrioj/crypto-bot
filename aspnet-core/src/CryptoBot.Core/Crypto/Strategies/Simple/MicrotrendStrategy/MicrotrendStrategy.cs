@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Strategies.Dtos;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Binance.Net.Interfaces;
-using CryptoBot.Crypto.Dtos.Simple;
-using CryptoBot.Crypto.Enums;
 
 namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
 {
     public class MicrotrendStrategy : ISimpleStrategy
     {
-        public Task<bool?> ShouldBuyStock(IList<IBinanceKline> historicalData)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData)
         {
             var last3Values = historicalData.Skip(historicalData.Count - 3).Take(3).Select(x => x.Close).ToList();
 
@@ -27,7 +26,10 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                 result = false;
             }
 
-            return Task.FromResult(result);
+            return await Task.FromResult(new ShouldBuyStockOutput
+            {
+                Buy = result
+            });
         }
     }
 }

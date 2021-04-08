@@ -98,8 +98,8 @@ namespace CryptoBot.Crypto.Services
                 var message = new StringBuilder();
                 foreach (var item in result)
                 {
-                    if (item.FuturePercDiff > 0 && item.WhatToDo == EWhatToDo.Buy
-                        || item.FuturePercDiff <= 0 && item.WhatToDo != EWhatToDo.Buy)
+                    if (item.FuturePercDiff > 0 && item.WhatToDo.WhatToDo == EWhatToDo.Buy
+                        || item.FuturePercDiff <= 0 && item.WhatToDo.WhatToDo != EWhatToDo.Buy)
                     {
                         ++success;
                     }
@@ -183,7 +183,7 @@ namespace CryptoBot.Crypto.Services
                 });
             }
 
-            return results.Where(x => x.WhatToDo == EWhatToDo.Buy).ToList();
+            return results.Where(x => x.WhatToDo.WhatToDo == EWhatToDo.Buy).ToList();
         }
 
         private async Task RegressionTestExec(
@@ -204,7 +204,7 @@ namespace CryptoBot.Crypto.Services
 
             var newWalletPrice = walletPrice * (percFuturuValueDiff + 1);
 
-            var newTradingWalletPrice = resultTraderService == EWhatToDo.Buy ? tradingWalletPrice * (percFuturuValueDiff + 1) : tradingWalletPrice;
+            var newTradingWalletPrice = resultTraderService.WhatToDo == EWhatToDo.Buy ? tradingWalletPrice * (percFuturuValueDiff + 1) : tradingWalletPrice;
 
             result.Add(new RegressionTestOutputDto
             {

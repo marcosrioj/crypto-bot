@@ -29,13 +29,13 @@ namespace CryptoBot.Crypto.Services
             _binanceService = binanceService;
         }
 
-        public Task<EWhatToDo> WhatToDo(
+        public async Task<WhatToDoOutput> WhatToDo(
             RegressionTestDataOutput data)
         {
-            return Task.FromResult(EWhatToDo.Buy);
+            return await Task.FromResult(new WhatToDoOutput());
         }
 
-        public async Task<EWhatToDo> WhatToDo(
+        public async Task<WhatToDoOutput> WhatToDo(
             EStrategy strategy,
             RegressionTestDataOutput data)
         {
@@ -70,107 +70,113 @@ namespace CryptoBot.Crypto.Services
         }
 
 
-        private async Task<EWhatToDo> WhatToDoBySimpleMeanReversionStrategy(RegressionTestDataOutput data)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionTestDataOutput data)
         {
             var strategy = new MeanReversionStrategy();
             var result = await strategy.ShouldBuyStock(data.DataToLearn);
 
-            if (result.HasValue)
+            if (result.Buy.HasValue)
             {
-                if (result.Value)
+                if (result.Buy.Value)
                 {
-                    return await Task.FromResult(EWhatToDo.Buy);
+                    return await Task.FromResult(new WhatToDoOutput
+                    {
+                        WhatToDo = EWhatToDo.Buy
+                    });
                 }
-
-                //TODO: Create logic to sell
-                return await Task.FromResult(EWhatToDo.Hold);
             }
 
-            return await Task.FromResult(EWhatToDo.Hold);
+            return await Task.FromResult(new WhatToDoOutput
+            {
+                WhatToDo = EWhatToDo.DontBuy
+            });
         }
 
-        private async Task<EWhatToDo> WhatToDoBySimpleMicrotrendStrategy(RegressionTestDataOutput data)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMicrotrendStrategy(RegressionTestDataOutput data)
         {
             var strategy = new MicrotrendStrategy();
             var result = await strategy.ShouldBuyStock(data.DataToLearn);
 
-            if (result.HasValue)
+            if (result.Buy.HasValue)
             {
-                if (result.Value)
+                if (result.Buy.Value)
                 {
-                    return await Task.FromResult(EWhatToDo.Buy);
+                    return await Task.FromResult(new WhatToDoOutput
+                    {
+                        WhatToDo = EWhatToDo.Buy
+                    });
                 }
-
-                //TODO: Create logic to sell
-                return await Task.FromResult(EWhatToDo.Hold);
             }
 
-            return await Task.FromResult(EWhatToDo.Hold);
+            return await Task.FromResult(new WhatToDoOutput
+            {
+                WhatToDo = EWhatToDo.DontBuy
+            });
         }
 
-        private async Task<EWhatToDo> WhatToDoBySimpleMlStrategy1(RegressionTestDataOutput data)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMlStrategy1(RegressionTestDataOutput data)
         {
             var strategy = new Strategies.Simple.MLStrategy1.MLStrategy1();
             var result = await strategy.ShouldBuyStock(data.DataToLearn);
 
-            if (result.HasValue)
+            if (result.Buy.HasValue)
             {
-                if (result.Value)
+                if (result.Buy.Value)
                 {
-                    return await Task.FromResult(EWhatToDo.Buy);
+                    return await Task.FromResult(new WhatToDoOutput
+                    {
+                        WhatToDo = EWhatToDo.Buy,
+                        Score = result.Score
+                    });
                 }
-
-                //TODO: Create logic to sell
-                return await Task.FromResult(EWhatToDo.Hold);
             }
 
-            return await Task.FromResult(EWhatToDo.Hold);
+            return await Task.FromResult(new WhatToDoOutput
+            {
+                WhatToDo = EWhatToDo.DontBuy
+            });
         }
 
-        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy1(RegressionTestDataOutput data)
+        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy1(RegressionTestDataOutput data)
         {
             var strategy = new Strategies.Normal.MLStrategy1.MLStrategy1();
 
             var result = await strategy.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
 
-            if (result)
+            if (result.Buy.HasValue)
             {
-                return await Task.FromResult(EWhatToDo.Buy);
+                return await Task.FromResult(new WhatToDoOutput
+                {
+                    WhatToDo = EWhatToDo.Buy,
+                    Score = result.Score
+                });
             }
 
-            //TODO: Create logic to sell
-            return await Task.FromResult(EWhatToDo.Hold);
+            return await Task.FromResult(new WhatToDoOutput
+            {
+                WhatToDo = EWhatToDo.DontBuy
+            });
         }
 
-        private async Task<EWhatToDo> WhatToDoByNormalMlStrategy2(RegressionTestDataOutput data)
+        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy2(RegressionTestDataOutput data)
         {
             var strategy = new MLStrategy2();
 
             var result = await strategy.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
 
-            if (result)
+            if (result.Buy.HasValue)
             {
-                return await Task.FromResult(EWhatToDo.Buy);
+                return await Task.FromResult(new WhatToDoOutput
+                {
+                    WhatToDo = EWhatToDo.Buy,
+                    Score = result.Score
+                });
             }
 
-            //TODO: Create logic to sell
-            return await Task.FromResult(EWhatToDo.Hold);
-        }
-
-        public void LogFull(string message)
-        {
-            using (StreamWriter writer = new StreamWriter("trader_full.log", true, System.Text.Encoding.UTF8))
+            return await Task.FromResult(new WhatToDoOutput
             {
-                writer.WriteLine(message);
-            }
-        }
-
-        public void LogMain(string message)
-        {
-            using (StreamWriter writer = new StreamWriter("trader_main.log", true, System.Text.Encoding.UTF8))
-            {
-                writer.WriteLine(message);
-            }
+                WhatToDo = EWhatToDo.DontBuy
+            });
         }
     }
 }

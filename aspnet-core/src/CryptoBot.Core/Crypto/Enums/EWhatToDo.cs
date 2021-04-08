@@ -3,7 +3,6 @@
     public enum EWhatToDo
     {
         Buy,
-        Hold,
-        Sell
+        DontBuy
     }
 }

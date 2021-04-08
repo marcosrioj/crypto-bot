@@ -1,17 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Binance.Net.Interfaces;
+﻿using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Dtos.Normal;
+using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using static Microsoft.ML.DataOperationsCatalog;
 
 namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 {
     public class MLStrategy1 : INormalStrategy
     {
-        public Task<bool> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline sampleStock)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline sampleStock)
         {
             // Cria o contexto que trabalhará com aprendizado de máquina.
             MLContext context = new MLContext();
@@ -27,7 +28,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
             //PrintMetrics(metrics);
 
-            return Task.FromResult(PredictPrice(context, model, sampleStock));
+            return await Task.FromResult(PredictPrice(context, model, sampleStock));
         }
 
         private static TrainTestData Sanitize(MLContext context, IList<IBinanceKline> historicalData)
@@ -117,11 +118,10 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
         //    Console.WriteLine("--------------------------------------------------");
         //}
 
-        private static bool PredictPrice(MLContext context, ITransformer model, IBinanceKline sampleStock)
+        private static ShouldBuyStockOutput PredictPrice(MLContext context, ITransformer model, IBinanceKline sampleStock)
         {
             PredictionEngine<StockInfo, StockInfoPrediction> predictor = context.Model
             .CreatePredictionEngine<StockInfo, StockInfoPrediction>(model);
-
 
             var actualInput = new StockInfo
             {
@@ -138,7 +138,11 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
             StockInfoPrediction prediction = predictor.Predict(actualInput);
 
-            return prediction.Close > 0.2;
+            return new ShouldBuyStockOutput
+            {
+                Buy = prediction.Close > 0.2,
+                Score = (decimal)prediction.Close
+            };
 
             //foreach (StockInfo stock in stocks)
             //{

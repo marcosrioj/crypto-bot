@@ -10,7 +10,7 @@ namespace CryptoBot.Crypto.Services.Dtos
         public decimal TradingWallet { get; set; }
         public IBinanceKline ActualStock { get; set; }
         public IBinanceKline FutureStock { get; set; }
-        public EWhatToDo WhatToDo { get; set; }
+        public WhatToDoOutput WhatToDo { get; set; }
         public decimal FuturePercDiff { get; set; }
     }
 }

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using CryptoBot.Crypto.Dtos.Simple;
 using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services.Dtos;
+using System.Text;
 
 namespace CryptoBot.Crypto.BackgroundWorker.Trader
 {
@@ -43,19 +44,27 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var initialWallet = 1000;
                 var interval = KlineInterval.ThirtyMinutes;
                 var limitOfDataToLearnAndTest = 1000;
+                var strategy = EStrategy.SimpleMlStrategy1;
 
                 DateTime start = DateTime.UtcNow;
-                var result = await _traderTestService.GetBetterCoinsToTraderRightNowAsync(EStrategy.SimpleMlStrategy1, interval, initialWallet, limitOfDataToLearnAndTest);
+                var result = await _traderTestService.GetBetterCoinsToTraderRightNowAsync(strategy, interval, initialWallet, limitOfDataToLearnAndTest);
                 DateTime end = DateTime.UtcNow;
                 TimeSpan timeDiff = end - start;
                 var seconds = timeDiff.Seconds;
 
                 var success = 0m;
                 var failed = 0m;
+                var finalResult = new StringBuilder();
+
+                var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss K").PadLeft(21, ' ');
+                finalResult.AppendLine($"GetBetterCoinsToTraderRightNow: Date: {date} - Strategy: {strategy} - Interval: {interval} - ItemsLearned: {limitOfDataToLearnAndTest}\n");
+
+                result = result.OrderByDescending(x => x.WhatToDo.Score);
+
                 foreach (var item in result)
                 {
-                    if (item.FuturePercDiff > 0 && item.WhatToDo == EWhatToDo.Buy
-                        || item.FuturePercDiff <= 0 && item.WhatToDo != EWhatToDo.Buy)
+                    if (item.FuturePercDiff > 0 && item.WhatToDo.WhatToDo == EWhatToDo.Buy
+                        || item.FuturePercDiff <= 0 && item.WhatToDo.WhatToDo != EWhatToDo.Buy)
                     {
                         ++success;
                     }
@@ -63,10 +72,18 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                     {
                         ++failed;
                     }
+
+                    var percFuturuValueDiffStr = $"{item.FuturePercDiff:P2}".PadLeft(7, ' ');
+
+                    finalResult.AppendLine($"Currency: {item.Currency}, FuturePercDiff: {percFuturuValueDiffStr}, Score: {item.WhatToDo.Score}");
                 }
                 var successResult = failed != 0 && success != 0 ? success / (success + failed) : 0;
                 var failedResult = failed != 0 && success != 0 ? failed / (success + failed) : 0;
-                var finalResult = $"Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})";
+
+                finalResult.AppendLine($"Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})\nTimeExecution: {seconds} seconds");
+
+                LogHelper.Log(finalResult.ToString(), "get-better-coins-to-trader-right-now");
+
             }
             catch (Exception e)
             {

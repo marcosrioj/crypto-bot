@@ -1,23 +1,24 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Binance.Net.Interfaces;
+﻿using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
 {
     public class MLStrategy2 : INormalStrategy
     {
-        public async Task<bool> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline sampleStock)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline sampleStock)
         {
             MLContext mlContext = new MLContext();
 
             // 1. Import or create training data
             var houseData = historicalData.Select(x => new Input
             {
-                Price = (float) x.Close,
-                Size = (float) x.BaseVolume
+                Price = (float)x.Close,
+                Size = (float)x.BaseVolume
             });
 
             IDataView trainingData = mlContext.Data.LoadFromEnumerable(houseData);
@@ -38,7 +39,11 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
 
             }
 
-            return await Task.FromResult(price.Price > 0.2);
+            return await Task.FromResult(new ShouldBuyStockOutput
+            {
+                Buy = price.Price > 0.2,
+                Score = (decimal)price.Price
+            });
 
             // Predicted price for size: 2500 sq ft= $261.98k
         }

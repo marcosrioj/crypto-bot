@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Strategies.Dtos;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Binance.Net.Interfaces;
 
 namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
 {
     public class MLStrategy1 : ISimpleStrategy
     {
-        public Task<bool?> ShouldBuyStock(IList<IBinanceKline> historicalData)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData)
         {
             var modelBuilder = new ModelBuilder();
             var model = modelBuilder.BuildModel(historicalData.Select(x => new ModelInput
@@ -17,7 +18,11 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
             }).ToList());
             var result = model.Predict();
 
-            return Task.FromResult((bool?)(result.ForecastedPriceDiffrence[0] > 0.005));
+            return await Task.FromResult(new ShouldBuyStockOutput
+            {
+                Buy = result.ForecastedPriceDiffrence[0] > 0.005,
+                Score = (decimal)result.ForecastedPriceDiffrence[0]
+            });
         }
     }
 }
