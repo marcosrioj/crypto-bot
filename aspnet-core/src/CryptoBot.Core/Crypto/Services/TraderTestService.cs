@@ -1,17 +1,15 @@
 ﻿
 using Abp.Domain.Services;
 using Binance.Net.Enums;
-
+using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Helpers;
+using CryptoBot.Crypto.Services.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Binance.Net.Interfaces;
-using CryptoBot.Crypto.Helpers;
-using CryptoBot.Crypto.Services.Dtos;
-
 
 namespace CryptoBot.Crypto.Services
 {
@@ -19,8 +17,6 @@ namespace CryptoBot.Crypto.Services
     {
         private readonly ITraderService _traderService;
         private readonly IBinanceService _binanceService;
-
-        private IBinanceKline _sampleStock;
 
         public TraderTestService(
             ITraderService traderService,
@@ -43,7 +39,7 @@ namespace CryptoBot.Crypto.Services
             var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
             var strategies = new List<EStrategy>()
                 {EStrategy.SimpleMlStrategy1, EStrategy.NormalMlStrategy1, EStrategy.NormalMlStrategy2, EStrategy.SimpleMeanReversionStrategy, EStrategy.SimpleMicrotrendStrategy};
-            
+
             var logName = DateTime.Now.ToString("complete-regression-test-TraderTestServiceErrors-yyyy-MM-dd-HH-mm-ss-K");
 
             foreach (var currency in allCurrencies)
@@ -154,6 +150,40 @@ namespace CryptoBot.Crypto.Services
                 LimitOfDataToTest = limitOfDataToTest,
                 InitialWallet = initialWallet
             };
+        }
+
+        public async Task<IEnumerable<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+            EStrategy strategy,
+            KlineInterval interval,
+            decimal initialWallet,
+            int limitOfDataToLearnAndTest = 1000,
+            DateTime? startTime = null,
+            DateTime? endTime = null)
+        {
+            var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
+
+            var results = new List<BetterCoinsToTraderRightNowOutputDto>();
+
+            foreach (var currency in allCurrencies)
+            {
+                var data = GetRegressionDataTest(currency, interval, initialWallet, limitOfDataToLearnAndTest, 1, startTime, endTime);
+
+                var regressionTestResult = await RegressionTest(strategy, data, ELogLevel.NoLog);
+                var firstRegressionTestResult = regressionTestResult.First();
+
+                results.Add(new BetterCoinsToTraderRightNowOutputDto
+                {
+                    Currency = currency,
+                    ActualStock = firstRegressionTestResult.ActualStock,
+                    FuturePercDiff = firstRegressionTestResult.FuturePercDiff,
+                    FutureStock = firstRegressionTestResult.FutureStock,
+                    TradingWallet = firstRegressionTestResult.TradingWallet,
+                    Wallet = firstRegressionTestResult.Wallet,
+                    WhatToDo = firstRegressionTestResult.WhatToDo
+                });
+            }
+
+            return results.Where(x => x.WhatToDo == EWhatToDo.Buy).ToList();
         }
 
         private async Task RegressionTestExec(

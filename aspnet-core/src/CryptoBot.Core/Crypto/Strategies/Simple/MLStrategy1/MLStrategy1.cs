@@ -17,7 +17,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
             }).ToList());
             var result = model.Predict();
 
-            return Task.FromResult((bool?)(result.ForecastedPriceDiffrence[0] > 0));
+            return Task.FromResult((bool?)(result.ForecastedPriceDiffrence[0] > 0.005));
         }
     }
 }

@@ -31,5 +31,13 @@ namespace CryptoBot.Crypto.Services
             int limitOfDataToTest = 120,
             DateTime? startTime = null,
             DateTime? endTime = null);
+
+        Task<IEnumerable<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+            EStrategy strategy,
+            KlineInterval interval,
+            decimal initialWallet,
+            int limitOfDataToLearnAndTest = 1000,
+            DateTime? startTime = null,
+            DateTime? endTime = null);
     }
 }

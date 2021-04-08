@@ -138,7 +138,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
             StockInfoPrediction prediction = predictor.Predict(actualInput);
 
-            return prediction.Close > (float)sampleStock.Close;
+            return prediction.Close > 0.2;
 
             //foreach (StockInfo stock in stocks)
             //{
