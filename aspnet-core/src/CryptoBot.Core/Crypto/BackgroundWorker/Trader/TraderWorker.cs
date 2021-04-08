@@ -55,6 +55,9 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var success = 0m;
                 var failed = 0m;
                 var finalResult = new StringBuilder();
+                var percTotal = 0m;
+                var walletTotal = 0m;
+                var tradingWalletTotal = 0m;
 
                 var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss K").PadLeft(21, ' ');
                 finalResult.AppendLine($"GetBetterCoinsToTraderRightNow: Date: {date} - Strategy: {strategy} - Interval: {interval} - ItemsLearned: {limitOfDataToLearnAndTest}\n");
@@ -76,11 +79,22 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                     var percFuturuValueDiffStr = $"{item.FuturePercDiff:P2}".PadLeft(7, ' ');
 
                     finalResult.AppendLine($"Currency: {item.Currency.ToString().PadLeft(5, ' ')}, FuturePercDiff: {percFuturuValueDiffStr}, Score: {item.WhatToDo.Score}");
+
+                    percTotal = percTotal + item.FuturePercDiff;
+                    walletTotal = walletTotal + item.Wallet;
+                    tradingWalletTotal = tradingWalletTotal + item.TradingWallet;
                 }
                 var successResult = failed != 0 && success != 0 ? success / (success + failed) : 0;
                 var failedResult = failed != 0 && success != 0 ? failed / (success + failed) : 0;
 
-                finalResult.AppendLine($"Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})\nTimeExecution: {seconds} seconds");
+                var percTotalStr = $"{percTotal:P2}".PadLeft(7, ' ');
+                var totalWalletStr = $"{walletTotal:C2}".PadLeft(10, ' ');
+                var totalTradindWalletStr = $"{tradingWalletTotal:C2}".PadLeft(10, ' ');
+                var initialWalletStr = $"{result.Count() * initialWallet:C2}".PadLeft(10, ' ');
+
+                finalResult.AppendLine($"PercEarn: {percTotalStr}, FinalWallet: {totalWalletStr}, FinalTradingWallet: {totalTradindWalletStr}");
+                finalResult.AppendLine($"Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})");
+                finalResult.AppendLine($"TimeExecution: {seconds} seconds");
 
                 LogHelper.Log(finalResult.ToString(), "get-better-coins-to-trader-right-now");
 
