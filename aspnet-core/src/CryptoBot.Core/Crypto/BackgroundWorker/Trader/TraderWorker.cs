@@ -48,7 +48,25 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var result = await _traderTestService.GetBetterCoinsToTraderRightNowAsync(EStrategy.SimpleMlStrategy1, interval, initialWallet, limitOfDataToLearnAndTest);
                 DateTime end = DateTime.UtcNow;
                 TimeSpan timeDiff = end - start;
-                var seconds = timeDiff.TotalMilliseconds * 1000;
+                var seconds = timeDiff.Seconds;
+
+                var success = 0m;
+                var failed = 0m;
+                foreach (var item in result)
+                {
+                    if (item.FuturePercDiff > 0 && item.WhatToDo == EWhatToDo.Buy
+                        || item.FuturePercDiff <= 0 && item.WhatToDo != EWhatToDo.Buy)
+                    {
+                        ++success;
+                    }
+                    else
+                    {
+                        ++failed;
+                    }
+                }
+                var successResult = failed != 0 && success != 0 ? success / (success + failed) : 0;
+                var failedResult = failed != 0 && success != 0 ? failed / (success + failed) : 0;
+                var finalResult = $"Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})";
             }
             catch (Exception e)
             {
