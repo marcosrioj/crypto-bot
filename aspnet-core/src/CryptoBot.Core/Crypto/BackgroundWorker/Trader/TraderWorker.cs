@@ -44,13 +44,13 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var initialWallet = 1000;
                 var interval = KlineInterval.FifteenMinutes;
                 var limitOfDataToLearnAndTest = 1000;
-                var strategy = EStrategy.SimpleMlStrategy1;
+                var strategy = EStrategy.NormalMlStrategy2;
 
                 DateTime start = DateTime.UtcNow;
                 var result = await _traderTestService.GetBetterCoinsToTraderRightNowAsync(strategy, interval, initialWallet, limitOfDataToLearnAndTest);
                 DateTime end = DateTime.UtcNow;
                 TimeSpan timeDiff = end - start;
-                var seconds = timeDiff.Seconds;
+                var seconds = timeDiff.TotalSeconds;
 
                 var success = 0m;
                 var failed = 0m;
