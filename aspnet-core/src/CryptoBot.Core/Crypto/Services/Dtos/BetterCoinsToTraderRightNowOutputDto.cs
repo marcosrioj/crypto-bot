@@ -12,5 +12,6 @@ namespace CryptoBot.Crypto.Services.Dtos
         public IBinanceKline FutureStock { get; set; }
         public WhatToDoOutput WhatToDo { get; set; }
         public decimal FuturePercDiff { get; set; }
+        public RegressionDataOutput Data { get; set; }
     }
 }

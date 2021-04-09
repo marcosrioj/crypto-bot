@@ -77,14 +77,11 @@ namespace CryptoBot.Crypto.Services
             var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}");
             var dataToLearnAndTest = _binanceService.GetData(currency, interval, startTime, endTime, limitOfDataToLearnAndTest);
             var limitOfDataToLearn = dataToLearnAndTest.Count - limitOfDataToTest;
-            var dataToLearn = dataToLearnAndTest.Take(limitOfDataToLearn).ToList();
-            var dataToTest = dataToLearnAndTest.Skip(limitOfDataToLearn).Take(limitOfDataToTest).ToList();
 
             return new RegressionDataOutput
             {
                 Currency = currency,
-                DataToLearn = dataToLearn,
-                DataToTest = dataToTest,
+                DataToLearnAndTest = dataToLearnAndTest,
                 SampleStockToTest = sampleStock,
                 Interval = interval,
                 LimitOfDataToLearn = limitOfDataToLearn,
@@ -101,7 +98,7 @@ namespace CryptoBot.Crypto.Services
         {
             var newData = data.Clone();
 
-            //Prepare the first stock to test
+            //Prepare the first stock to test//TODO
             var fisrtStockToTest = newData.DataToTest.First();
             newData.DataToTest.Remove(fisrtStockToTest);
 
@@ -148,7 +145,7 @@ namespace CryptoBot.Crypto.Services
             return result;
         }
 
-        public async Task<IEnumerable<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+        public async Task<List<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
             EStrategy strategy,
             KlineInterval interval,
             decimal initialWallet,
@@ -175,11 +172,30 @@ namespace CryptoBot.Crypto.Services
                     FutureStock = firstRegressionTestResult.FutureStock,
                     TradingWallet = firstRegressionTestResult.TradingWallet,
                     Wallet = firstRegressionTestResult.Wallet,
-                    WhatToDo = firstRegressionTestResult.WhatToDo
+                    WhatToDo = firstRegressionTestResult.WhatToDo,
+                    Data = data
                 });
             }
 
             return results.Where(x => x.WhatToDo.WhatToDo == EWhatToDo.Buy).ToList();
+        }
+
+        public async Task<List<BetterCoinsToTraderRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(EStrategy strategy, List<BetterCoinsToTraderRightNowOutputDto> input)
+        {
+            var inputClone = input.ToList();
+
+            foreach (var item in inputClone)
+            {
+                var regressionTestResult = await RegressionExec(strategy, item.Data, ELogLevel.NoLog);
+                var firstRegressionTestResult = regressionTestResult.First();
+
+                if (firstRegressionTestResult.WhatToDo.WhatToDo != EWhatToDo.Buy)
+                {
+                    input.Remove(item);
+                }
+            }
+
+            return input;
         }
 
         private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data)

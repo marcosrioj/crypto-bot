@@ -51,13 +51,21 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 
                 DateTime start = DateTime.UtcNow;
                 var result = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategy, interval, initialWallet, limitOfDataToLearnAndTest);
+                var messageResult1 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, result);
+
+                var result2 = await _traderService.FilterBetterCoinsToTraderRightNowAsync(EStrategy.NormalMlStrategy1, result);
+                var messageResult2 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, EStrategy.NormalMlStrategy1, result2);
+
+                var result3 = await _traderService.FilterBetterCoinsToTraderRightNowAsync(EStrategy.NormalMlStrategy2, result);
+                var messageResult3 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, EStrategy.NormalMlStrategy2, result3);
+
                 DateTime end = DateTime.UtcNow;
                 TimeSpan timeDiff = end - start;
                 var seconds = timeDiff.TotalSeconds;
 
-                var message = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, result, seconds);
+                messageResult3.AppendLine($"\nTimeExecution: {seconds} seconds");
 
-                LogHelper.Log(message, "get-better-coins-to-trader-right-now");
+                LogHelper.Log($"{messageResult1}\n\n{messageResult2}\n\n{messageResult3}\n", "get-better-coins-to-trader-right-now");
 
             }
             catch (Exception e)

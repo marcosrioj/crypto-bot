@@ -30,12 +30,16 @@ namespace CryptoBot.Crypto.Services
                     RegressionDataOutput data,
                     ELogLevel logLevel = ELogLevel.NoLog);
 
-        Task<IEnumerable<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+        Task<List<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
             EStrategy strategy,
             KlineInterval interval,
             decimal initialWallet,
             int limitOfDataToLearnAndTest = 1000,
             DateTime? startTime = null,
             DateTime? endTime = null);
+
+        Task<List<BetterCoinsToTraderRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
+            EStrategy strategy,
+            List<BetterCoinsToTraderRightNowOutputDto> input);
     }
 }

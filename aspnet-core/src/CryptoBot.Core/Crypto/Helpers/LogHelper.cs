@@ -43,7 +43,7 @@ namespace CryptoBot.Crypto.Helpers
             return $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, Diff: {percFuturuValueDiffStr}, {action} {score}, {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureTradingWallet: {newWalletInvestingPriceStr}";
         }
 
-        public static string CreateBetterCoinsToTraderRightNowMessage(int initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, IEnumerable<BetterCoinsToTraderRightNowOutputDto> result, double seconds)
+        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(int initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, IEnumerable<BetterCoinsToTraderRightNowOutputDto> result)
         {
             var success = 0m;
             var failed = 0m;
@@ -87,9 +87,8 @@ namespace CryptoBot.Crypto.Helpers
 
             finalResult.AppendLine($"PercEarn: {percTotalStr}, InitialWallet: {initialWalletStr}, FinalWallet: {totalWalletStr}, FinalTradingWallet: {totalTradindWalletStr}");
             finalResult.AppendLine($"Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})");
-            finalResult.AppendLine($"TimeExecution: {seconds} seconds");
 
-            return finalResult.ToString();
+            return finalResult;
         }
 
     }

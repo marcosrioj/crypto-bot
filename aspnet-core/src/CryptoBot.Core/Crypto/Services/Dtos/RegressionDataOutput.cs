@@ -10,6 +10,7 @@ namespace CryptoBot.Crypto.Services.Dtos
     {
         public ECurrency Currency { get; set; }
         public decimal InitialWallet { get; set; }
+        public List<IBinanceKline> DataToLearnAndTest { get; set; }
         public List<IBinanceKline> DataToLearn { get; set; }
         public List<IBinanceKline> DataToTest { get; set; }
         public IBinanceKline SampleStockToTest { get; set; }
@@ -20,11 +21,14 @@ namespace CryptoBot.Crypto.Services.Dtos
 
         public RegressionDataOutput Clone()
         {
+            var dataToLearnAndTest = DataToLearnAndTest.ToList();
+
             return new RegressionDataOutput
             {
                 Currency = Currency,
-                DataToLearn = DataToLearn.ToList(),
-                DataToTest = DataToTest.ToList(),
+                DataToLearnAndTest = dataToLearnAndTest,
+                DataToLearn = dataToLearnAndTest.Take(LimitOfDataToLearn).ToList(),
+                DataToTest = dataToLearnAndTest.Skip(LimitOfDataToLearn).Take(LimitOfDataToTest).ToList(),
                 SampleStockToTest = SampleStockToTest,
                 Interval = Interval,
                 LimitOfDataToLearn = LimitOfDataToLearn,
