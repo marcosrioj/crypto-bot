@@ -20,14 +20,17 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 {
     public class TraderWorker : AsyncPeriodicBackgroundWorkerBase, ISingletonDependency
     {
+        private readonly ITraderService _traderService;
         private readonly ITraderTestService _traderTestService;
 
         public TraderWorker(
             AbpAsyncTimer timer,
+            ITraderService traderService,
             ITraderTestService traderTestService)
             : base(timer)
         {
             Timer.Period = 1000;
+            _traderService = traderService;
             _traderTestService = traderTestService;
         }
 
@@ -44,10 +47,10 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var initialWallet = 1000;
                 var interval = KlineInterval.FifteenMinutes;
                 var limitOfDataToLearnAndTest = 1000;
-                var strategy = EStrategy.NormalMlStrategy2;
+                var strategy = EStrategy.SimpleMlStrategy1;
 
                 DateTime start = DateTime.UtcNow;
-                var result = await _traderTestService.GetBetterCoinsToTraderRightNowAsync(strategy, interval, initialWallet, limitOfDataToLearnAndTest);
+                var result = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategy, interval, initialWallet, limitOfDataToLearnAndTest);
                 DateTime end = DateTime.UtcNow;
                 TimeSpan timeDiff = end - start;
                 var seconds = timeDiff.TotalSeconds;
@@ -114,17 +117,17 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var limitOfDataToLearnAndTest = 1000;
                 var limitOfDataToTest = 120;
 
-                var data = _traderTestService.GetRegressionDataTest(ECurrency.DENT, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
+                var data = _traderService.GetRegressionData(ECurrency.DENT, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                await _traderService.RegressionExec(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
 
-                data = _traderTestService.GetRegressionDataTest(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
+                data = _traderService.GetRegressionData(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                await _traderService.RegressionExec(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
 
-                data = _traderTestService.GetRegressionDataTest(ECurrency.XRP, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
+                data = _traderService.GetRegressionData(ECurrency.XRP, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                await _traderService.RegressionExec(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
 
-                data = _traderTestService.GetRegressionDataTest(ECurrency.EOS, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderTestService.RegressionTest(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
+                data = _traderService.GetRegressionData(ECurrency.EOS, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                await _traderService.RegressionExec(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
                 //await _traderTestService.RegressionTest(EStrategy.NormalMlStrategy1, data, ELogLevel.FullLog);
                 //await _traderTestService.RegressionTest(EStrategy.NormalMlStrategy2, data, ELogLevel.FullLog);
                 //await _traderTestService.RegressionTest(EStrategy.SimpleMicrotrendStrategy, data, ELogLevel.FullLog);

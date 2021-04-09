@@ -3,7 +3,7 @@ using CryptoBot.Crypto.Enums;
 
 namespace CryptoBot.Crypto.Services.Dtos
 {
-    public class RegressionTestOutputDto
+    public class RegressionOutputDto
     {
         public decimal Wallet { get; set; }
         public decimal TradingWallet { get; set; }

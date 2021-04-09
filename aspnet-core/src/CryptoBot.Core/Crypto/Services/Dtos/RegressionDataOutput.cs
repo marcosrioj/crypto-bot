@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace CryptoBot.Crypto.Services.Dtos
 {
-    public class RegressionTestDataOutput
+    public class RegressionDataOutput
     {
         public ECurrency Currency { get; set; }
         public decimal InitialWallet { get; set; }
@@ -18,9 +18,9 @@ namespace CryptoBot.Crypto.Services.Dtos
         public int LimitOfDataToLearnAndTest { get; set; }
         public int LimitOfDataToTest { get; set; }
 
-        public RegressionTestDataOutput Clone()
+        public RegressionDataOutput Clone()
         {
-            return new RegressionTestDataOutput
+            return new RegressionDataOutput
             {
                 Currency = Currency,
                 DataToLearn = DataToLearn.ToList(),
