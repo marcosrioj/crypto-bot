@@ -140,7 +140,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
             return new ShouldBuyStockOutput
             {
-                Buy = prediction.Close > 0.2,
+                Buy = prediction.Close > (float)sampleStock.Close,  // Really coin price
                 Score = (decimal)prediction.Close
             };
 

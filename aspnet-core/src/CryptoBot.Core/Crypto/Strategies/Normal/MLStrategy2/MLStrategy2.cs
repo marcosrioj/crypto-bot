@@ -34,18 +34,11 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
             var size = new Input() { Size = houseData.Last().Size };
             var price = mlContext.Model.CreatePredictionEngine<Input, Prediction>(model).Predict(size);
 
-            if (price.Price > (float)sampleStock.Close)
-            {
-
-            }
-
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = price.Price > 0.2,
-                Score = (decimal)price.Price
+                Buy = price.Price > (float)sampleStock.Close,
+                Score = (decimal)price.Price // Really coin price
             });
-
-            // Predicted price for size: 2500 sq ft= $261.98k
         }
     }
 

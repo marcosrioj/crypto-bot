@@ -29,7 +29,7 @@ namespace CryptoBot.Crypto.Helpers
                 ? "BUY".PadRight(8, ' ')
                 : "DONT BUY".PadRight(8, ' ');
 
-            var score = $"{result.Score}".PadLeft(5, ' ');
+            var score = $"{result.Score}".PadLeft(9, ' ');
 
             var i = index.ToString().PadLeft(5, ' ');
 
@@ -43,7 +43,7 @@ namespace CryptoBot.Crypto.Helpers
             return $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, Diff: {percFuturuValueDiffStr}, {action} {score}, {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureTradingWallet: {newWalletInvestingPriceStr}";
         }
 
-        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(int initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, IEnumerable<BetterCoinsToTraderRightNowOutputDto> result)
+        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, IEnumerable<BetterCoinsToTraderRightNowOutputDto> result)
         {
             var success = 0m;
             var failed = 0m;
@@ -80,7 +80,8 @@ namespace CryptoBot.Crypto.Helpers
             var successResult = failed != 0 && success != 0 ? success / (success + failed) : 0;
             var failedResult = failed != 0 && success != 0 ? failed / (success + failed) : 0;
 
-            var percTotalStr = $"{percTotal / result.Count():P2}".PadLeft(7, ' ');
+            percTotal = result.Count() != 0 ? percTotal / result.Count() : 0;
+            var percTotalStr = $"{percTotal:P2}".PadLeft(7, ' ');
             var totalWalletStr = $"{walletTotal:C2}".PadLeft(10, ' ');
             var totalTradindWalletStr = $"{tradingWalletTotal:C2}".PadLeft(10, ' ');
             var initialWalletStr = $"{result.Count() * initialWallet:C2}".PadLeft(10, ' ');

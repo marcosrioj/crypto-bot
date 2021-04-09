@@ -20,7 +20,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
 
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = result.ForecastedPriceDiffrence[0] > 0.005,
+                Buy = result.ForecastedPriceDiffrence[0] > 0.005, // Score from ML
                 Score = (decimal)result.ForecastedPriceDiffrence[0]
             });
         }

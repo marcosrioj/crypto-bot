@@ -41,5 +41,14 @@ namespace CryptoBot.Crypto.Services
         Task<List<BetterCoinsToTraderRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
             EStrategy strategy,
             List<BetterCoinsToTraderRightNowOutputDto> input);
+
+        Task<List<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+                    List<EStrategy> strategies,
+                    KlineInterval interval,
+                    decimal initialWallet,
+                    int limitOfDataToLearnAndTest = 1000,
+                    ELogLevel logLevel = ELogLevel.NoLog,
+                    DateTime? startTime = null,
+                    DateTime? endTime = null);
     }
 }

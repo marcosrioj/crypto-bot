@@ -180,22 +180,83 @@ namespace CryptoBot.Crypto.Services
             return results.Where(x => x.WhatToDo.WhatToDo == EWhatToDo.Buy).ToList();
         }
 
+        public async Task<List<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+            List<EStrategy> strategies,
+            KlineInterval interval,
+            decimal initialWallet,
+            int limitOfDataToLearnAndTest = 1000,
+            ELogLevel logLevel = ELogLevel.NoLog,
+            DateTime? startTime = null,
+            DateTime? endTime = null)
+        {
+            if (!strategies.Any())
+            {
+                throw new ArgumentException("Must to have at least one strategy");
+            }
+
+            var messageLogger = new StringBuilder();
+            DateTime start = DateTime.UtcNow;
+
+            var firstStrategy = strategies.First();
+            strategies.Remove(firstStrategy);
+
+            var result = await GetBetterCoinsToTraderRightNowAsync(firstStrategy, interval, initialWallet, limitOfDataToLearnAndTest);
+
+            if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.FullLog)
+            {
+                messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, firstStrategy, result).ToString());
+            }
+
+            foreach (var strategy in strategies)
+            {
+                result = await FilterBetterCoinsToTraderRightNowAsync(strategy, result);
+
+                if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.FullLog)
+                {
+                    messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, result).ToString());
+                }
+            }
+
+            if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.FullLog)
+            {
+                DateTime end = DateTime.UtcNow;
+                TimeSpan timeDiff = end - start;
+                var seconds = timeDiff.TotalSeconds;
+
+                messageLogger.AppendLine($"\nTimeExecution: {seconds} seconds");
+
+                LogHelper.Log($"{messageLogger}\n", "get-better-coins-to-trader-right-now");
+            }
+
+            return result;
+        }
+
         public async Task<List<BetterCoinsToTraderRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(EStrategy strategy, List<BetterCoinsToTraderRightNowOutputDto> input)
         {
-            var inputClone = input.ToList();
+            var result = new List<BetterCoinsToTraderRightNowOutputDto>();
 
-            foreach (var item in inputClone)
+            foreach (var item in input)
             {
                 var regressionTestResult = await RegressionExec(strategy, item.Data, ELogLevel.NoLog);
                 var firstRegressionTestResult = regressionTestResult.First();
 
-                if (firstRegressionTestResult.WhatToDo.WhatToDo != EWhatToDo.Buy)
+                if (firstRegressionTestResult.WhatToDo.WhatToDo == EWhatToDo.Buy)
                 {
-                    input.Remove(item);
+                    result.Add(new BetterCoinsToTraderRightNowOutputDto
+                    {
+                        Currency = item.Currency,
+                        ActualStock = firstRegressionTestResult.ActualStock,
+                        FuturePercDiff = firstRegressionTestResult.FuturePercDiff,
+                        FutureStock = firstRegressionTestResult.FutureStock,
+                        TradingWallet = firstRegressionTestResult.TradingWallet,
+                        Wallet = firstRegressionTestResult.Wallet,
+                        WhatToDo = firstRegressionTestResult.WhatToDo,
+                        Data = item.Data
+                    });
                 }
             }
 
-            return input;
+            return result;
         }
 
         private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data)
@@ -205,13 +266,10 @@ namespace CryptoBot.Crypto.Services
 
             if (result.Buy.HasValue)
             {
-                if (result.Buy.Value)
+                return await Task.FromResult(new WhatToDoOutput
                 {
-                    return await Task.FromResult(new WhatToDoOutput
-                    {
-                        WhatToDo = EWhatToDo.Buy
-                    });
-                }
+                    WhatToDo = EWhatToDo.Buy
+                });
             }
 
             return await Task.FromResult(new WhatToDoOutput
@@ -225,15 +283,12 @@ namespace CryptoBot.Crypto.Services
             var strategy = new MicrotrendStrategy();
             var result = await strategy.ShouldBuyStock(data.DataToLearn);
 
-            if (result.Buy.HasValue)
+            if (result.Buy.HasValue && result.Buy.Value)
             {
-                if (result.Buy.Value)
+                return await Task.FromResult(new WhatToDoOutput
                 {
-                    return await Task.FromResult(new WhatToDoOutput
-                    {
-                        WhatToDo = EWhatToDo.Buy
-                    });
-                }
+                    WhatToDo = EWhatToDo.Buy
+                });
             }
 
             return await Task.FromResult(new WhatToDoOutput
@@ -247,16 +302,13 @@ namespace CryptoBot.Crypto.Services
             var strategy = new Strategies.Simple.MLStrategy1.MLStrategy1();
             var result = await strategy.ShouldBuyStock(data.DataToLearn);
 
-            if (result.Buy.HasValue)
+            if (result.Buy.HasValue && result.Buy.Value)
             {
-                if (result.Buy.Value)
+                return await Task.FromResult(new WhatToDoOutput
                 {
-                    return await Task.FromResult(new WhatToDoOutput
-                    {
-                        WhatToDo = EWhatToDo.Buy,
-                        Score = result.Score
-                    });
-                }
+                    WhatToDo = EWhatToDo.Buy,
+                    Score = result.Score
+                });
             }
 
             return await Task.FromResult(new WhatToDoOutput
@@ -271,7 +323,7 @@ namespace CryptoBot.Crypto.Services
 
             var result = await strategy.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
 
-            if (result.Buy.HasValue)
+            if (result.Buy.HasValue && result.Buy.Value)
             {
                 return await Task.FromResult(new WhatToDoOutput
                 {
@@ -292,7 +344,7 @@ namespace CryptoBot.Crypto.Services
 
             var result = await strategy.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
 
-            if (result.Buy.HasValue)
+            if (result.Buy.HasValue && result.Buy.Value)
             {
                 return await Task.FromResult(new WhatToDoOutput
                 {
