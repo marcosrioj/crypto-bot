@@ -29,7 +29,7 @@ namespace CryptoBot.Crypto.Helpers
                 ? "BUY".PadRight(8, ' ')
                 : "DONT BUY".PadRight(8, ' ');
 
-            var score = $"{result.Score}".PadLeft(9, ' ');
+            var score = $"{result.Score}".PadLeft(11, ' ');
 
             var i = index.ToString().PadLeft(5, ' ');
 

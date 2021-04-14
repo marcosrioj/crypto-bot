@@ -1,4 +1,5 @@
-﻿using Binance.Net.Interfaces;
+﻿using Abp.Domain.Services;
+using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
 {
-    public class MLStrategy2 : INormalStrategy
+    public class MLStrategy2 : DomainService, IMLStrategy2
     {
         public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline sampleStock)
         {

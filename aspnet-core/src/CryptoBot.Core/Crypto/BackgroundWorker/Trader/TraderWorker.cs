@@ -103,16 +103,16 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 await _traderService.RegressionExec(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
 
                 data = _traderService.GetRegressionData(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                await _traderService.RegressionExec(EStrategy.NormalMlStrategy1, data, ELogLevel.FullLog);
+
+                data = _traderService.GetRegressionData(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 await _traderService.RegressionExec(EStrategy.NormalMlStrategy2, data, ELogLevel.FullLog);
 
-                //data = _traderService.GetRegressionData(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                //await _traderService.RegressionExec(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
+                data = _traderService.GetRegressionData(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                await _traderService.RegressionExec(EStrategy.SimpleMeanReversionStrategy, data, ELogLevel.FullLog);
 
-                //data = _traderService.GetRegressionData(ECurrency.XRP, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                //await _traderService.RegressionExec(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
-
-                //data = _traderService.GetRegressionData(ECurrency.EOS, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                //await _traderService.RegressionExec(EStrategy.SimpleMlStrategy1, data, ELogLevel.FullLog);
+                data = _traderService.GetRegressionData(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                await _traderService.RegressionExec(EStrategy.SimpleMicrotrendStrategy, data, ELogLevel.FullLog);
             }
             catch (Exception e)
             {

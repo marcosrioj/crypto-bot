@@ -4,6 +4,7 @@ using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Enums;
 using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services.Dtos;
+using CryptoBot.Crypto.Strategies.Normal.MLStrategy1;
 using CryptoBot.Crypto.Strategies.Normal.MLStrategy2;
 using CryptoBot.Crypto.Strategies.Simple.MeanReversionStrategy;
 using CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy;
@@ -18,11 +19,27 @@ namespace CryptoBot.Crypto.Services
     public class TraderService : DomainService, ITraderService
     {
         private readonly IBinanceService _binanceService;
+        private readonly IMLStrategy1 _normalMlStrategy1;
+        private readonly IMLStrategy2 _normalMlStrategy2;
+        private readonly IMeanReversionStrategy _simpleMeanReversionStrategy;
+        private readonly IMicrotrendStrategy _simpleMicrotrendStrategy;
+        private readonly Strategies.Simple.MLStrategy1.IMLStrategy1 _simpleMlStrategy1;
 
         public TraderService(
-            IBinanceService binanceService)
+            IBinanceService binanceService,
+            IMLStrategy1 normalMlStrategy1,
+            IMLStrategy2 normalMlStrategy2,
+            IMeanReversionStrategy simpleMeanReversionStrategy,
+            IMicrotrendStrategy simpleMicrotrendStrategy,
+            Strategies.Simple.MLStrategy1.IMLStrategy1 simpleMlStrategy1)
         {
             _binanceService = binanceService;
+            _normalMlStrategy1 = normalMlStrategy1;
+            _normalMlStrategy2 = normalMlStrategy2;
+            _simpleMeanReversionStrategy = simpleMeanReversionStrategy;
+            _simpleMicrotrendStrategy = simpleMicrotrendStrategy;
+            _simpleMlStrategy1 = simpleMlStrategy1;
+
         }
 
         public async Task<WhatToDoOutput> WhatToDo(
@@ -116,7 +133,9 @@ namespace CryptoBot.Crypto.Services
             {
                 var i = 1;
                 var success = 0m;
+                var successBuy = 0m;
                 var failed = 0m;
+                var failedBuy = 0m;
                 var message = new StringBuilder();
                 foreach (var item in result)
                 {
@@ -130,14 +149,28 @@ namespace CryptoBot.Crypto.Services
                         ++failed;
                     }
 
+                    if (item.WhatToDo.WhatToDo == EWhatToDo.Buy)
+                    {
+                        if (item.FuturePercDiff > 0)
+                        {
+                            ++successBuy;
+                        }
+                        else {
+                            ++failedBuy;
+                        }
+                        
+                    }
+
                     message.AppendLine(LogHelper.CreateRegressionItemMessage(i, item.FutureStock, item.TradingWallet, item.Wallet, item.WhatToDo, item.FuturePercDiff, item.ActualStock));
                     ++i;
                 }
 
                 var successResult = failed != 0 && success != 0 ? success / (success + failed) : 0;
+                var successBuyResult = failedBuy != 0 && successBuy != 0 ? successBuy / (successBuy + failedBuy) : 0;
                 var failedResult = failed != 0 && success != 0 ? failed / (success + failed) : 0;
+                var failedBuyResult = failedBuy != 0 && successBuy != 0 ? failedBuy / (successBuy + failedBuy) : 0;
 
-                message.AppendLine($"\nRegressionTest Finished - Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})");
+                message.AppendLine($"\nRegressionTest Finished - SuccessBuy: {successBuyResult:P2}({successBuy})- FailedBuy: {failedBuyResult:P2}({failedBuy}) --- Success: {successResult:P2}({success})- Failed: {failedResult:P2}({failed})");
 
                 LogHelper.Log(message.ToString(), "regression_test");
             }
@@ -259,10 +292,11 @@ namespace CryptoBot.Crypto.Services
             return result;
         }
 
+
+
         private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data)
         {
-            var strategy = new MeanReversionStrategy();
-            var result = await strategy.ShouldBuyStock(data.DataToLearn);
+            var result = await _simpleMeanReversionStrategy.ShouldBuyStock(data.DataToLearn);
 
             if (result.Buy.HasValue)
             {
@@ -280,8 +314,7 @@ namespace CryptoBot.Crypto.Services
 
         private async Task<WhatToDoOutput> WhatToDoBySimpleMicrotrendStrategy(RegressionDataOutput data)
         {
-            var strategy = new MicrotrendStrategy();
-            var result = await strategy.ShouldBuyStock(data.DataToLearn);
+            var result = await _simpleMicrotrendStrategy.ShouldBuyStock(data.DataToLearn);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -299,8 +332,7 @@ namespace CryptoBot.Crypto.Services
 
         private async Task<WhatToDoOutput> WhatToDoBySimpleMlStrategy1(RegressionDataOutput data)
         {
-            var strategy = new Strategies.Simple.MLStrategy1.MLStrategy1();
-            var result = await strategy.ShouldBuyStock(data.DataToLearn);
+            var result = await _simpleMlStrategy1.ShouldBuyStock(data.DataToLearn);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -319,9 +351,7 @@ namespace CryptoBot.Crypto.Services
 
         private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy1(RegressionDataOutput data)
         {
-            var strategy = new Strategies.Normal.MLStrategy1.MLStrategy1();
-
-            var result = await strategy.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
+            var result = await _normalMlStrategy1.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -340,9 +370,7 @@ namespace CryptoBot.Crypto.Services
 
         private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy2(RegressionDataOutput data)
         {
-            var strategy = new MLStrategy2();
-
-            var result = await strategy.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
+            var result = await _normalMlStrategy2.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {

@@ -1,4 +1,5 @@
-﻿using Binance.Net.Interfaces;
+﻿using Abp.Domain.Services;
+using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Strategies.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;

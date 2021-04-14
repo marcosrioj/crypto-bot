@@ -1,4 +1,5 @@
-﻿using Binance.Net.Interfaces;
+﻿using Abp.Domain.Services;
+using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Strategies.Dtos;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
 {
-    public class MicrotrendStrategy : ISimpleStrategy
+    public class MicrotrendStrategy : DomainService, IMicrotrendStrategy
     {
         public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData)
         {
