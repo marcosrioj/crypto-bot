@@ -1,5 +1,7 @@
 ﻿using Abp.Domain.Services;
 using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,16 +11,27 @@ namespace CryptoBot.Crypto.Strategies.Simple.MeanReversionStrategy
 {
     public class MeanReversionStrategy : DomainService, IMeanReversionStrategy
     {
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData)
+        private readonly ISettingsService _settingsService;
+
+        public MeanReversionStrategy(ISettingsService settingsService)
         {
-            if (historicalData.Count > 20)
+            _settingsService = settingsService;
+        }
+
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile)
+        {
+            var numberOfValues = (int)_settingsService.GetInvestorProfileFactor(EStrategy.SimpleMeanReversionStrategy, eInvestorProfile);
+
+            if (historicalData.Count > numberOfValues)
             {
-                var histData = historicalData.Skip(historicalData.Count - 20).Take(20).ToList();
+                var histData = historicalData.Skip(historicalData.Count - numberOfValues).Take(numberOfValues).ToList();
+
+                var lastPrice = histData.OrderByDescending(x => x.CloseTime).First().Close;
 
                 var avg = histData.Select(x => x.Close).Average();
-                var diff = avg - histData.OrderByDescending(x => x.CloseTime).First().Close;
+                var diff = avg - lastPrice;
 
-                return await Task.FromResult(new ShouldBuyStockOutput { Buy = diff >= 0 });
+                return await Task.FromResult(new ShouldBuyStockOutput { Buy = diff >= 0, Score = diff });
             }
 
             return await Task.FromResult(new ShouldBuyStockOutput());

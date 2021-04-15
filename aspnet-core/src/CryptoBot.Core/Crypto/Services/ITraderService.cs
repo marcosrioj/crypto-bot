@@ -10,10 +10,9 @@ namespace CryptoBot.Crypto.Services
 {
     public interface ITraderService : IDomainService
     {
-        Task<WhatToDoOutput> WhatToDo(RegressionDataOutput data);
-
         Task<WhatToDoOutput> WhatToDo(
             EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
             RegressionDataOutput data);
 
         RegressionDataOutput GetRegressionData(
@@ -27,11 +26,13 @@ namespace CryptoBot.Crypto.Services
 
         Task<List<RegressionOutputDto>> RegressionExec(
                     EStrategy strategy,
+                    EInvestorProfile eInvestorProfile,
                     RegressionDataOutput data,
                     ELogLevel logLevel = ELogLevel.NoLog);
 
         Task<List<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
             EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
             KlineInterval interval,
             decimal initialWallet,
             int limitOfDataToLearnAndTest = 1000,
@@ -40,10 +41,12 @@ namespace CryptoBot.Crypto.Services
 
         Task<List<BetterCoinsToTraderRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
             EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
             List<BetterCoinsToTraderRightNowOutputDto> input);
 
         Task<List<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
                     List<EStrategy> strategies,
+                    EInvestorProfile eInvestorProfile,
                     KlineInterval interval,
                     decimal initialWallet,
                     int limitOfDataToLearnAndTest = 1000,

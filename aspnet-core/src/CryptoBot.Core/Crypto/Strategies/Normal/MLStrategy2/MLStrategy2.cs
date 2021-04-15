@@ -1,5 +1,7 @@
 ﻿using Abp.Domain.Services;
 using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
@@ -11,8 +13,17 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
 {
     public class MLStrategy2 : DomainService, IMLStrategy2
     {
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline sampleStock)
+        private readonly ISettingsService _settingsService;
+
+        public MLStrategy2(ISettingsService settingsService)
         {
+            _settingsService = settingsService;
+        }
+
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, IBinanceKline sampleStock)
+        {
+            var percFactor = _settingsService.GetInvestorProfileFactor(Enums.EStrategy.NormalMlStrategy2, eInvestorProfile);
+
             MLContext mlContext = new MLContext();
 
             // 1. Import or create training data
@@ -35,9 +46,12 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
             var size = new Input() { Size = houseData.Last().Size };
             var price = mlContext.Model.CreatePredictionEngine<Input, Prediction>(model).Predict(size);
 
+            var realTimeClosePrice = (float)sampleStock.Close;
+            realTimeClosePrice = realTimeClosePrice * (1 + percFactor);
+
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = price.Price > (float)sampleStock.Close,
+                Buy = price.Price > realTimeClosePrice,
                 Score = (decimal)price.Price // Really coin price
             });
         }

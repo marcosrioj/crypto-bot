@@ -43,13 +43,8 @@ namespace CryptoBot.Crypto.Services
         }
 
         public async Task<WhatToDoOutput> WhatToDo(
-            RegressionDataOutput data)
-        {
-            return await Task.FromResult(new WhatToDoOutput());
-        }
-
-        public async Task<WhatToDoOutput> WhatToDo(
             EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
             RegressionDataOutput data)
         {
             switch (strategy)
@@ -59,23 +54,23 @@ namespace CryptoBot.Crypto.Services
                     {
                         throw new Exception("NormalMlStrategy must to have the actual stock");
                     }
-                    return await WhatToDoByNormalMlStrategy1(data);
+                    return await WhatToDoByNormalMlStrategy1(data, eInvestorProfile);
 
                 case EStrategy.NormalMlStrategy2:
                     if (data.SampleStockToTest == null)
                     {
                         throw new Exception("NormalMlStrategy2 must to have the actual stock");
                     }
-                    return await WhatToDoByNormalMlStrategy2(data);
+                    return await WhatToDoByNormalMlStrategy2(data, eInvestorProfile);
 
                 case EStrategy.SimpleMlStrategy1:
-                    return await WhatToDoBySimpleMlStrategy1(data);
+                    return await WhatToDoBySimpleMlStrategy1(data, eInvestorProfile);
 
                 case EStrategy.SimpleMeanReversionStrategy:
-                    return await WhatToDoBySimpleMeanReversionStrategy(data);
+                    return await WhatToDoBySimpleMeanReversionStrategy(data, eInvestorProfile);
 
                 case EStrategy.SimpleMicrotrendStrategy:
-                    return await WhatToDoBySimpleMicrotrendStrategy(data);
+                    return await WhatToDoBySimpleMicrotrendStrategy(data, eInvestorProfile);
 
                 default:
                     throw new Exception("Strategy not found");
@@ -110,6 +105,7 @@ namespace CryptoBot.Crypto.Services
 
         public async Task<List<RegressionOutputDto>> RegressionExec(
             EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
             RegressionDataOutput data,
             ELogLevel logLevel = ELogLevel.NoLog)
         {
@@ -121,13 +117,13 @@ namespace CryptoBot.Crypto.Services
 
             if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.MainLog)
             {
-                LogHelper.Log($"\nRegressionTest - Coin: {newData.Currency}, InitialWallet: {newData.InitialWallet:C2}, Interval: {newData.Interval}, Strategy: {strategy}, ItemsLearned: {newData.LimitOfDataToLearn} (Requested {newData.LimitOfDataToLearnAndTest}), ItemsTested: {newData.LimitOfDataToTest}", "regression_test");
+                LogHelper.Log($"\nRegressionTest - Coin: {newData.Currency}, InitialWallet: {newData.InitialWallet:C2}, Interval: {newData.Interval}, Strategy: {strategy}, InvestorProfile: {eInvestorProfile}, ItemsLearned: {newData.LimitOfDataToLearn} (Requested {newData.LimitOfDataToLearnAndTest}), ItemsTested: {newData.LimitOfDataToTest}", "regression_test");
             }
 
             var result = new List<RegressionOutputDto>();
 
             await RegressionItemExec(
-                1, strategy, newData, fisrtStockToTest, newData.InitialWallet, newData.InitialWallet, logLevel, result);
+                1, strategy, eInvestorProfile, newData, fisrtStockToTest, newData.InitialWallet, newData.InitialWallet, logLevel, result);
 
             if (logLevel == ELogLevel.FullLog)
             {
@@ -180,6 +176,7 @@ namespace CryptoBot.Crypto.Services
 
         public async Task<List<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
             EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
             KlineInterval interval,
             decimal initialWallet,
             int limitOfDataToLearnAndTest = 1000,
@@ -194,7 +191,7 @@ namespace CryptoBot.Crypto.Services
             {
                 var data = GetRegressionData(currency, interval, initialWallet, limitOfDataToLearnAndTest, 1, startTime, endTime);
 
-                var regressionTestResult = await RegressionExec(strategy, data, ELogLevel.NoLog);
+                var regressionTestResult = await RegressionExec(strategy, eInvestorProfile, data, ELogLevel.NoLog);
                 var firstRegressionTestResult = regressionTestResult.First();
 
                 results.Add(new BetterCoinsToTraderRightNowOutputDto
@@ -215,6 +212,7 @@ namespace CryptoBot.Crypto.Services
 
         public async Task<List<BetterCoinsToTraderRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
             List<EStrategy> strategies,
+            EInvestorProfile eInvestorProfile,
             KlineInterval interval,
             decimal initialWallet,
             int limitOfDataToLearnAndTest = 1000,
@@ -233,20 +231,20 @@ namespace CryptoBot.Crypto.Services
             var firstStrategy = strategies.First();
             strategies.Remove(firstStrategy);
 
-            var result = await GetBetterCoinsToTraderRightNowAsync(firstStrategy, interval, initialWallet, limitOfDataToLearnAndTest);
+            var result = await GetBetterCoinsToTraderRightNowAsync(firstStrategy, eInvestorProfile, interval, initialWallet, limitOfDataToLearnAndTest);
 
             if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.FullLog)
             {
-                messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, firstStrategy, result).ToString());
+                messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, firstStrategy, eInvestorProfile, result).ToString());
             }
 
             foreach (var strategy in strategies)
             {
-                result = await FilterBetterCoinsToTraderRightNowAsync(strategy, result);
+                result = await FilterBetterCoinsToTraderRightNowAsync(strategy, eInvestorProfile, result);
 
                 if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.FullLog)
                 {
-                    messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, result).ToString());
+                    messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, eInvestorProfile, result).ToString());
                 }
             }
 
@@ -264,13 +262,16 @@ namespace CryptoBot.Crypto.Services
             return result;
         }
 
-        public async Task<List<BetterCoinsToTraderRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(EStrategy strategy, List<BetterCoinsToTraderRightNowOutputDto> input)
+        public async Task<List<BetterCoinsToTraderRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
+            EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
+            List<BetterCoinsToTraderRightNowOutputDto> input)
         {
             var result = new List<BetterCoinsToTraderRightNowOutputDto>();
 
             foreach (var item in input)
             {
-                var regressionTestResult = await RegressionExec(strategy, item.Data, ELogLevel.NoLog);
+                var regressionTestResult = await RegressionExec(strategy, eInvestorProfile, item.Data, ELogLevel.NoLog);
                 var firstRegressionTestResult = regressionTestResult.First();
 
                 if (firstRegressionTestResult.WhatToDo.WhatToDo == EWhatToDo.Buy)
@@ -292,47 +293,9 @@ namespace CryptoBot.Crypto.Services
             return result;
         }
 
-
-
-        private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
         {
-            var result = await _simpleMeanReversionStrategy.ShouldBuyStock(data.DataToLearn);
-
-            if (result.Buy.HasValue)
-            {
-                return await Task.FromResult(new WhatToDoOutput
-                {
-                    WhatToDo = EWhatToDo.Buy
-                });
-            }
-
-            return await Task.FromResult(new WhatToDoOutput
-            {
-                WhatToDo = EWhatToDo.DontBuy
-            });
-        }
-
-        private async Task<WhatToDoOutput> WhatToDoBySimpleMicrotrendStrategy(RegressionDataOutput data)
-        {
-            var result = await _simpleMicrotrendStrategy.ShouldBuyStock(data.DataToLearn);
-
-            if (result.Buy.HasValue && result.Buy.Value)
-            {
-                return await Task.FromResult(new WhatToDoOutput
-                {
-                    WhatToDo = EWhatToDo.Buy
-                });
-            }
-
-            return await Task.FromResult(new WhatToDoOutput
-            {
-                WhatToDo = EWhatToDo.DontBuy
-            });
-        }
-
-        private async Task<WhatToDoOutput> WhatToDoBySimpleMlStrategy1(RegressionDataOutput data)
-        {
-            var result = await _simpleMlStrategy1.ShouldBuyStock(data.DataToLearn);
+            var result = await _simpleMeanReversionStrategy.ShouldBuyStock(data.DataToLearn, eInvestorProfile);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -345,13 +308,14 @@ namespace CryptoBot.Crypto.Services
 
             return await Task.FromResult(new WhatToDoOutput
             {
-                WhatToDo = EWhatToDo.DontBuy
+                WhatToDo = EWhatToDo.DontBuy,
+                Score = result.Score
             });
         }
 
-        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy1(RegressionDataOutput data)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMicrotrendStrategy(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
         {
-            var result = await _normalMlStrategy1.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
+            var result = await _simpleMicrotrendStrategy.ShouldBuyStock(data.DataToLearn, eInvestorProfile);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -364,13 +328,14 @@ namespace CryptoBot.Crypto.Services
 
             return await Task.FromResult(new WhatToDoOutput
             {
-                WhatToDo = EWhatToDo.DontBuy
+                WhatToDo = EWhatToDo.DontBuy,
+                Score = result.Score
             });
         }
 
-        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy2(RegressionDataOutput data)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMlStrategy1(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
         {
-            var result = await _normalMlStrategy2.ShouldBuyStock(data.DataToLearn, data.SampleStockToTest);
+            var result = await _simpleMlStrategy1.ShouldBuyStock(data.DataToLearn, eInvestorProfile);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -383,13 +348,55 @@ namespace CryptoBot.Crypto.Services
 
             return await Task.FromResult(new WhatToDoOutput
             {
-                WhatToDo = EWhatToDo.DontBuy
+                WhatToDo = EWhatToDo.DontBuy,
+                Score = result.Score
+            });
+        }
+
+        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy1(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
+        {
+            var result = await _normalMlStrategy1.ShouldBuyStock(data.DataToLearn, eInvestorProfile, data.SampleStockToTest);
+
+            if (result.Buy.HasValue && result.Buy.Value)
+            {
+                return await Task.FromResult(new WhatToDoOutput
+                {
+                    WhatToDo = EWhatToDo.Buy,
+                    Score = result.Score
+                });
+            }
+
+            return await Task.FromResult(new WhatToDoOutput
+            {
+                WhatToDo = EWhatToDo.DontBuy,
+                Score = result.Score
+            });
+        }
+
+        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy2(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
+        {
+            var result = await _normalMlStrategy2.ShouldBuyStock(data.DataToLearn, eInvestorProfile, data.SampleStockToTest);
+
+            if (result.Buy.HasValue && result.Buy.Value)
+            {
+                return await Task.FromResult(new WhatToDoOutput
+                {
+                    WhatToDo = EWhatToDo.Buy,
+                    Score = result.Score
+                });
+            }
+
+            return await Task.FromResult(new WhatToDoOutput
+            {
+                WhatToDo = EWhatToDo.DontBuy,
+                Score = result.Score
             });
         }
 
         private async Task RegressionItemExec(
             int index,
             EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
             RegressionDataOutput data,
             IBinanceKline futureStock,
             decimal walletPrice,
@@ -397,7 +404,7 @@ namespace CryptoBot.Crypto.Services
             ELogLevel logLevel,
             List<RegressionOutputDto> result)
         {
-            var resultTraderService = await WhatToDo(strategy, data);
+            var resultTraderService = await WhatToDo(strategy, eInvestorProfile, data);
 
             var actualStock = data.DataToLearn.Last();
 
@@ -427,7 +434,7 @@ namespace CryptoBot.Crypto.Services
                 data.DataToLearn.Add(futureStock);
 
                 await RegressionItemExec(
-                    ++index, strategy, data, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel, result);
+                    ++index, strategy, eInvestorProfile, data, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel, result);
             }
         }
     }

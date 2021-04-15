@@ -8,6 +8,6 @@ namespace CryptoBot.Crypto.Services
     public interface ISettingsService : IDomainService
     {
         Task<IEnumerable<ECurrency>> GetActiveCurrencies();
-        float GetInvestorProfileFactor(EStrategy strategy, EInvestorProfile investorProfile = EInvestorProfile.Moderate);
+        float GetInvestorProfileFactor(EStrategy strategy, EInvestorProfile investorProfile = EInvestorProfile.UltraConservative);
     }
 }

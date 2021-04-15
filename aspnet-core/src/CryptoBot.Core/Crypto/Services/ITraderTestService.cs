@@ -1,5 +1,6 @@
 ﻿using Abp.Domain.Services;
 using Binance.Net.Enums;
+using CryptoBot.Crypto.Enums;
 using CryptoBot.Crypto.Services.Dtos;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace CryptoBot.Crypto.Services
     public interface ITraderTestService : IDomainService
     {
         Task<IEnumerable<CompleteRegressionTestOutputDto>> CompleteRegressionTest(
+            EInvestorProfile investorProfile,
             KlineInterval interval,
             decimal initialWallet,
             int limitOfDetailsToLearnAndTest = 1000,

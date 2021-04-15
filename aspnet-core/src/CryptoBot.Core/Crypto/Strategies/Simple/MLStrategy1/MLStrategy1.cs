@@ -1,5 +1,7 @@
 ﻿using Abp.Domain.Services;
 using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +11,17 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
 {
     public class MLStrategy1 : DomainService, IMLStrategy1
     {
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData)
+        private readonly ISettingsService _settingsService;
+
+        public MLStrategy1(ISettingsService settingsService)
         {
+            _settingsService = settingsService;
+        }
+
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile)
+        {
+            var percFactor = _settingsService.GetInvestorProfileFactor(Enums.EStrategy.SimpleMlStrategy1, eInvestorProfile);
+
             var modelBuilder = new ModelBuilder();
             var model = modelBuilder.BuildModel(historicalData.Select(x => new ModelInput
             {
@@ -21,7 +32,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
 
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = result.ForecastedPriceDiffrence[0] > 0.005, // Score from ML
+                Buy = result.ForecastedPriceDiffrence[0] > percFactor,
                 Score = (decimal)result.ForecastedPriceDiffrence[0]
             });
         }

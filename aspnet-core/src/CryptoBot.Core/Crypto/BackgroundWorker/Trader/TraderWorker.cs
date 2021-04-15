@@ -47,8 +47,9 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                     EStrategy.NormalMlStrategy1,
                     EStrategy.NormalMlStrategy2
                 };
+                var investorProfile = EInvestorProfile.UltraConservative;
 
-                var result = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategies, interval, initialWallet, limitOfDataToLearnAndTest, ELogLevel.FullLog);
+                var result = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategies, investorProfile, interval, initialWallet, limitOfDataToLearnAndTest, ELogLevel.FullLog);
             }
             catch (Exception e)
             {
@@ -64,16 +65,17 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var interval = KlineInterval.FifteenMinutes;
                 var limitOfDataToLearnAndTest = 1000;
                 var strategy = EStrategy.SimpleMlStrategy1;
+                var investorProfile = EInvestorProfile.UltraConservative;
 
                 DateTime start = DateTime.UtcNow;
-                var result = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategy, interval, initialWallet, limitOfDataToLearnAndTest);
-                var messageResult1 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, result);
+                var result = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategy, investorProfile, interval, initialWallet, limitOfDataToLearnAndTest);
+                var messageResult1 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, investorProfile, result);
 
-                var result2 = await _traderService.FilterBetterCoinsToTraderRightNowAsync(EStrategy.NormalMlStrategy1, result);
-                var messageResult2 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, EStrategy.NormalMlStrategy1, result2);
+                var result2 = await _traderService.FilterBetterCoinsToTraderRightNowAsync(EStrategy.NormalMlStrategy1, investorProfile, result);
+                var messageResult2 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, EStrategy.NormalMlStrategy1, investorProfile, result2);
 
-                var result3 = await _traderService.FilterBetterCoinsToTraderRightNowAsync(EStrategy.NormalMlStrategy2, result2);
-                var messageResult3 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, EStrategy.NormalMlStrategy2, result3);
+                var result3 = await _traderService.FilterBetterCoinsToTraderRightNowAsync(EStrategy.NormalMlStrategy2, investorProfile, result2);
+                var messageResult3 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, EStrategy.NormalMlStrategy2, investorProfile, result3);
 
                 DateTime end = DateTime.UtcNow;
                 TimeSpan timeDiff = end - start;
@@ -95,24 +97,25 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             try
             {
                 var initialWallet = 1000;
-                var interval = KlineInterval.OneMinute;
+                var interval = KlineInterval.FifteenMinutes;
                 var limitOfDataToLearnAndTest = 1000;
                 var limitOfDataToTest = 120;
+                var investorProfile = EInvestorProfile.UltraConservative;
 
-                var data = _traderService.GetRegressionData(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderService.RegressionExec(EStrategy.SimpleMicrotrendStrategy, data, ELogLevel.FullLog);
+                //var data = _traderService.GetRegressionData(ECurrency.BTC, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                //await _traderService.RegressionExec(EStrategy.NormalMlStrategy1, data, ELogLevel.FullLog);
 
-                data = _traderService.GetRegressionData(ECurrency.ETH, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderService.RegressionExec(EStrategy.SimpleMicrotrendStrategy, data, ELogLevel.FullLog);
+                //data = _traderService.GetRegressionData(ECurrency.ETH, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                //await _traderService.RegressionExec(EStrategy.NormalMlStrategy1, data, ELogLevel.FullLog);
 
-                data = _traderService.GetRegressionData(ECurrency.XRP, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderService.RegressionExec(EStrategy.SimpleMicrotrendStrategy, data, ELogLevel.FullLog);
+                //data = _traderService.GetRegressionData(ECurrency.XRP, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                //await _traderService.RegressionExec(EStrategy.NormalMlStrategy1, data, ELogLevel.FullLog);
 
-                data = _traderService.GetRegressionData(ECurrency.BNB, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderService.RegressionExec(EStrategy.SimpleMicrotrendStrategy, data, ELogLevel.FullLog);
+                var data = _traderService.GetRegressionData(ECurrency.BNB, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                await _traderService.RegressionExec(EStrategy.NormalMlStrategy1, investorProfile, data, ELogLevel.FullLog);
 
-                data = _traderService.GetRegressionData(ECurrency.HOT, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
-                await _traderService.RegressionExec(EStrategy.SimpleMicrotrendStrategy, data, ELogLevel.FullLog);
+                //data = _traderService.GetRegressionData(ECurrency.HOT, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
+                //await _traderService.RegressionExec(EStrategy.NormalMlStrategy1, data, ELogLevel.FullLog);
             }
             catch (Exception e)
             {
@@ -130,8 +133,9 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var limitOfDetailsToLearnAndTest = 5000;
                 var limitOfDetailsToTest = 120;
                 var interval = KlineInterval.FifteenMinutes;
+                var investorProfile = EInvestorProfile.UltraConservative;
 
-                var result = await _traderTestService.CompleteRegressionTest(interval, initialWallet, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
+                var result = await _traderTestService.CompleteRegressionTest(investorProfile, interval, initialWallet, limitOfDetailsToLearnAndTest, limitOfDetailsToTest);
 
                 var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss K").PadLeft(21, ' ');
                 LogHelper.Log($"\n\nDate: {date} - Interval: {interval} - ItemsLearned: {limitOfDetailsToLearnAndTest - limitOfDetailsToTest} - ItemsTested: {limitOfDetailsToTest}", logName);

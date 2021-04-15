@@ -1,6 +1,8 @@
 ﻿using Abp.Domain.Services;
 using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Dtos.Normal;
+using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
@@ -13,7 +15,14 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 {
     public class MLStrategy1 : DomainService, IMLStrategy1
     {
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, IBinanceKline sampleStock)
+        private readonly ISettingsService _settingsService;
+
+        public MLStrategy1(ISettingsService settingsService)
+        {
+            _settingsService = settingsService;
+        }
+
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, IBinanceKline sampleStock)
         {
             // Cria o contexto que trabalhará com aprendizado de máquina.
             MLContext context = new MLContext();
@@ -29,7 +38,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
             //PrintMetrics(metrics);
 
-            return await Task.FromResult(PredictPrice(context, model, sampleStock));
+            return await Task.FromResult(PredictPrice(context, model, sampleStock, eInvestorProfile));
         }
 
         private static TrainTestData Sanitize(MLContext context, IList<IBinanceKline> historicalData)
@@ -119,7 +128,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
         //    Console.WriteLine("--------------------------------------------------");
         //}
 
-        private static ShouldBuyStockOutput PredictPrice(MLContext context, ITransformer model, IBinanceKline sampleStock)
+        private ShouldBuyStockOutput PredictPrice(MLContext context, ITransformer model, IBinanceKline sampleStock, EInvestorProfile eInvestorProfile)
         {
             PredictionEngine<StockInfo, StockInfoPrediction> predictor = context.Model
             .CreatePredictionEngine<StockInfo, StockInfoPrediction>(model);
@@ -139,9 +148,14 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
             StockInfoPrediction prediction = predictor.Predict(actualInput);
 
+            var percFactor = _settingsService.GetInvestorProfileFactor(EStrategy.NormalMlStrategy1, eInvestorProfile);
+
+            var realTimeClosePrice = (float)sampleStock.Close;
+            realTimeClosePrice = realTimeClosePrice * (1 + percFactor);
+
             return new ShouldBuyStockOutput
             {
-                Buy = prediction.Close > (float)sampleStock.Close,  // Really coin price
+                Buy = prediction.Close > realTimeClosePrice,  // Really coin price
                 Score = (decimal)prediction.Close
             };
 

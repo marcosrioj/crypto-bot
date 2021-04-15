@@ -24,6 +24,7 @@ namespace CryptoBot.Crypto.Services
         }
 
         public async Task<IEnumerable<CompleteRegressionTestOutputDto>> CompleteRegressionTest(
+            EInvestorProfile investorProfile,
             KlineInterval interval,
             decimal initialWallet,
             int limitOfDataToLearnAndTest = 1000,
@@ -47,7 +48,7 @@ namespace CryptoBot.Crypto.Services
                 {
                     try
                     {
-                        var regressionTestResult = await _traderService.RegressionExec(strategy, data, ELogLevel.NoLog);
+                        var regressionTestResult = await _traderService.RegressionExec(strategy, investorProfile, data, ELogLevel.NoLog);
 
                         result.Add(new CompleteRegressionTestOutputDto
                         {

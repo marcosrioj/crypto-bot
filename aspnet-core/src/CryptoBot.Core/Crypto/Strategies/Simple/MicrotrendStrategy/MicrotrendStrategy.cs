@@ -1,5 +1,6 @@
 ﻿using Abp.Domain.Services;
 using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Enums;
 using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using System.Collections.Generic;
@@ -17,9 +18,9 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
             _settingsService = settingsService;
         }
 
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile)
         {
-            var numberOfTest = (int)_settingsService.GetInvestorProfileFactor(Enums.EStrategy.SimpleMicrotrendStrategy);
+            var numberOfTest = (int)_settingsService.GetInvestorProfileFactor(Enums.EStrategy.SimpleMicrotrendStrategy, eInvestorProfile);
 
             var lastValues = historicalData.Skip(historicalData.Count - numberOfTest).Take(numberOfTest).Select(x => x.Close).ToList();
 
@@ -32,6 +33,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
             }
 
             decimal? previousValue = null;
+            int count = 1; 
             foreach (var value in lastValues)
             {
                 if (previousValue == null)
@@ -44,16 +46,19 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                 {
                     return await Task.FromResult(new ShouldBuyStockOutput
                     {
-                        Buy = false
+                        Buy = false,
+                        Score = count
                     });
                 }
 
                 previousValue = value;
+                count++;
             }
 
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = true
+                Buy = true,
+                Score = count
             });
         }
     }

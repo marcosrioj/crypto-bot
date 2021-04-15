@@ -43,7 +43,7 @@ namespace CryptoBot.Crypto.Helpers
             return $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, Diff: {percFuturuValueDiffStr}, {action} {score}, {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureTradingWallet: {newWalletInvestingPriceStr}";
         }
 
-        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, IEnumerable<BetterCoinsToTraderRightNowOutputDto> result)
+        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, EInvestorProfile investorProfile, IEnumerable<BetterCoinsToTraderRightNowOutputDto> result)
         {
             var success = 0m;
             var failed = 0m;
@@ -53,7 +53,7 @@ namespace CryptoBot.Crypto.Helpers
             var tradingWalletTotal = 0m;
 
             var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss K").PadLeft(21, ' ');
-            finalResult.AppendLine($"GetBetterCoinsToTraderRightNow: Date: {date} - Strategy: {strategy} - Interval: {interval} - ItemsLearned: {limitOfDataToLearnAndTest}\n");
+            finalResult.AppendLine($"GetBetterCoinsToTraderRightNow: Date: {date} - Strategy: {strategy} - InvestorProfile: {investorProfile} - Interval: {interval} - ItemsLearned: {limitOfDataToLearnAndTest}\n");
 
             result = result.OrderByDescending(x => x.WhatToDo.Score);
 
