@@ -48,7 +48,7 @@ namespace CryptoBot.Crypto.Services
         }
 
         //TODO Apply on strategies
-        public async Task<float> GetInvestorProfileFactor(EStrategy strategy, EInvestorProfile investorProfile = EInvestorProfile.UltraAggressive)
+        public float GetInvestorProfileFactor(EStrategy strategy, EInvestorProfile investorProfile = EInvestorProfile.Moderate)
         {
             //TODO Put in the Settings Table
             switch (strategy)
@@ -71,20 +71,20 @@ namespace CryptoBot.Crypto.Services
                             throw new ArgumentException("Invalid investor profile");
                     }
 
-                //TODO verify levels
                 case EStrategy.SimpleMicrotrendStrategy:
                     switch (investorProfile)
                     {
+                        // Numbers of the last values has to be greater than next one
                         case EInvestorProfile.UltraAggressive:
-                            return 0;
-                        case EInvestorProfile.Aggressive:
-                            return 1;
-                        case EInvestorProfile.Moderate:
-                            return 2;
-                        case EInvestorProfile.Conservative:
                             return 3;
-                        case EInvestorProfile.UltraConservative:
+                        case EInvestorProfile.Aggressive:
                             return 4;
+                        case EInvestorProfile.Moderate:
+                            return 5;
+                        case EInvestorProfile.Conservative:
+                            return 6;
+                        case EInvestorProfile.UltraConservative:
+                            return 7;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }

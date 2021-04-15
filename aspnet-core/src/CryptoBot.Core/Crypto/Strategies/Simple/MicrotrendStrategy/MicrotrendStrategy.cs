@@ -1,5 +1,6 @@
 ﻿using Abp.Domain.Services;
 using Binance.Net.Interfaces;
+using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,27 +10,50 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
 {
     public class MicrotrendStrategy : DomainService, IMicrotrendStrategy
     {
+        private readonly ISettingsService _settingsService;
+
+        public MicrotrendStrategy(ISettingsService settingsService)
+        {
+            _settingsService = settingsService;
+        }
+
         public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData)
         {
-            var last3Values = historicalData.Skip(historicalData.Count - 3).Take(3).Select(x => x.Close).ToList();
+            var numberOfTest = (int)_settingsService.GetInvestorProfileFactor(Enums.EStrategy.SimpleMicrotrendStrategy);
 
-            //Default to hold
-            var result = (bool?)null;
+            var lastValues = historicalData.Skip(historicalData.Count - numberOfTest).Take(numberOfTest).Select(x => x.Close).ToList();
 
-            if (last3Values.Count >= 3 && last3Values[0] > last3Values[1] && last3Values[1] > last3Values[2])
+            if (lastValues.Count < numberOfTest)
             {
-                //Buy if we have 2 mins of increase
-                result = true;
+                return await Task.FromResult(new ShouldBuyStockOutput
+                {
+                    Buy = false
+                });
             }
-            else if (last3Values.Count >= 3 && (last3Values[0] < last3Values[1] || last3Values[1] < last3Values[2]))
+
+            decimal? previousValue = null;
+            foreach (var value in lastValues)
             {
-                //Sell if any decrease in price
-                result = false;
+                if (previousValue == null)
+                {
+                    previousValue = value;
+                    continue;
+                }
+
+                if (value > previousValue)
+                {
+                    return await Task.FromResult(new ShouldBuyStockOutput
+                    {
+                        Buy = false
+                    });
+                }
+
+                previousValue = value;
             }
 
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = result
+                Buy = true
             });
         }
     }
