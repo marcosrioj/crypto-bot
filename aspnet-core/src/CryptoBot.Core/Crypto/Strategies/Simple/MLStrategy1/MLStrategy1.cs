@@ -20,7 +20,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
 
         public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile)
         {
-            var percFactor = _settingsService.GetInvestorProfileFactor(Enums.EStrategy.SimpleMlStrategy1, eInvestorProfile);
+            var percFactor = _settingsService.GetInvestorProfileFactor(EStrategy.SimpleMlStrategy1, eInvestorProfile);
 
             var modelBuilder = new ModelBuilder();
             var model = modelBuilder.BuildModel(historicalData.Select(x => new ModelInput

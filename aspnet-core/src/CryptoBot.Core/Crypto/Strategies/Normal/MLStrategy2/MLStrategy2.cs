@@ -46,12 +46,11 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
             var size = new Input() { Size = houseData.Last().Size };
             var price = mlContext.Model.CreatePredictionEngine<Input, Prediction>(model).Predict(size);
 
-            var realTimeClosePrice = (float)sampleStock.Close;
-            realTimeClosePrice = realTimeClosePrice * (1 + percFactor);
+            var finalPrice = (float)sampleStock.Close * (1 + percFactor);
 
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = price.Price > realTimeClosePrice,
+                Buy = price.Price > (float)sampleStock.Close,
                 Score = (decimal)price.Price // Really coin price
             });
         }

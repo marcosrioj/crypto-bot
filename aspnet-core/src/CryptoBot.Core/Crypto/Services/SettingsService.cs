@@ -81,13 +81,13 @@ namespace CryptoBot.Crypto.Services
                         case EInvestorProfile.UltraAggressive:
                             return 0;
                         case EInvestorProfile.Aggressive:
-                            return 0.002f;
+                            return 0.0025f;
                         case EInvestorProfile.Moderate:
-                            return 0.004f;
+                            return 0.005f;
                         case EInvestorProfile.Conservative:
-                            return 0.006f;
+                            return 0.0075f;
                         case EInvestorProfile.UltraConservative:
-                            return 0.008f;
+                            return 0.01f;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }
@@ -118,13 +118,13 @@ namespace CryptoBot.Crypto.Services
                         case EInvestorProfile.UltraAggressive:
                             return 0;
                         case EInvestorProfile.Aggressive:
-                            return 0.01f;
+                            return 0.1f;
                         case EInvestorProfile.Moderate:
-                            return 0.02f;
+                            return 0.2f;
                         case EInvestorProfile.Conservative:
-                            return 0.03f;
+                            return 0.3f;
                         case EInvestorProfile.UltraConservative:
-                            return 0.04f;
+                            return 0.4f;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }

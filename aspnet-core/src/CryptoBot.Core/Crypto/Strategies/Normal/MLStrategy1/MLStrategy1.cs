@@ -6,6 +6,7 @@ using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using static Microsoft.ML.DataOperationsCatalog;
 
 namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 {
+    [Obsolete("O sampleStock stock é usado para prever o preco, mas nesse modelo ainda não funciona porque o período é customizável e adicionar toda as oções dessa estratégia não dá um valor real")]
     public class MLStrategy1 : DomainService, IMLStrategy1
     {
         private readonly ISettingsService _settingsService;
