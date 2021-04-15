@@ -63,7 +63,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             try
             {
                 var initialWallet = 1000;
-                var interval = KlineInterval.FifteenMinutes;
+                var interval = KlineInterval.FiveMinutes;
                 var limitOfDataToLearnAndTest = 1000;
                 var strategies = new List<EStrategy>() {
                     EStrategy.SimpleMeanReversionStrategy,
