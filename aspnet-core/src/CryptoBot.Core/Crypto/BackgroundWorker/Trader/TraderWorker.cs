@@ -66,11 +66,25 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var interval = KlineInterval.FifteenMinutes;
                 var limitOfDataToLearnAndTest = 1000;
                 var strategies = new List<EStrategy>() {
+                    EStrategy.SimpleMeanReversionStrategy,
                     EStrategy.SimpleMlStrategy1
                 };
                 var investorProfile = EInvestorProfile.UltraConservative;
 
-                var result = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategies, investorProfile, interval, initialWallet, limitOfDataToLearnAndTest, ELogLevel.FullLog);
+                var result1 = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategies, investorProfile, interval, initialWallet, limitOfDataToLearnAndTest, ELogLevel.FullLog);
+
+                strategies = new List<EStrategy>() {
+                    EStrategy.SimpleMeanReversionStrategy,
+                    EStrategy.NormalMlStrategy2
+                };
+                var result2 = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategies, investorProfile, interval, initialWallet, limitOfDataToLearnAndTest, ELogLevel.FullLog);
+
+                strategies = new List<EStrategy>() {
+                    EStrategy.SimpleMeanReversionStrategy,
+                    EStrategy.SimpleMlStrategy1,
+                    EStrategy.NormalMlStrategy2
+                };
+                var result4 = await _traderService.GetBetterCoinsToTraderRightNowAsync(strategies, investorProfile, interval, initialWallet, limitOfDataToLearnAndTest, ELogLevel.FullLog);
             }
             catch (Exception e)
             {
