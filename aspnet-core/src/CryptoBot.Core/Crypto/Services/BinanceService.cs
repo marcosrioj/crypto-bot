@@ -102,7 +102,7 @@ namespace CryptoBot.Crypto.Services
             return inputData;
         }
 
-        private void Samples()
+        public void Samples()
         {
             SetBinanceClients(2);
 
@@ -113,6 +113,9 @@ namespace CryptoBot.Crypto.Services
 
                 // Spot.Order | Spot order info endpoints
                 var orders = client.Spot.Order.GetAllOrders("BTCUSDT");
+
+                // 
+                var bookOrders = client.Spot.Market.GetOrderBook("BTCUSDT");
 
                 // Spot.System | Spot system endpoints
                 var exchangeInfo = client.Spot.System.GetExchangeInfo();

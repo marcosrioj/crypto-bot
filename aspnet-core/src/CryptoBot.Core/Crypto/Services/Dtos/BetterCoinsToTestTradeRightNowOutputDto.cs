@@ -3,7 +3,7 @@ using CryptoBot.Crypto.Enums;
 
 namespace CryptoBot.Crypto.Services.Dtos
 {
-    public class BetterCoinsToTraderRightNowOutputDto
+    public class BetterCoinsToTestTradeRightNowOutputDto
     {
         public ECurrency Currency { get; set; }
         public decimal Wallet { get; set; }
@@ -12,6 +12,6 @@ namespace CryptoBot.Crypto.Services.Dtos
         public IBinanceKline FutureStock { get; set; }
         public WhatToDoOutput WhatToDo { get; set; }
         public decimal FuturePercDiff { get; set; }
-        public RegressionDataOutput Data { get; set; }
+        public RegressionTestDataOutput Data { get; set; }
     }
 }

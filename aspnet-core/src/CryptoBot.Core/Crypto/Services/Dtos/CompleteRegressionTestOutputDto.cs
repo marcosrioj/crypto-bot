@@ -8,6 +8,6 @@ namespace CryptoBot.Crypto.Services.Dtos
         public ECurrency Currency { get; set; }
         public EStrategy Strategy { get; set; }
 
-        public List<RegressionOutputDto> Results { get; set; }
+        public List<RegressionTestOutputDto> Results { get; set; }
     }
 }

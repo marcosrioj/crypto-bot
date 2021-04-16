@@ -138,6 +138,7 @@
         UNFI,
         UNI,
         USDC,
+        USDT,
         UTK,
         VET,
         VITE,

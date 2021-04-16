@@ -23,5 +23,7 @@ namespace CryptoBot.Crypto.Services
             DateTime? startTime,
             DateTime? endTime,
             int limitOfDetails);
+
+        void Samples();
     }
 }

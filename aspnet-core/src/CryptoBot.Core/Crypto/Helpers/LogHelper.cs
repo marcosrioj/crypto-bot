@@ -43,7 +43,7 @@ namespace CryptoBot.Crypto.Helpers
             return $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, Diff: {percFuturuValueDiffStr}, {action} {score}, {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureTradingWallet: {newWalletInvestingPriceStr}";
         }
 
-        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, EInvestorProfile investorProfile, IEnumerable<BetterCoinsToTraderRightNowOutputDto> result)
+        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, EInvestorProfile investorProfile, IEnumerable<BetterCoinsToTestTradeRightNowOutputDto> result)
         {
             var success = 0m;
             var failed = 0m;
