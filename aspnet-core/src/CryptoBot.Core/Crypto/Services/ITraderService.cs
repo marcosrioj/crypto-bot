@@ -47,5 +47,7 @@ namespace CryptoBot.Crypto.Services
                     EStrategy strategy,
                     EInvestorProfile eInvestorProfile,
                     RegressionDataOutput data);
+
+        Task AutoTraderWithWalletVirtualAsync(long userId);
     }
 }

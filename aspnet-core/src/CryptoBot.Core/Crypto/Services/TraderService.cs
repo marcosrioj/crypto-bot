@@ -205,6 +205,49 @@ namespace CryptoBot.Crypto.Services
             };
         }
 
+        public async Task AutoTraderWithWalletVirtualAsync(long userId)
+        {
+            var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, 1000);
+            var tragindId = await CreateTrading(mainWallet.Id, mainWallet.Balance);
+
+            var interval = KlineInterval.FiveMinutes;
+            var limitOfDataToLearn = 1000;
+            var strategies = new List<EStrategy>() {
+                    EStrategy.SimpleMeanReversionStrategy
+                };
+            var investorProfile = EInvestorProfile.UltraConservative;
+
+            var betterCoinsToTrade = await GetBetterCoinsToTraderRightNowAsync(strategies, investorProfile, interval, limitOfDataToLearn);
+
+            //TODO CONTINUE
+        }
+
+        private async Task<long> CreateTrading(long walletId, decimal startbalance)
+        {
+            var tradingId = await _tradingRepository.InsertAndGetIdAsync(new Trading
+            {
+                StartBalance = startbalance,
+                WalletId = walletId
+            });
+
+            await CurrentUnitOfWork.SaveChangesAsync();
+
+            return tradingId;
+        }
+
+        private async Task UpdateTrading(long id, decimal balance)
+        {
+            var trading = await _tradingRepository
+                .GetAll()
+                .Where(x => x.Id == id)
+                .FirstAsync();
+
+            trading.EndBalance = balance;
+
+            await CurrentUnitOfWork.SaveChangesAsync();
+        }
+
+
         private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
         {
             var result = await _simpleMeanReversionStrategy.ShouldBuyStock(data.DataToLearn, eInvestorProfile);
