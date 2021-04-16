@@ -14,5 +14,38 @@ namespace CryptoBot.Crypto.Services
             EStrategy strategy,
             EInvestorProfile eInvestorProfile,
             RegressionDataOutput data);
+
+        Task<List<BetterCoinsTradeRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+            EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
+            KlineInterval interval,
+            int limitOfDataToLearn = 1000,
+            DateTime? startTime = null,
+            DateTime? endTime = null);
+
+        Task<List<BetterCoinsTradeRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+                    List<EStrategy> strategies,
+                    EInvestorProfile eInvestorProfile,
+                    KlineInterval interval,
+                    int limitOfDataToLearn = 1000,
+                    DateTime? startTime = null,
+                    DateTime? endTime = null);
+
+        Task<List<BetterCoinsTradeRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
+                    EStrategy strategy,
+                    EInvestorProfile eInvestorProfile,
+                    List<BetterCoinsTradeRightNowOutputDto> input);
+
+        RegressionDataOutput GetRegressionData(
+            ECurrency currency,
+            KlineInterval interval,
+            int limitOfDataToLearn = 120,
+            DateTime? startTime = null,
+            DateTime? endTime = null);
+
+        Task<RegressionOutputDto> RegressionExec(
+                    EStrategy strategy,
+                    EInvestorProfile eInvestorProfile,
+                    RegressionDataOutput data);
     }
 }

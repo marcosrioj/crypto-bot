@@ -238,7 +238,7 @@ namespace CryptoBot.Crypto.Services
             var firstStrategy = strategies.First();
             strategies.Remove(firstStrategy);
 
-            var result = await GetBetterCoinsToTraderRightNowAsync(firstStrategy, eInvestorProfile, interval, initialWallet, limitOfDataToLearnAndTest);
+            var result = await GetBetterCoinsToTraderRightNowAsync(firstStrategy, eInvestorProfile, interval, initialWallet, limitOfDataToLearnAndTest, startTime, endTime);
 
             if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.FullLog)
             {

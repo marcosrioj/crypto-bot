@@ -92,7 +92,6 @@ namespace CryptoBot.Crypto.Services
             EStrategy strategy,
             EInvestorProfile eInvestorProfile,
             KlineInterval interval,
-            decimal initialWallet,
             int limitOfDataToLearn = 1000,
             DateTime? startTime = null,
             DateTime? endTime = null)
@@ -119,6 +118,57 @@ namespace CryptoBot.Crypto.Services
             }
 
             return results.Where(x => x.WhatToDo.WhatToDo == EWhatToDo.Buy).ToList();
+        }
+
+        public async Task<List<BetterCoinsTradeRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+            List<EStrategy> strategies,
+            EInvestorProfile eInvestorProfile,
+            KlineInterval interval,
+            int limitOfDataToLearn = 1000,
+            DateTime? startTime = null,
+            DateTime? endTime = null)
+        {
+            if (!strategies.Any())
+            {
+                throw new ArgumentException("Must to have at least one strategy");
+            }
+
+            var firstStrategy = strategies.First();
+            strategies.Remove(firstStrategy);
+
+            var result = await GetBetterCoinsToTraderRightNowAsync(firstStrategy, eInvestorProfile, interval, limitOfDataToLearn, startTime, endTime);
+
+            foreach (var strategy in strategies)
+            {
+                result = await FilterBetterCoinsToTraderRightNowAsync(strategy, eInvestorProfile, result);
+            }
+
+            return result;
+        }
+
+        public async Task<List<BetterCoinsTradeRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
+            EStrategy strategy,
+            EInvestorProfile eInvestorProfile,
+            List<BetterCoinsTradeRightNowOutputDto> input)
+        {
+            var result = new List<BetterCoinsTradeRightNowOutputDto>();
+
+            foreach (var item in input)
+            {
+                var regressionResult = await RegressionExec(strategy, eInvestorProfile, item.Data);
+
+                if (regressionResult.WhatToDo.WhatToDo == EWhatToDo.Buy)
+                {
+                    result.Add(new BetterCoinsTradeRightNowOutputDto
+                    {
+                        Currency = item.Currency,
+                        WhatToDo = regressionResult.WhatToDo,
+                        Data = item.Data
+                    });
+                }
+            }
+
+            return result;
         }
 
         public RegressionDataOutput GetRegressionData(
