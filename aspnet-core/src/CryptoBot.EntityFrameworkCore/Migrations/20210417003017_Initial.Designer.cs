@@ -4,14 +4,16 @@ using CryptoBot.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    partial class CryptoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210417003017_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1527,110 +1529,43 @@ namespace CryptoBot.Migrations
                     b.ToTable("AbpUsers");
                 });
 
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.Order", b =>
+            modelBuilder.Entity("CryptoBot.Crypto.Entities.OrderHistory", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .UseIdentityColumn();
+
+                    b.Property<int>("Action")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,8)");
 
+                    b.Property<decimal>("Average")
+                        .HasColumnType("decimal(18,8)");
+
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
                     b.Property<long?>("CreatorUserId")
                         .HasColumnType("bigint");
+
+                    b.Property<decimal>("Executed")
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<int>("From")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,8)");
+
                     b.Property<int>("To")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("UsdtPriceFrom")
-                        .HasColumnType("decimal(18,8)");
-
-                    b.Property<decimal>("UsdtPriceTo")
-                        .HasColumnType("decimal(18,8)");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.Prediction", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Currency")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DataLearned")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Interval")
-                        .HasColumnType("int");
-
-                    b.Property<int>("InvestorProfile")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Score")
-                        .HasColumnType("decimal(18,8)");
-
-                    b.Property<string>("Strategies")
-                        .HasColumnType("varchar(300)");
-
-                    b.Property<int?>("Strategy")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<int>("WhatToDo")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Predictions");
-                });
-
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.PredictionOrder", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("PredictionId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("PredictionId");
-
-                    b.ToTable("PredictionOrders");
+                    b.ToTable("OrderHistories");
                 });
 
             modelBuilder.Entity("CryptoBot.Crypto.Entities.Trading", b =>
@@ -1981,25 +1916,6 @@ namespace CryptoBot.Migrations
                     b.Navigation("LastModifierUser");
                 });
 
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.PredictionOrder", b =>
-                {
-                    b.HasOne("CryptoBot.Crypto.Entities.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CryptoBot.Crypto.Entities.Prediction", "Prediction")
-                        .WithMany("Orders")
-                        .HasForeignKey("PredictionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Prediction");
-                });
-
             modelBuilder.Entity("CryptoBot.Crypto.Entities.Trading", b =>
                 {
                     b.HasOne("CryptoBot.Crypto.Entities.Wallet", "Wallet")
@@ -2118,11 +2034,6 @@ namespace CryptoBot.Migrations
                     b.Navigation("Settings");
 
                     b.Navigation("Tokens");
-                });
-
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.Prediction", b =>
-                {
-                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

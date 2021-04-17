@@ -46,5 +46,17 @@ namespace CryptoBot.Crypto.Services
 
             return wallet;
         }
+
+        public async Task UpdateBalance(long walletId, decimal balance)
+        {
+            var wallet = await _repository
+                .GetAll()
+                .Where(x => x.Id == walletId)
+                .FirstAsync();
+
+            wallet.Balance = balance;
+
+            await CurrentUnitOfWork.SaveChangesAsync();
+        }
     }
 }

@@ -22,6 +22,9 @@ namespace CryptoBot.Crypto.Services
     public class TraderService : DomainService, ITraderService
     {
         public readonly IRepository<Trading, long> _tradingRepository;
+        public readonly IRepository<Order, long> _orderRepository;
+        public readonly IRepository<PredictionOrder, long> _predictionOrderRepository;
+        public readonly IRepository<Prediction, long> _predictionRepository;
 
         private readonly IBinanceService _binanceService;
         private readonly IWalletService _walletService;
@@ -33,6 +36,9 @@ namespace CryptoBot.Crypto.Services
 
         public TraderService(
             IRepository<Trading, long> tradingRepository,
+            IRepository<Order, long> orderRepository,
+            IRepository<Prediction, long> predictionRepository,
+            IRepository<PredictionOrder, long> predictionOrderRepository,
             IBinanceService binanceService,
             IWalletService walletService,
             IMLStrategy1 normalMlStrategy1,
@@ -42,6 +48,9 @@ namespace CryptoBot.Crypto.Services
             Strategies.Simple.MLStrategy1.IMLStrategy1 simpleMlStrategy1)
         {
             _tradingRepository = tradingRepository;
+            _orderRepository = orderRepository;
+            _predictionRepository = predictionRepository;
+            _predictionOrderRepository = predictionOrderRepository;
 
             _binanceService = binanceService;
             _walletService = walletService;
@@ -50,7 +59,6 @@ namespace CryptoBot.Crypto.Services
             _simpleMeanReversionStrategy = simpleMeanReversionStrategy;
             _simpleMicrotrendStrategy = simpleMicrotrendStrategy;
             _simpleMlStrategy1 = simpleMlStrategy1;
-
         }
 
         public async Task<WhatToDoOutput> WhatToDo(
@@ -88,98 +96,109 @@ namespace CryptoBot.Crypto.Services
             }
         }
 
-        public async Task<List<BetterCoinsTradeRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+        public async Task GenerateBetterPrediction1Async(
             EStrategy strategy,
             EInvestorProfile eInvestorProfile,
             KlineInterval interval,
-            int limitOfDataToLearn = 1000,
-            DateTime? startTime = null,
-            DateTime? endTime = null)
+            int limitOfDataToLearn = 1000)
         {
             var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
-
-            var results = new List<BetterCoinsTradeRightNowOutputDto>();
 
             foreach (var currency in allCurrencies)
             {
                 if (currency == ECurrency.USDT)
                     continue;
 
-                var data = GetRegressionData(currency, interval, limitOfDataToLearn, startTime, endTime);
+                var data = GetRegressionData(currency, interval, limitOfDataToLearn);
 
-                var regressionTestResult = await RegressionExec(strategy, eInvestorProfile, data);
+                var whatToDo = await WhatToDo(strategy, eInvestorProfile, data);
 
-                results.Add(new BetterCoinsTradeRightNowOutputDto
+                if (whatToDo.WhatToDo == EWhatToDo.Buy)
                 {
-                    Currency = currency,
-                    WhatToDo = regressionTestResult.WhatToDo,
-                    Data = data
-                });
+                    await _predictionRepository.InsertAndGetIdAsync(new Prediction
+                    {
+                        CreationTime = DateTime.Now,
+                        Currency = currency,
+                        InvestorProfile = eInvestorProfile,
+                        Type = EPredictionType.Regression1,
+                        Strategy = strategy,
+                        WhatToDo = whatToDo.WhatToDo,
+                        Interval = interval,
+                        Score = whatToDo.Score,
+                        DataLearned = limitOfDataToLearn
+                    });
+                }
             }
-
-            return results.Where(x => x.WhatToDo.WhatToDo == EWhatToDo.Buy).ToList();
         }
 
-        public async Task<List<BetterCoinsTradeRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
+        public async Task GenerateBetterPrediction2Async(
             List<EStrategy> strategies,
             EInvestorProfile eInvestorProfile,
             KlineInterval interval,
-            int limitOfDataToLearn = 1000,
-            DateTime? startTime = null,
-            DateTime? endTime = null)
+            int limitOfDataToLearn = 1000)
         {
             if (!strategies.Any())
             {
                 throw new ArgumentException("Must to have at least one strategy");
             }
 
+            var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
             var firstStrategy = strategies.First();
             strategies.Remove(firstStrategy);
 
-            var result = await GetBetterCoinsToTraderRightNowAsync(firstStrategy, eInvestorProfile, interval, limitOfDataToLearn, startTime, endTime);
-
-            foreach (var strategy in strategies)
+            foreach (var currency in allCurrencies)
             {
-                result = await FilterBetterCoinsToTraderRightNowAsync(strategy, eInvestorProfile, result);
-            }
+                if (currency == ECurrency.USDT)
+                    continue;
 
-            return result;
-        }
+                var data = GetRegressionData(currency, interval, limitOfDataToLearn);
 
-        public async Task<List<BetterCoinsTradeRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
-            EStrategy strategy,
-            EInvestorProfile eInvestorProfile,
-            List<BetterCoinsTradeRightNowOutputDto> input)
-        {
-            var result = new List<BetterCoinsTradeRightNowOutputDto>();
+                var whatToDo = await WhatToDo(firstStrategy, eInvestorProfile, data);
 
-            foreach (var item in input)
-            {
-                var regressionResult = await RegressionExec(strategy, eInvestorProfile, item.Data);
-
-                if (regressionResult.WhatToDo.WhatToDo == EWhatToDo.Buy)
+                if (whatToDo.WhatToDo == EWhatToDo.Buy)
                 {
-                    result.Add(new BetterCoinsTradeRightNowOutputDto
+                    var runnedAllStrategies = true;
+                    var strategiesSb = new StringBuilder($"{firstStrategy}.");
+
+                    for (int i = 0; i < strategies.Count; i++)
                     {
-                        Currency = item.Currency,
-                        WhatToDo = regressionResult.WhatToDo,
-                        Data = item.Data
-                    });
+                        var strategy = strategies[i];
+                        strategiesSb.Append($"{strategy}.");
+                        var whatToDoByStrategy = await WhatToDo(strategy, eInvestorProfile, data);
+
+                        if (whatToDoByStrategy.WhatToDo != EWhatToDo.Buy)
+                        {
+                            runnedAllStrategies = false;
+                            i = strategies.Count;
+                        }
+                    }
+
+                    if (runnedAllStrategies)
+                    {
+                        await _predictionRepository.InsertAndGetIdAsync(new Prediction
+                        {
+                            CreationTime = DateTime.Now,
+                            Currency = currency,
+                            InvestorProfile = eInvestorProfile,
+                            Type = EPredictionType.Regression2,
+                            Strategies = strategiesSb.ToString(),
+                            WhatToDo = whatToDo.WhatToDo,
+                            Interval = interval,
+                            Score = whatToDo.Score,
+                            DataLearned = limitOfDataToLearn
+                        });
+                    }
                 }
             }
-
-            return result;
         }
 
         public RegressionDataOutput GetRegressionData(
             ECurrency currency,
             KlineInterval interval,
-            int limitOfDataToLearn = 120,
-            DateTime? startTime = null,
-            DateTime? endTime = null)
+            int limitOfDataToLearn = 120)
         {
             var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}");
-            var dataToLearn = _binanceService.GetData(currency, interval, startTime, endTime, limitOfDataToLearn);
+            var dataToLearn = _binanceService.GetData(currency, interval, null, null, limitOfDataToLearn);
 
             return new RegressionDataOutput
             {
@@ -191,35 +210,108 @@ namespace CryptoBot.Crypto.Services
             };
         }
 
-        public async Task<RegressionOutputDto> RegressionExec(
-            EStrategy strategy,
-            EInvestorProfile eInvestorProfile,
-            RegressionDataOutput data)
-        {
-            var resultTraderService = await WhatToDo(strategy, eInvestorProfile, data);
-
-            return new RegressionOutputDto
-            {
-                ActualStock = data.StockRightNow,
-                WhatToDo = resultTraderService,
-            };
-        }
-
         public async Task AutoTraderWithWalletVirtualAsync(long userId)
         {
             var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, 1000);
-            var tragindId = await CreateTrading(mainWallet.Id, mainWallet.Balance);
 
-            var interval = KlineInterval.FiveMinutes;
-            var limitOfDataToLearn = 1000;
-            var strategies = new List<EStrategy>() {
-                    EStrategy.SimpleMeanReversionStrategy
-                };
-            var investorProfile = EInvestorProfile.UltraConservative;
+            if (mainWallet.Balance < 300)
+            {
+                return;
+            }
 
-            var betterCoinsToTrade = await GetBetterCoinsToTraderRightNowAsync(strategies, investorProfile, interval, limitOfDataToLearn);
+            //var maindTragindId = await CreateTrading(mainWallet.Id, mainWallet.Balance);
 
-            //TODO CONTINUE
+            var predictions = await _predictionRepository
+                .GetAll()
+                .AsNoTracking()
+                .Where(x =>
+                    x.CreationTime > DateTime.Now.AddSeconds(-10)
+                    && !x.Orders.Any(y => y.CreatorUserId == userId))
+                .ToListAsync();
+
+            if (predictions.Count == 0)
+            {
+                return;
+            }
+
+            var predictionsFiltered = new List<PredictionFilteredDto>();
+            foreach (var prediction in predictions)
+            {
+                var pair = $"{prediction.Currency}{CryptoBotConsts.BaseCoinName}";
+                var bookPrice = _binanceService.GetBookPrice(pair);
+                var bookOrder = _binanceService.GetBookOrders(pair, 20);
+
+                if (bookPrice.Data != null
+                    && bookOrder.Data != null
+                    && bookOrder.Data.Asks.Any()
+                    && bookOrder.Data.Asks.Any())
+                {
+                    var askQuantity = bookOrder.Data.Asks.Sum(x => x.Quantity);
+                    var bidQuantity = bookOrder.Data.Bids.Sum(x => x.Quantity);
+
+                    if (bidQuantity > askQuantity)
+                    {
+                        if (mainWallet.Balance < bidQuantity * bookPrice.Data.BestAskPrice)
+                        {
+                            predictionsFiltered.Add(new PredictionFilteredDto
+                            {
+                                Prediction = prediction,
+                                BookPrice = bookPrice.Data,
+                                AsksData = bookOrder.Data.Asks,
+                                BidsData = bookOrder.Data.Bids
+                            });
+                        }
+                    }
+                }
+            }
+
+            if (predictionsFiltered.Count == 0)
+            {
+                return;
+            }
+
+            var percApprovedByOperation = 0.2m; //20%
+            var balanceUsdtCalc = (mainWallet.Balance * percApprovedByOperation) / predictionsFiltered.Count;
+
+            foreach (var prediction in predictionsFiltered)
+            {
+                var amount = balanceUsdtCalc / prediction.BookPrice.BestAskPrice;
+
+                await _predictionOrderRepository.InsertAndGetIdAsync(
+                    new PredictionOrder
+                    {
+                        Order = new Order
+                        {
+                            From = ECurrency.USDT,
+                            To = prediction.Prediction.Currency,
+                            UsdtPriceFrom = 1,
+                            UsdtPriceTo = prediction.BookPrice.BestAskPrice,
+                            CreatorUserId = userId,
+                            Amount = amount
+                        },
+                        PredictionId = prediction.Prediction.Id,
+                        CreatorUserId = userId
+                    });
+
+                var wallet = await _walletService.GetOrCreate(prediction.Prediction.Currency, EWalletType.Virtual, userId);
+                var newWalletBalance = wallet.Balance + amount;
+                await _walletService.UpdateBalance(wallet.Id, newWalletBalance);
+
+                mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId);
+                var newMainWalletBalance = mainWallet.Balance - balanceUsdtCalc;
+                await _walletService.UpdateBalance(mainWallet.Id, newMainWalletBalance);
+
+                //var sb = new StringBuilder();
+                //sb.AppendLine(coinToTrade.Currency.ToString());
+                //sb.AppendLine($"BestAskPrice: {bookPrice.Data.BestAskPrice}");
+                //sb.AppendLine($"BestAskQuantity: {bookPrice.Data.BestAskQuantity}");
+                //sb.AppendLine($"BestBidPrice: {bookPrice.Data.BestBidPrice}");
+                //sb.AppendLine($"BestBidQuantity: {bookPrice.Data.BestBidQuantity}");
+                //sb.AppendLine($"askQuantity: {askQuantity}");
+                //sb.AppendLine($"bidQuantity: {bidQuantity}\n\n");
+
+                //LogHelper.Log($"{sb}", "test");
+            }
         }
 
         private async Task<long> CreateTrading(long walletId, decimal startbalance)

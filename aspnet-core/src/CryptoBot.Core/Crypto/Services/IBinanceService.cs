@@ -25,5 +25,7 @@ namespace CryptoBot.Crypto.Services
             int limitOfDetails);
 
         void Samples();
+
+        WebCallResult<BinanceOrderBook> GetBookOrders(string pair, int? limit = null);
     }
 }

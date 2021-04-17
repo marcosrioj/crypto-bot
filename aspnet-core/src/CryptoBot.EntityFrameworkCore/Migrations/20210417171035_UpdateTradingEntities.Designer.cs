@@ -4,14 +4,16 @@ using CryptoBot.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    partial class CryptoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210417171035_UpdateTradingEntities")]
+    partial class UpdateTradingEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1527,7 +1529,7 @@ namespace CryptoBot.Migrations
                     b.ToTable("AbpUsers");
                 });
 
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.Order", b =>
+            modelBuilder.Entity("CryptoBot.Crypto.Entities.OrderHistory", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1557,7 +1559,7 @@ namespace CryptoBot.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders");
+                    b.ToTable("OrderHistories");
                 });
 
             modelBuilder.Entity("CryptoBot.Crypto.Entities.Prediction", b =>
@@ -1603,34 +1605,6 @@ namespace CryptoBot.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Predictions");
-                });
-
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.PredictionOrder", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("CreatorUserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("PredictionId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("PredictionId");
-
-                    b.ToTable("PredictionOrders");
                 });
 
             modelBuilder.Entity("CryptoBot.Crypto.Entities.Trading", b =>
@@ -1981,25 +1955,6 @@ namespace CryptoBot.Migrations
                     b.Navigation("LastModifierUser");
                 });
 
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.PredictionOrder", b =>
-                {
-                    b.HasOne("CryptoBot.Crypto.Entities.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CryptoBot.Crypto.Entities.Prediction", "Prediction")
-                        .WithMany("Orders")
-                        .HasForeignKey("PredictionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Prediction");
-                });
-
             modelBuilder.Entity("CryptoBot.Crypto.Entities.Trading", b =>
                 {
                     b.HasOne("CryptoBot.Crypto.Entities.Wallet", "Wallet")
@@ -2118,11 +2073,6 @@ namespace CryptoBot.Migrations
                     b.Navigation("Settings");
 
                     b.Navigation("Tokens");
-                });
-
-            modelBuilder.Entity("CryptoBot.Crypto.Entities.Prediction", b =>
-                {
-                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

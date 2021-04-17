@@ -44,7 +44,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
 
             // 4. Make a prediction
             var size = new Input() { Size = houseData.Last().Size };
-            var price = mlContext.Model.CreatePredictionEngine<Input, Prediction>(model).Predict(size);
+            var price = mlContext.Model.CreatePredictionEngine<Input, PredictionMl2>(model).Predict(size);
 
             var finalPrice = (float)sampleStock.Close * (1 + percFactor);
 
@@ -62,7 +62,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
         public float Price { get; set; }
     }
 
-    public class Prediction
+    public class PredictionMl2
     {
         [ColumnName("Score")]
         public float Price { get; set; }

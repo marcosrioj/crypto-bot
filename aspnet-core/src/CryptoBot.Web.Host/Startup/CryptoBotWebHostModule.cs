@@ -35,6 +35,7 @@ namespace CryptoBot.Web.Host.Startup
         {
             var workManager = IocManager.Resolve<IBackgroundWorkerManager>();
             workManager.Add(IocManager.Resolve<TraderWorker>());
+            workManager.Add(IocManager.Resolve<PredictionWorker>());
         }
     }
 }

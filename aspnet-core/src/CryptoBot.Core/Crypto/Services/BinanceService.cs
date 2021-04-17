@@ -52,6 +52,16 @@ namespace CryptoBot.Crypto.Services
             return result.Data.FirstOrDefault();
         }
 
+        public WebCallResult<BinanceOrderBook> GetBookOrders(string pair, int? limit = null)
+        {
+            SetBinanceClients(2);
+
+            using (var client = new BinanceClient())
+            {
+                var bookOrders = client.Spot.Market.GetOrderBook(pair, limit);
+                return bookOrders;
+            }
+        }
 
         public List<IBinanceKline> GetData(
             ECurrency currency,

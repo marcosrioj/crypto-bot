@@ -4,14 +4,16 @@ using CryptoBot.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    partial class CryptoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210417173201_Edited_OrderTableName2")]
+    partial class Edited_OrderTableName2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1546,6 +1548,9 @@ namespace CryptoBot.Migrations
                     b.Property<int>("From")
                         .HasColumnType("int");
 
+                    b.Property<int>("MyProperty")
+                        .HasColumnType("int");
+
                     b.Property<int>("To")
                         .HasColumnType("int");
 
@@ -1621,7 +1626,10 @@ namespace CryptoBot.Migrations
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("PredictionId")
+                    b.Property<long?>("PredictionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -1629,6 +1637,8 @@ namespace CryptoBot.Migrations
                     b.HasIndex("OrderId");
 
                     b.HasIndex("PredictionId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("PredictionOrders");
                 });
@@ -1989,15 +1999,19 @@ namespace CryptoBot.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CryptoBot.Crypto.Entities.Prediction", "Prediction")
+                    b.HasOne("CryptoBot.Crypto.Entities.Prediction", null)
                         .WithMany("Orders")
-                        .HasForeignKey("PredictionId")
+                        .HasForeignKey("PredictionId");
+
+                    b.HasOne("CryptoBot.Authorization.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("Prediction");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CryptoBot.Crypto.Entities.Trading", b =>

@@ -32,11 +32,25 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             _binanceService = binanceService;
         }
 
-        [UnitOfWork]
+        [UnitOfWork(false)]
         protected override async Task DoWorkAsync()
         {
-            await BinanceTest();
+            await AutoTraderWithWalletVirtual();
         }
+
+        private async Task AutoTraderWithWalletVirtual()
+        {
+            try
+            {
+                await _traderService.AutoTraderWithWalletVirtualAsync(2);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
 
         private async Task BinanceTest()
         {
@@ -50,7 +64,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var initialWallet = 1000;
                 var interval = KlineInterval.FifteenMinutes;
                 var limitOfDataToLearnAndTest = 1000;
-                var limitOfDataToTest = 120;
+                var limitOfDataToTest = 0;
                 var investorProfile = EInvestorProfile.UltraConservative;
 
                 var data1 = _traderTestService.GetRegressionData(ECurrency.DOGE, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
