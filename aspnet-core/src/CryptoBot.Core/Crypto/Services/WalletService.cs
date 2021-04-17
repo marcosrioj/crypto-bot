@@ -58,5 +58,27 @@ namespace CryptoBot.Crypto.Services
 
             await CurrentUnitOfWork.SaveChangesAsync();
         }
+
+        public async Task UpdatedWalletsUsdtToCustomCurrency(long userId, decimal deductionUsdt, ECurrency currency, decimal amount)
+        {
+            var mainWallet = await GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId);
+            var newMainWalletBalance = mainWallet.Balance - deductionUsdt;
+            await UpdateBalance(mainWallet.Id, newMainWalletBalance);
+
+            var wallet = await GetOrCreate(currency, EWalletType.Virtual, userId);
+            var newWalletBalance = wallet.Balance + amount;
+            await UpdateBalance(wallet.Id, newWalletBalance);
+        }
+
+        public async Task UpdatedWalletsCustomCurrencyToUsdt(long userId, decimal deductionCurrency, ECurrency currency, decimal amount)
+        {
+            var wallet = await GetOrCreate(currency, EWalletType.Virtual, userId);
+            var newWalletBalance = wallet.Balance - deductionCurrency;
+            await UpdateBalance(wallet.Id, newWalletBalance);
+
+            var mainWallet = await GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId);
+            var newMainWalletBalance = mainWallet.Balance + amount;
+            await UpdateBalance(mainWallet.Id, newMainWalletBalance);
+        }
     }
 }

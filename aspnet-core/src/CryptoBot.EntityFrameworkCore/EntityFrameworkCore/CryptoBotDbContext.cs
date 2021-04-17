@@ -11,8 +11,6 @@ namespace CryptoBot.EntityFrameworkCore
     {
         public DbSet<Order> Orders { get; set; }
 
-        public DbSet<Trading> Trading { get; set; }
-
         public DbSet<Wallet> Wallets { get; set; }
 
         public DbSet<Prediction> Predictions { get; set; }

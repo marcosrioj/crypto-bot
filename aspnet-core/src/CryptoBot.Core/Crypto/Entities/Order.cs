@@ -18,5 +18,8 @@ namespace CryptoBot.Crypto.Entities
 
         [Column(TypeName = "decimal(18, 8)")]
         public decimal Amount { get; set; }
+
+        public long? OriginOrderId { get; set; }
+        public Order OriginOrder { get; set; }
     }
 }

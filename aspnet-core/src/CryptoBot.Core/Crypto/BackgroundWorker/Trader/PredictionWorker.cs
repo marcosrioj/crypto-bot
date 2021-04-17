@@ -39,7 +39,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 
         private async Task Regression1()
         {
-            var interval = KlineInterval.FiveMinutes;
+            var interval = KlineInterval.OneMinute;
             var limitOfDataToLearn = 1000;
             var investorProfile = EInvestorProfile.UltraConservative;
             var strategy = EStrategy.SimpleMlStrategy1;
@@ -49,7 +49,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 
         private async Task Regression2()
         {
-            var interval = KlineInterval.FiveMinutes;
+            var interval = KlineInterval.OneMinute;
             var limitOfDataToLearn = 1000;
             var investorProfile = EInvestorProfile.UltraConservative;
             var strategies = new List<EStrategy>() {

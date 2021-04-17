@@ -17,19 +17,15 @@ namespace CryptoBot.Crypto.Services
 {
     public class TraderTestService : DomainService, ITraderTestService
     {
-        public readonly IRepository<Trading, long> _tradingRepository;
-
         private readonly IWalletService _walletService;
         private readonly ITraderService _traderService;
         private readonly IBinanceService _binanceService;
 
         public TraderTestService(
-            IRepository<Trading, long> tradingRepository,
             IWalletService walletService,
             ITraderService traderService,
             IBinanceService binanceService)
         {
-            _tradingRepository = tradingRepository;
             _walletService = walletService;
             _traderService = traderService;
             _binanceService = binanceService;

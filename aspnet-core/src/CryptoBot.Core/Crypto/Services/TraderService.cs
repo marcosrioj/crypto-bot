@@ -1,9 +1,11 @@
 ﻿using Abp.Domain.Repositories;
 using Abp.Domain.Services;
+using Abp.Events.Bus;
 using Binance.Net.Enums;
 using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Events.Data;
 using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services.Dtos;
 using CryptoBot.Crypto.Strategies.Normal.MLStrategy1;
@@ -21,7 +23,6 @@ namespace CryptoBot.Crypto.Services
 {
     public class TraderService : DomainService, ITraderService
     {
-        public readonly IRepository<Trading, long> _tradingRepository;
         public readonly IRepository<Order, long> _orderRepository;
         public readonly IRepository<PredictionOrder, long> _predictionOrderRepository;
         public readonly IRepository<Prediction, long> _predictionRepository;
@@ -34,8 +35,9 @@ namespace CryptoBot.Crypto.Services
         private readonly IMicrotrendStrategy _simpleMicrotrendStrategy;
         private readonly Strategies.Simple.MLStrategy1.IMLStrategy1 _simpleMlStrategy1;
 
+        public IEventBus EventBus { get; set; }
+
         public TraderService(
-            IRepository<Trading, long> tradingRepository,
             IRepository<Order, long> orderRepository,
             IRepository<Prediction, long> predictionRepository,
             IRepository<PredictionOrder, long> predictionOrderRepository,
@@ -47,7 +49,6 @@ namespace CryptoBot.Crypto.Services
             IMicrotrendStrategy simpleMicrotrendStrategy,
             Strategies.Simple.MLStrategy1.IMLStrategy1 simpleMlStrategy1)
         {
-            _tradingRepository = tradingRepository;
             _orderRepository = orderRepository;
             _predictionRepository = predictionRepository;
             _predictionOrderRepository = predictionOrderRepository;
@@ -59,6 +60,8 @@ namespace CryptoBot.Crypto.Services
             _simpleMeanReversionStrategy = simpleMeanReversionStrategy;
             _simpleMicrotrendStrategy = simpleMicrotrendStrategy;
             _simpleMlStrategy1 = simpleMlStrategy1;
+
+            EventBus = NullEventBus.Instance;
         }
 
         public async Task<WhatToDoOutput> WhatToDo(
@@ -277,7 +280,7 @@ namespace CryptoBot.Crypto.Services
             {
                 var amount = balanceUsdtCalc / prediction.BookPrice.BestAskPrice;
 
-                await _predictionOrderRepository.InsertAndGetIdAsync(
+                var predictionOrderId = await _predictionOrderRepository.InsertAndGetIdAsync(
                     new PredictionOrder
                     {
                         Order = new Order
@@ -293,13 +296,9 @@ namespace CryptoBot.Crypto.Services
                         CreatorUserId = userId
                     });
 
-                var wallet = await _walletService.GetOrCreate(prediction.Prediction.Currency, EWalletType.Virtual, userId);
-                var newWalletBalance = wallet.Balance + amount;
-                await _walletService.UpdateBalance(wallet.Id, newWalletBalance);
+                await _walletService.UpdatedWalletsUsdtToCustomCurrency(userId, balanceUsdtCalc, prediction.Prediction.Currency, amount);
 
-                mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId);
-                var newMainWalletBalance = mainWallet.Balance - balanceUsdtCalc;
-                await _walletService.UpdateBalance(mainWallet.Id, newMainWalletBalance);
+                EventBus.Trigger(new PredictionOrderCreatedEventData { PredictionOrderId = predictionOrderId });
 
                 //var sb = new StringBuilder();
                 //sb.AppendLine(coinToTrade.Currency.ToString());
@@ -313,32 +312,6 @@ namespace CryptoBot.Crypto.Services
                 //LogHelper.Log($"{sb}", "test");
             }
         }
-
-        private async Task<long> CreateTrading(long walletId, decimal startbalance)
-        {
-            var tradingId = await _tradingRepository.InsertAndGetIdAsync(new Trading
-            {
-                StartBalance = startbalance,
-                WalletId = walletId
-            });
-
-            await CurrentUnitOfWork.SaveChangesAsync();
-
-            return tradingId;
-        }
-
-        private async Task UpdateTrading(long id, decimal balance)
-        {
-            var trading = await _tradingRepository
-                .GetAll()
-                .Where(x => x.Id == id)
-                .FirstAsync();
-
-            trading.EndBalance = balance;
-
-            await CurrentUnitOfWork.SaveChangesAsync();
-        }
-
 
         private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
         {
