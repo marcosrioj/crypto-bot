@@ -32,7 +32,7 @@ namespace CryptoBot.Crypto.Services
             KlineInterval interval,
             int limitOfDataToLearn = 120);
 
-        Task AutoTraderBuyWithWalletVirtualAsync(long userId);
+        Task AutoTraderBuyWithWalletVirtualAsync(long userId, KlineInterval interval, EInvestorProfile investorProfile, EStrategy strategy);
 
         Task AutoTraderSellWithWalletVirtualAsync();
     }

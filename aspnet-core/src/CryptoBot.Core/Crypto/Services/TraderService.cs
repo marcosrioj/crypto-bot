@@ -206,7 +206,7 @@ namespace CryptoBot.Crypto.Services
             };
         }
 
-        public async Task AutoTraderBuyWithWalletVirtualAsync(long userId)
+        public async Task AutoTraderBuyWithWalletVirtualAsync(long userId, KlineInterval interval, EInvestorProfile investorProfile, EStrategy strategy)
         {
             var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, 1000);
 
@@ -220,7 +220,10 @@ namespace CryptoBot.Crypto.Services
                 .AsNoTracking()
                 .Where(x =>
                     x.CreationTime > DateTime.Now.AddSeconds(-10)
-                    && !x.Orders.Any(y => y.CreatorUserId == userId))
+                    && !x.Orders.Any(y => y.CreatorUserId == userId)
+                    && x.Interval == interval
+                    && x.InvestorProfile == investorProfile
+                    && x.Strategy == strategy)
                 .ToListAsync();
 
             if (predictions.Count == 0)

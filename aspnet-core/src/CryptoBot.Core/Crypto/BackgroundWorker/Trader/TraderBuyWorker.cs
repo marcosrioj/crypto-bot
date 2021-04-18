@@ -35,21 +35,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
         [UnitOfWork(false)]
         protected override async Task DoWorkAsync()
         {
-            await AutoTraderWithWalletVirtual();
         }
-
-        private async Task AutoTraderWithWalletVirtual()
-        {
-            try
-            {
-                await _traderService.AutoTraderBuyWithWalletVirtualAsync(2);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
 
         private async Task BinanceTest()
         {

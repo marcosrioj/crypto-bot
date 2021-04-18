@@ -34,9 +34,24 @@ namespace CryptoBot.Web.Host.Startup
         public override void PostInitialize()
         {
             var workManager = IocManager.Resolve<IBackgroundWorkerManager>();
-            workManager.Add(IocManager.Resolve<TraderBuyWorker>());
+            //workManager.Add(IocManager.Resolve<TraderBuyWorker>());
+            //workManager.Add(IocManager.Resolve<PredictionWorker>());
+
+            workManager.Add(IocManager.Resolve<Prediction3Worker>());
+            workManager.Add(IocManager.Resolve<Prediction4Worker>());
+            workManager.Add(IocManager.Resolve<Prediction5Worker>());
+            workManager.Add(IocManager.Resolve<Prediction6Worker>());
+            workManager.Add(IocManager.Resolve<Prediction7Worker>());
+            workManager.Add(IocManager.Resolve<Prediction8Worker>());
+
+            workManager.Add(IocManager.Resolve<TraderBuyUser3Worker>());
+            workManager.Add(IocManager.Resolve<TraderBuyUser4Worker>());
+            workManager.Add(IocManager.Resolve<TraderBuyUser5Worker>());
+            workManager.Add(IocManager.Resolve<TraderBuyUser6Worker>());
+            workManager.Add(IocManager.Resolve<TraderBuyUser7Worker>());
+            workManager.Add(IocManager.Resolve<TraderBuyUser8Worker>());
+
             workManager.Add(IocManager.Resolve<TraderSellWorker>());
-            workManager.Add(IocManager.Resolve<PredictionWorker>());
         }
     }
 }
