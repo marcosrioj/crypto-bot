@@ -2,11 +2,8 @@
 using Abp.Domain.Services;
 using Abp.Events.Bus;
 using Binance.Net.Enums;
-using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Enums;
-using CryptoBot.Crypto.Events.Data;
-using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services.Dtos;
 using CryptoBot.Crypto.Strategies.Normal.MLStrategy1;
 using CryptoBot.Crypto.Strategies.Normal.MLStrategy2;
@@ -35,8 +32,6 @@ namespace CryptoBot.Crypto.Services
         private readonly IMicrotrendStrategy _simpleMicrotrendStrategy;
         private readonly Strategies.Simple.MLStrategy1.IMLStrategy1 _simpleMlStrategy1;
 
-        public IEventBus EventBus { get; set; }
-
         public TraderService(
             IRepository<Order, long> orderRepository,
             IRepository<Prediction, long> predictionRepository,
@@ -60,8 +55,6 @@ namespace CryptoBot.Crypto.Services
             _simpleMeanReversionStrategy = simpleMeanReversionStrategy;
             _simpleMicrotrendStrategy = simpleMicrotrendStrategy;
             _simpleMlStrategy1 = simpleMlStrategy1;
-
-            EventBus = NullEventBus.Instance;
         }
 
         public async Task<WhatToDoOutput> WhatToDo(
@@ -213,16 +206,14 @@ namespace CryptoBot.Crypto.Services
             };
         }
 
-        public async Task AutoTraderWithWalletVirtualAsync(long userId)
+        public async Task AutoTraderBuyWithWalletVirtualAsync(long userId)
         {
             var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, 1000);
 
-            if (mainWallet.Balance < 300)
+            if (mainWallet.Balance < 100)
             {
                 return;
             }
-
-            //var maindTragindId = await CreateTrading(mainWallet.Id, mainWallet.Balance);
 
             var predictions = await _predictionRepository
                 .GetAll()
@@ -287,6 +278,7 @@ namespace CryptoBot.Crypto.Services
                         {
                             From = ECurrency.USDT,
                             To = prediction.Prediction.Currency,
+                            Status = EOrderStatus.Buyed,
                             UsdtPriceFrom = 1,
                             UsdtPriceTo = prediction.BookPrice.BestAskPrice,
                             CreatorUserId = userId,
@@ -297,19 +289,56 @@ namespace CryptoBot.Crypto.Services
                     });
 
                 await _walletService.UpdatedWalletsUsdtToCustomCurrency(userId, balanceUsdtCalc, prediction.Prediction.Currency, amount);
+            }
+        }
 
-                EventBus.Trigger(new PredictionOrderCreatedEventData { PredictionOrderId = predictionOrderId });
+        public async Task AutoTraderSellWithWalletVirtualAsync()
+        {
+            if (DateTime.Now.Second == 50)
+            {
+                var secondsEarlier = 20;
 
-                //var sb = new StringBuilder();
-                //sb.AppendLine(coinToTrade.Currency.ToString());
-                //sb.AppendLine($"BestAskPrice: {bookPrice.Data.BestAskPrice}");
-                //sb.AppendLine($"BestAskQuantity: {bookPrice.Data.BestAskQuantity}");
-                //sb.AppendLine($"BestBidPrice: {bookPrice.Data.BestBidPrice}");
-                //sb.AppendLine($"BestBidQuantity: {bookPrice.Data.BestBidQuantity}");
-                //sb.AppendLine($"askQuantity: {askQuantity}");
-                //sb.AppendLine($"bidQuantity: {bidQuantity}\n\n");
+                var predictionOrders = await _predictionOrderRepository
+                    .GetAll()
+                    .Include(x => x.Order)
+                    .Include(x => x.Prediction)
+                    .Where(x => 
+                        x.Order.Status == EOrderStatus.Buyed
+                        && (
+                            x.Prediction.Interval == KlineInterval.OneMinute
+                            || (x.Prediction.Interval == KlineInterval.ThreeMinutes && x.CreationTime > DateTime.Now.AddSeconds(-180 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.FiveMinutes && x.CreationTime > DateTime.Now.AddSeconds(-300 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.FifteenMinutes && x.CreationTime > DateTime.Now.AddSeconds(-900 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.ThirtyMinutes && x.CreationTime > DateTime.Now.AddSeconds(-1800 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.OneHour && x.CreationTime > DateTime.Now.AddSeconds(-3600 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.TwoHour && x.CreationTime > DateTime.Now.AddSeconds(-7200 + secondsEarlier))
+                        ))
+                    .ToListAsync();
 
-                //LogHelper.Log($"{sb}", "test");
+                foreach (var predictionOrder in predictionOrders)
+                {
+                    var pair = $"{predictionOrder.Order.To}{CryptoBotConsts.BaseCoinName}";
+                    var bookPrice = _binanceService.GetBookPrice(pair);
+
+                    var amount = bookPrice.Data.BestBidPrice * predictionOrder.Order.Amount;
+
+                    var predictionOrderId = await _orderRepository.InsertAndGetIdAsync(
+                        new Order
+                        {
+                            From = predictionOrder.Order.To,
+                            To = ECurrency.USDT,
+                            Status = EOrderStatus.Selled,
+                            UsdtPriceFrom = bookPrice.Data.BestBidPrice,
+                            UsdtPriceTo = 1,
+                            CreatorUserId = predictionOrder.CreatorUserId,
+                            Amount = amount,
+                            OriginOrderId = predictionOrder.OrderId
+                        });
+
+                    await _walletService.UpdatedWalletsCustomCurrencyToUsdt(predictionOrder.CreatorUserId.Value, predictionOrder.Order.Amount, predictionOrder.Order.To, amount);
+
+                    predictionOrder.Order.Status = EOrderStatus.Selled;
+                }
             }
         }
 

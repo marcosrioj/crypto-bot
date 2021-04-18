@@ -11,10 +11,14 @@ namespace CryptoBot.Crypto.Services
     public class WalletService : DomainService, IWalletService
     {
         public readonly IRepository<Wallet, long> _repository;
+        public readonly IBinanceService _binanceService;
 
-        public WalletService(IRepository<Wallet, long> repository)
+        public WalletService(
+            IRepository<Wallet, long> repository,
+            IBinanceService binanceService)
         {
             _repository = repository;
+            _binanceService = binanceService;
         }
 
         public async Task<Wallet> GetOrCreate(ECurrency currency, EWalletType type, long userId, decimal initialBalance = 0)
@@ -79,6 +83,34 @@ namespace CryptoBot.Crypto.Services
             var mainWallet = await GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId);
             var newMainWalletBalance = mainWallet.Balance + amount;
             await UpdateBalance(mainWallet.Id, newMainWalletBalance);
+        }
+
+        public async Task<decimal> MyUsdtWallet(long userId)
+        {
+            var wallets = await _repository
+                .GetAll()
+                .AsNoTracking()
+                .Where(x => x.UserId == userId)
+                .ToListAsync();
+
+            var balance = 0m;
+
+            foreach (var wallet in wallets)
+            {
+                if (wallet.Currency == ECurrency.USDT)
+                {
+                    balance = balance + wallet.Balance;
+                } 
+                else
+                {
+                    var pair = $"{wallet.Currency}{CryptoBotConsts.BaseCoinName}";
+                    var bookPrice = _binanceService.GetBookPrice(pair);
+
+                    balance = balance + bookPrice.Data.BestAskPrice * wallet.Balance;
+                }
+            }
+
+            return balance;
         }
     }
 }

@@ -32,7 +32,6 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
             }
             catch (System.Exception ex)
             {
-
                 throw;
             }
         }
@@ -49,11 +48,11 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 
         private async Task Regression2()
         {
-            var interval = KlineInterval.OneMinute;
+            var interval = KlineInterval.FifteenMinutes;
             var limitOfDataToLearn = 1000;
             var investorProfile = EInvestorProfile.UltraConservative;
             var strategies = new List<EStrategy>() {
-                    EStrategy.SimpleMeanReversionStrategy,
+                    EStrategy.SimpleMicrotrendStrategy,
                     EStrategy.SimpleMlStrategy1
                 };
 

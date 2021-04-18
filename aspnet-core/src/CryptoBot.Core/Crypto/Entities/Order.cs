@@ -10,6 +10,8 @@ namespace CryptoBot.Crypto.Entities
 
         public ECurrency To { get; set; }
 
+        public EOrderStatus Status { get; set; }
+
         [Column(TypeName = "decimal(18, 8)")]
         public decimal UsdtPriceFrom { get; set; }
 

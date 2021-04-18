@@ -34,7 +34,8 @@ namespace CryptoBot.Web.Host.Startup
         public override void PostInitialize()
         {
             var workManager = IocManager.Resolve<IBackgroundWorkerManager>();
-            workManager.Add(IocManager.Resolve<TraderWorker>());
+            workManager.Add(IocManager.Resolve<TraderBuyWorker>());
+            workManager.Add(IocManager.Resolve<TraderSellWorker>());
             workManager.Add(IocManager.Resolve<PredictionWorker>());
         }
     }

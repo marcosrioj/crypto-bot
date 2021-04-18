@@ -14,5 +14,7 @@ namespace CryptoBot.Crypto.Services
         Task UpdatedWalletsUsdtToCustomCurrency(long userId, decimal deductionUsdt, ECurrency currency, decimal amount);
 
         Task UpdatedWalletsCustomCurrencyToUsdt(long userId, decimal additionUsdt, ECurrency currency, decimal amount);
+
+        Task<decimal> MyUsdtWallet(long userId);
     }
 }

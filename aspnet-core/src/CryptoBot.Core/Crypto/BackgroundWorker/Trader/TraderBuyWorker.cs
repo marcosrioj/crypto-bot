@@ -13,13 +13,13 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto.BackgroundWorker.Trader
 {
-    public class TraderWorker : AsyncPeriodicBackgroundWorkerBase, ISingletonDependency
+    public class TraderBuyWorker : AsyncPeriodicBackgroundWorkerBase, ISingletonDependency
     {
         private readonly ITraderService _traderService;
         private readonly IBinanceService _binanceService;
         private readonly ITraderTestService _traderTestService;
 
-        public TraderWorker(
+        public TraderBuyWorker(
             AbpAsyncTimer timer,
             ITraderService traderService,
             ITraderTestService traderTestService,
@@ -42,11 +42,10 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
         {
             try
             {
-                await _traderService.AutoTraderWithWalletVirtualAsync(2);
+                await _traderService.AutoTraderBuyWithWalletVirtualAsync(2);
             }
             catch (Exception ex)
             {
-
                 throw;
             }
         }
