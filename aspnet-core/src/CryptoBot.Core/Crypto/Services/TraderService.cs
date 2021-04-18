@@ -306,12 +306,12 @@ namespace CryptoBot.Crypto.Services
                         x.Order.Status == EOrderStatus.Buyed
                         && (
                             x.Prediction.Interval == KlineInterval.OneMinute
-                            || (x.Prediction.Interval == KlineInterval.ThreeMinutes && x.CreationTime > DateTime.Now.AddSeconds(-180 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.FiveMinutes && x.CreationTime > DateTime.Now.AddSeconds(-300 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.FifteenMinutes && x.CreationTime > DateTime.Now.AddSeconds(-900 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.ThirtyMinutes && x.CreationTime > DateTime.Now.AddSeconds(-1800 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.OneHour && x.CreationTime > DateTime.Now.AddSeconds(-3600 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.TwoHour && x.CreationTime > DateTime.Now.AddSeconds(-7200 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.ThreeMinutes && x.CreationTime < DateTime.Now.AddSeconds(-180 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.FiveMinutes && x.CreationTime < DateTime.Now.AddSeconds(-300 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.FifteenMinutes && x.CreationTime < DateTime.Now.AddSeconds(-900 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.ThirtyMinutes && x.CreationTime < DateTime.Now.AddSeconds(-1800 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.OneHour && x.CreationTime < DateTime.Now.AddSeconds(-3600 + secondsEarlier))
+                            || (x.Prediction.Interval == KlineInterval.TwoHour && x.CreationTime < DateTime.Now.AddSeconds(-7200 + secondsEarlier))
                         ))
                     .ToListAsync();
 

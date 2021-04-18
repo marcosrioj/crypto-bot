@@ -48,11 +48,11 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
 
         private async Task Regression2()
         {
-            var interval = KlineInterval.FifteenMinutes;
+            var interval = KlineInterval.ThreeMinutes;
             var limitOfDataToLearn = 1000;
             var investorProfile = EInvestorProfile.UltraConservative;
             var strategies = new List<EStrategy>() {
-                    EStrategy.SimpleMicrotrendStrategy,
+                    //EStrategy.SimpleMicrotrendStrategy,
                     EStrategy.SimpleMlStrategy1
                 };
 
