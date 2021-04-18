@@ -1,5 +1,3 @@
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using Abp.Authorization;
 using Abp.Authorization.Roles;
 using Abp.Authorization.Users;
@@ -8,7 +6,10 @@ using CryptoBot.Authorization;
 using CryptoBot.Authorization.Roles;
 using CryptoBot.Authorization.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CryptoBot.EntityFrameworkCore.Seed.Host
 {
@@ -121,6 +122,39 @@ namespace CryptoBot.EntityFrameworkCore.Seed.Host
                 _context.SaveChanges();
 
                 _context.SaveChanges();
+            }
+
+            //  users
+            var userIds = new List<int>() { 3, 4, 5, 6, 7, 8, 9 };
+
+            foreach (var userId in userIds)
+            {
+                var userHost = _context.Users.IgnoreQueryFilters().FirstOrDefault(u => u.TenantId == null && u.UserName == $"user{userId}");
+                if (userHost == null)
+                {
+                    var user = new User
+                    {
+                        TenantId = null,
+                        UserName = $"user{userId}",
+                        Name = $"User{userId}",
+                        Surname = "Lima",
+                        EmailAddress = $"user{userId}@gmail.com",
+                        IsEmailConfirmed = true,
+                        IsActive = true
+                    };
+
+                    user.Password = new PasswordHasher<User>(new OptionsWrapper<PasswordHasherOptions>(new PasswordHasherOptions())).HashPassword(user, "1234qweR");
+                    user.SetNormalizedNames();
+
+                    adminUserForHost = _context.Users.Add(user).Entity;
+                    _context.SaveChanges();
+
+                    // Assign Admin role to admin user
+                    _context.UserRoles.Add(new UserRole(null, adminUserForHost.Id, adminRoleForHost.Id));
+                    _context.SaveChanges();
+
+                    _context.SaveChanges();
+                }
             }
         }
     }

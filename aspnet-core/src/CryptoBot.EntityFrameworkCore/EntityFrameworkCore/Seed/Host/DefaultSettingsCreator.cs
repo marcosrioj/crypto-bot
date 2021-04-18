@@ -38,6 +38,29 @@ namespace CryptoBot.EntityFrameworkCore.Seed.Host
             //Binance Marcos
             AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 2);
             AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 2);
+
+            //Binance Tests
+            AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 3);
+            AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 3);
+
+            AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 4);
+            AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 4);
+
+            AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 5);
+            AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 5);
+
+            AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 6);
+            AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 6);
+
+            AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 7);
+            AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 7);
+
+            AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 8);
+            AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 8);
+
+            AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 9);
+            AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 9);
+
         }
 
         private void AddSettingIfNotExists(string name, string value, int? tenantId = null, long? userId = null)
