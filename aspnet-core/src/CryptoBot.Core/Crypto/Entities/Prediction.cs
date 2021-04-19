@@ -23,8 +23,8 @@ namespace CryptoBot.Crypto.Entities
 
         public KlineInterval Interval { get; set; }
 
-        [Column(TypeName = "decimal(18, 8)")]
-        public decimal Score { get; set; }
+        [Column(TypeName = "varchar(100)")]
+        public string Score { get; set; }
 
         public int DataLearned { get; set; }
 

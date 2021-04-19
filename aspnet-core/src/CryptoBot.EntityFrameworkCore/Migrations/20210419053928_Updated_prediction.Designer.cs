@@ -4,14 +4,16 @@ using CryptoBot.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    partial class CryptoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210419053928_Updated_prediction")]
+    partial class Updated_prediction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1593,8 +1595,8 @@ namespace CryptoBot.Migrations
                     b.Property<int>("InvestorProfile")
                         .HasColumnType("int");
 
-                    b.Property<string>("Score")
-                        .HasColumnType("varchar(100)");
+                    b.Property<decimal>("Score")
+                        .HasColumnType("decimal(22,12)");
 
                     b.Property<string>("Strategies")
                         .HasColumnType("varchar(300)");

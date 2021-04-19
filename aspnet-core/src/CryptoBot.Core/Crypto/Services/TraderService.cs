@@ -120,7 +120,7 @@ namespace CryptoBot.Crypto.Services
                         Strategy = strategy,
                         WhatToDo = whatToDo.WhatToDo,
                         Interval = interval,
-                        Score = whatToDo.Score,
+                        Score = whatToDo.Score.ToString(),
                         DataLearned = limitOfDataToLearn
                     });
                 }
@@ -180,7 +180,7 @@ namespace CryptoBot.Crypto.Services
                             Strategies = strategiesSb.ToString(),
                             WhatToDo = whatToDo.WhatToDo,
                             Interval = interval,
-                            Score = whatToDo.Score,
+                            Score = whatToDo.Score.ToString(),
                             DataLearned = limitOfDataToLearn
                         });
                     }
@@ -246,7 +246,7 @@ namespace CryptoBot.Crypto.Services
                     var askQuantity = bookOrder.Data.Asks.Sum(x => x.Quantity);
                     var bidQuantity = bookOrder.Data.Bids.Sum(x => x.Quantity);
 
-                    if (bidQuantity > askQuantity)
+                    if (bidQuantity > (askQuantity + (askQuantity * 0.1m)))
                     {
                         if (mainWallet.Balance < bidQuantity * bookPrice.Data.BestAskPrice)
                         {
