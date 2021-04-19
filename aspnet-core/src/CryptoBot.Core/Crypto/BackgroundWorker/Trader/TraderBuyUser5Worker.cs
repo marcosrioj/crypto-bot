@@ -41,7 +41,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                     5,
                     KlineInterval.ThreeMinutes,
                     EInvestorProfile.UltraConservative,
-                    EStrategy.SimpleMicrotrendStrategy);
+                    EStrategy.SimpleMlStrategy1);
             }
             catch (Exception ex)
             {

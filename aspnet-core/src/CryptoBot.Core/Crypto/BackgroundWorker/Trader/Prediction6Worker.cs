@@ -31,7 +31,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Trader
                 var interval = KlineInterval.ThreeMinutes;
                 var limitOfDataToLearn = 1000;
                 var investorProfile = EInvestorProfile.UltraConservative;
-                var strategy = EStrategy.SimpleMlStrategy1;
+                var strategy = EStrategy.NormalMlStrategy2;
                 //var strategies = new List<EStrategy>() {
                 //    EStrategy.SimpleMicrotrendStrategy,
                 //    //EStrategy.SimpleMlStrategy1
