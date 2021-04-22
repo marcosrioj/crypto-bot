@@ -35,5 +35,7 @@ namespace CryptoBot.Crypto.Services
         Task ScheduleBuyVirtualTrader(long userId, FormulaDto formula);
 
         Task StartScheduleFormulas();
+
+        Task ScheduleAutoTraderSellWithWalletVirtualAsync();
     }
 }

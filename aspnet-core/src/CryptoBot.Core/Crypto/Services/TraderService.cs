@@ -20,6 +20,7 @@ using Abp.Quartz;
 using Quartz;
 using CryptoBot.Crypto.Background.Jobs;
 using Abp.ObjectMapping;
+using Abp.Domain.Uow;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -108,6 +109,7 @@ namespace CryptoBot.Crypto.Services
             }
         }
 
+        [UnitOfWork(false)]
         public async Task GenerateBetterPredictionsAsync(FormulaDto formula)
         {
             if (!Enum.IsDefined(formula.Strategy1))
@@ -180,6 +182,7 @@ namespace CryptoBot.Crypto.Services
             };
         }
 
+        [UnitOfWork(false)]
         public async Task AutoTraderBuyWithWalletVirtualAsync(long userId, FormulaDto formula)
         {
             var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, 1000);
@@ -277,56 +280,71 @@ namespace CryptoBot.Crypto.Services
             }
         }
 
+        [UnitOfWork(false)]
         public async Task AutoTraderSellWithWalletVirtualAsync()
         {
-            if (DateTime.Now.Second == 50)
+            var secondsEarlier = 20;
+
+            var predictionOrders = await _predictionOrderRepository
+                .GetAll()
+                .Include(x => x.Order)
+                .Include(x => x.Prediction)
+                .Where(x =>
+                    x.Order.Status == EOrderStatus.Buyed
+                    && (
+                        x.Prediction.Interval == KlineInterval.OneMinute
+                        || (x.Prediction.Interval == KlineInterval.ThreeMinutes && x.CreationTime < DateTime.Now.AddSeconds(-180 + secondsEarlier))
+                        || (x.Prediction.Interval == KlineInterval.FiveMinutes && x.CreationTime < DateTime.Now.AddSeconds(-300 + secondsEarlier))
+                        || (x.Prediction.Interval == KlineInterval.FifteenMinutes && x.CreationTime < DateTime.Now.AddSeconds(-900 + secondsEarlier))
+                        || (x.Prediction.Interval == KlineInterval.ThirtyMinutes && x.CreationTime < DateTime.Now.AddSeconds(-1800 + secondsEarlier))
+                        || (x.Prediction.Interval == KlineInterval.OneHour && x.CreationTime < DateTime.Now.AddSeconds(-3600 + secondsEarlier))
+                        || (x.Prediction.Interval == KlineInterval.TwoHour && x.CreationTime < DateTime.Now.AddSeconds(-7200 + secondsEarlier))
+                    ))
+                .ToListAsync();
+
+            foreach (var predictionOrder in predictionOrders)
             {
-                var secondsEarlier = 20;
+                var pair = $"{predictionOrder.Order.To}{CryptoBotConsts.BaseCoinName}";
+                var bookPrice = _binanceService.GetBookPrice(pair);
 
-                var predictionOrders = await _predictionOrderRepository
-                    .GetAll()
-                    .Include(x => x.Order)
-                    .Include(x => x.Prediction)
-                    .Where(x =>
-                        x.Order.Status == EOrderStatus.Buyed
-                        && (
-                            x.Prediction.Interval == KlineInterval.OneMinute
-                            || (x.Prediction.Interval == KlineInterval.ThreeMinutes && x.CreationTime < DateTime.Now.AddSeconds(-180 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.FiveMinutes && x.CreationTime < DateTime.Now.AddSeconds(-300 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.FifteenMinutes && x.CreationTime < DateTime.Now.AddSeconds(-900 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.ThirtyMinutes && x.CreationTime < DateTime.Now.AddSeconds(-1800 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.OneHour && x.CreationTime < DateTime.Now.AddSeconds(-3600 + secondsEarlier))
-                            || (x.Prediction.Interval == KlineInterval.TwoHour && x.CreationTime < DateTime.Now.AddSeconds(-7200 + secondsEarlier))
-                        ))
-                    .ToListAsync();
+                var amount = bookPrice.Data.BestBidPrice * predictionOrder.Order.Amount;
 
-                foreach (var predictionOrder in predictionOrders)
-                {
-                    var pair = $"{predictionOrder.Order.To}{CryptoBotConsts.BaseCoinName}";
-                    var bookPrice = _binanceService.GetBookPrice(pair);
+                var predictionOrderId = await _orderRepository.InsertAndGetIdAsync(
+                    new Order
+                    {
+                        From = predictionOrder.Order.To,
+                        To = ECurrency.USDT,
+                        Status = EOrderStatus.Selled,
+                        UsdtPriceFrom = bookPrice.Data.BestBidPrice,
+                        UsdtPriceTo = 1,
+                        CreatorUserId = predictionOrder.CreatorUserId,
+                        Amount = amount,
+                        OriginOrderId = predictionOrder.OrderId
+                    });
 
-                    var amount = bookPrice.Data.BestBidPrice * predictionOrder.Order.Amount;
+                await _walletService.UpdatedWalletsCustomCurrencyToUsdt(predictionOrder.CreatorUserId.Value, predictionOrder.Order.Amount, predictionOrder.Order.To, amount);
 
-                    var predictionOrderId = await _orderRepository.InsertAndGetIdAsync(
-                        new Order
-                        {
-                            From = predictionOrder.Order.To,
-                            To = ECurrency.USDT,
-                            Status = EOrderStatus.Selled,
-                            UsdtPriceFrom = bookPrice.Data.BestBidPrice,
-                            UsdtPriceTo = 1,
-                            CreatorUserId = predictionOrder.CreatorUserId,
-                            Amount = amount,
-                            OriginOrderId = predictionOrder.OrderId
-                        });
-
-                    await _walletService.UpdatedWalletsCustomCurrencyToUsdt(predictionOrder.CreatorUserId.Value, predictionOrder.Order.Amount, predictionOrder.Order.To, amount);
-
-                    predictionOrder.Order.Status = EOrderStatus.Selled;
-                }
+                predictionOrder.Order.Status = EOrderStatus.Selled;
             }
+
         }
 
+        public async Task ScheduleAutoTraderSellWithWalletVirtualAsync()
+        {
+            await _jobManager.ScheduleAsync<SellVirtualTraderJob>(
+                job =>
+                {
+                    job.WithIdentity("SellTrader");
+                },
+                trigger =>
+                {
+                    trigger
+                        .StartNow()
+                        .WithCronSchedule("50 * * * * ?");
+                });
+        }
+
+        [UnitOfWork(false)]
         public async Task StartScheduleFormulas()
         {
             var formulas = await _formulaRepository

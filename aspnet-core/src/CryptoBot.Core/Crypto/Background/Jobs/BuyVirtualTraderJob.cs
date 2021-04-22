@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto.Background.Jobs
 {
+    [DisallowConcurrentExecution]
     public class BuyVirtualTraderJob : JobBase, ITransientDependency
     {
         private readonly ITraderService _traderService;
