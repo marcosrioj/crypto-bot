@@ -38,6 +38,12 @@ namespace CryptoBot.Crypto.Background.Jobs
                 InvestorProfile2 = dataMap.GetInt("InvestorProfile2") > 0 ? (EInvestorProfile)dataMap.GetInt("InvestorProfile2") : null,
                 Strategy3 = dataMap.GetInt("Strategy3") > 0 ? (EStrategy)dataMap.GetInt("Strategy3") : null,
                 InvestorProfile3 = dataMap.GetInt("InvestorProfile3") > 0 ? (EInvestorProfile)dataMap.GetInt("InvestorProfile3") : null,
+                BalancePreserved = (decimal)dataMap.GetFloat("BalancePreserved"),
+                OrderPrice = (decimal)dataMap.GetFloat("OrderPrice"),
+                OrderPriceType = (EOrderPriceType)dataMap.GetInt("OrderPriceType"),
+                Description = dataMap.GetString("Description"),
+                BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),
+                BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor")
             };
 
             await _traderService.AutoTraderBuyWithWalletVirtualAsync(userId, formula);

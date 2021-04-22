@@ -188,7 +188,7 @@ namespace CryptoBot.Crypto.Services
         {
             var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, 1000);
 
-            if (mainWallet.Balance < 100)
+            if (mainWallet.Balance < formula.BalancePreserved)
             {
                 return;
             }
@@ -271,12 +271,20 @@ namespace CryptoBot.Crypto.Services
                 return;
             }
 
-            var percApprovedByOperation = 0.2m; //20%
-            var balanceUsdtCalc = (mainWallet.Balance * percApprovedByOperation) / predictionsFiltered.Count;
+            var priceUsdtToBuyByPredictionFiltered = 0m;
+
+            if (formula.OrderPriceType == EOrderPriceType.Percent)
+            {
+                priceUsdtToBuyByPredictionFiltered = (mainWallet.Balance * formula.OrderPrice) / predictionsFiltered.Count;
+            } 
+            else
+            {
+                priceUsdtToBuyByPredictionFiltered = formula.OrderPrice / predictionsFiltered.Count;
+            }
 
             foreach (var prediction in predictionsFiltered)
             {
-                var amount = balanceUsdtCalc / prediction.BookPrice.BestAskPrice;
+                var amount = priceUsdtToBuyByPredictionFiltered / prediction.BookPrice.BestAskPrice;
 
                 var predictionOrderId = await _predictionOrderRepository.InsertAndGetIdAsync(
                     new PredictionOrder
@@ -295,7 +303,7 @@ namespace CryptoBot.Crypto.Services
                         CreatorUserId = userId
                     });
 
-                await _walletService.UpdatedWalletsUsdtToCustomCurrency(userId, balanceUsdtCalc, prediction.Prediction.Currency, amount);
+                await _walletService.UpdatedWalletsUsdtToCustomCurrency(userId, priceUsdtToBuyByPredictionFiltered, prediction.Prediction.Currency, amount);
             }
         }
 
@@ -407,7 +415,13 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
                         .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
                         .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
-                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0);
+                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
+                        .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
+                        .UsingJobData("OrderPrice", (float)formula.OrderPrice)
+                        .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
+                        .UsingJobData("Description", formula.Description)
+                        .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
+                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor); ;
                 },
                 trigger =>
                 {
@@ -441,7 +455,13 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
                         .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
                         .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
-                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0);
+                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
+                        .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
+                        .UsingJobData("OrderPrice", (float)formula.OrderPrice)
+                        .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
+                        .UsingJobData("Description", formula.Description)
+                        .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
+                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor);
                 },
                 trigger =>
                 {

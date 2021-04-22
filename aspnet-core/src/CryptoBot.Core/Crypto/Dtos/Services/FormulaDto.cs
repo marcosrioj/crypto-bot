@@ -12,6 +12,8 @@ namespace CryptoBot.Crypto.Dtos.Services
     {
         public bool IsActive { get; set; }
 
+        public string Description { get; set; }
+
         [Required]
         public EStrategy Strategy1 { get; set; }
 
@@ -38,6 +40,15 @@ namespace CryptoBot.Crypto.Dtos.Services
 
         [Required]
         public int LimitOfDataToLearn { get; set; }
+
+        [Required]
+        public decimal BalancePreserved { get; set; }
+
+        [Required]
+        public EOrderPriceType OrderPriceType { get; set; }
+
+        [Required]
+        public decimal OrderPrice { get; set; }
 
     }
 }
