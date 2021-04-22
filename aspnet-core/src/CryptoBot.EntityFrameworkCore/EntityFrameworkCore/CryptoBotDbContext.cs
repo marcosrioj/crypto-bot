@@ -17,6 +17,8 @@ namespace CryptoBot.EntityFrameworkCore
 
         public DbSet<PredictionOrder> PredictionOrders { get; set; }
 
+        public DbSet<Formula> Formulas { get; set; }
+
         public CryptoBotDbContext(DbContextOptions<CryptoBotDbContext> options)
             : base(options)
         {

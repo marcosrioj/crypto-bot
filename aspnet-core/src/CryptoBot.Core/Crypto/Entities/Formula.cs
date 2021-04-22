@@ -1,16 +1,12 @@
-﻿using Abp.Domain.Entities.Auditing;
+﻿using Abp.Domain.Entities;
 using Binance.Net.Enums;
 using CryptoBot.Crypto.Enums;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CryptoBot.Crypto.Entities
 {
-    public class Prediction : CreationAuditedEntity<long>
+    public class Formula : Entity<long>
     {
-        public ECurrency Currency { get; set; }
-
-        public EWhatToDo WhatToDo { get; set; }
+        public bool IsActive { get; set; }
 
         public EStrategy Strategy1 { get; set; }
         public EInvestorProfile InvestorProfile1 { get; set; }
@@ -22,12 +18,6 @@ namespace CryptoBot.Crypto.Entities
         public EInvestorProfile? InvestorProfile3 { get; set; }
 
         public KlineInterval Interval { get; set; }
-
-        [Column(TypeName = "varchar(100)")]
-        public string Score { get; set; }
-
-        public int DataLearned { get; set; }
-
-        public List<PredictionOrder> Orders { get; set; }
+        public int LimitOfDataToLearn { get; set; }
     }
 }

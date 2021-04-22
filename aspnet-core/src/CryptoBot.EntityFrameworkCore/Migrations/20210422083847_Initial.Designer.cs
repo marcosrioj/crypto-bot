@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    [Migration("20210419053928_Updated_prediction")]
-    partial class Updated_prediction
+    [Migration("20210422083847_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1529,6 +1529,45 @@ namespace CryptoBot.Migrations
                     b.ToTable("AbpUsers");
                 });
 
+            modelBuilder.Entity("CryptoBot.Crypto.Entities.Formula", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .UseIdentityColumn();
+
+                    b.Property<int>("Interval")
+                        .HasColumnType("int");
+
+                    b.Property<int>("InvestorProfile1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InvestorProfile2")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InvestorProfile3")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LimitOfDataToLearn")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Strategy1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Strategy2")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Strategy3")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Formulas");
+                });
+
             modelBuilder.Entity("CryptoBot.Crypto.Entities.Order", b =>
                 {
                     b.Property<long>("Id")
@@ -1592,19 +1631,25 @@ namespace CryptoBot.Migrations
                     b.Property<int>("Interval")
                         .HasColumnType("int");
 
-                    b.Property<int>("InvestorProfile")
+                    b.Property<int>("InvestorProfile1")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Score")
-                        .HasColumnType("decimal(22,12)");
-
-                    b.Property<string>("Strategies")
-                        .HasColumnType("varchar(300)");
-
-                    b.Property<int?>("Strategy")
+                    b.Property<int?>("InvestorProfile2")
                         .HasColumnType("int");
 
-                    b.Property<int>("Type")
+                    b.Property<int?>("InvestorProfile3")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Score")
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("Strategy1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Strategy2")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Strategy3")
                         .HasColumnType("int");
 
                     b.Property<int>("WhatToDo")

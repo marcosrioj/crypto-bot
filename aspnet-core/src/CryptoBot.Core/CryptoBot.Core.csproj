@@ -19,6 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Abp.AutoMapper" Version="6.3.0" />
+    <PackageReference Include="Abp.Quartz" Version="6.3.0" />
     <PackageReference Include="Abp.ZeroCore.EntityFrameworkCore" Version="6.3.0" />
     <PackageReference Include="Binance.Net" Version="6.12.0" />
     <PackageReference Include="Castle.Windsor.MsDependencyInjection" Version="3.3.1" />

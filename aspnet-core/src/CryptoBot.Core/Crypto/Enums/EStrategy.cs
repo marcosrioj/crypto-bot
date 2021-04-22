@@ -3,16 +3,16 @@
     public enum EStrategy
     {
         //Risk: 🐲 🐲 Possible reward: 💰 💰
-        SimpleMeanReversionStrategy,
+        SimpleMeanReversionStrategy = 1,
 
         // Risk: 🐲 Possible reward: 💰
-        SimpleMicrotrendStrategy,
+        SimpleMicrotrendStrategy = 3,
 
         // Risk: 🐲 🐲 🐲 Possible reward: 💰
-        SimpleMlStrategy1,
+        SimpleMlStrategy1 = 5,
 
-        NormalMlStrategy1,
+        NormalMlStrategy1 = 7,
 
-        NormalMlStrategy2
+        NormalMlStrategy2 = 9
     }
 }

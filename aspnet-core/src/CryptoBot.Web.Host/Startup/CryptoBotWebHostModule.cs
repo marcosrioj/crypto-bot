@@ -1,16 +1,18 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Abp.Modules;
+﻿using Abp.Modules;
+using Abp.Quartz;
 using Abp.Reflection.Extensions;
 using CryptoBot.Configuration;
-using Abp.Threading.BackgroundWorkers;
-using CryptoBot.Crypto.BackgroundWorker.Trader;
+using CryptoBot.Crypto.Background.Jobs;
+using CryptoBot.Crypto.Services;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Quartz;
 
 namespace CryptoBot.Web.Host.Startup
 {
     [DependsOn(
        typeof(CryptoBotWebCoreModule))]
-    public class CryptoBotWebHostModule: AbpModule
+    public class CryptoBotWebHostModule : AbpModule
     {
         private readonly IWebHostEnvironment _env;
         private readonly IConfigurationRoot _appConfiguration;
@@ -33,25 +35,42 @@ namespace CryptoBot.Web.Host.Startup
 
         public override void PostInitialize()
         {
-            var workManager = IocManager.Resolve<IBackgroundWorkerManager>();
-            //workManager.Add(IocManager.Resolve<TraderBuyWorker>());
-            //workManager.Add(IocManager.Resolve<PredictionWorker>());
+            //var workManager = IocManager.Resolve<IBackgroundWorkerManager>();
+            //workManager.Add(IocManager.Resolve<TestsWorker>());
 
-            //workManager.Add(IocManager.Resolve<Prediction3Worker>());
-            //workManager.Add(IocManager.Resolve<Prediction4Worker>());
-            workManager.Add(IocManager.Resolve<Prediction5Worker>());
-            workManager.Add(IocManager.Resolve<Prediction6Worker>());
-            //workManager.Add(IocManager.Resolve<Prediction7Worker>());
-            //workManager.Add(IocManager.Resolve<Prediction8Worker>());
+            StartupJobs();
+        }
+        private void StartupJobs()
+        {
+            InitializeSellTraderAsync();
+            StartFormulasAsync();
+        }
 
-            //workManager.Add(IocManager.Resolve<TraderBuyUser3Worker>());
-            //workManager.Add(IocManager.Resolve<TraderBuyUser4Worker>());
-            workManager.Add(IocManager.Resolve<TraderBuyUser5Worker>());
-            workManager.Add(IocManager.Resolve<TraderBuyUser6Worker>());
-            //workManager.Add(IocManager.Resolve<TraderBuyUser7Worker>());
-            //workManager.Add(IocManager.Resolve<TraderBuyUser8Worker>());
+        private void InitializeSellTraderAsync()
+        {
+            var jobManager = IocManager.Resolve<IQuartzScheduleJobManager>();
 
-            workManager.Add(IocManager.Resolve<TraderSellWorker>());
+            jobManager.ScheduleAsync<SellVirtualTraderJob>(
+                job =>
+                {
+                    job.WithIdentity("SellTrader");
+                },
+                trigger =>
+                {
+                    trigger.StartNow()
+                        .WithSimpleSchedule(schedule =>
+                        {
+                            schedule.RepeatForever()
+                                .WithIntervalInSeconds(1)
+                                .Build();
+                        });
+                });
+        }
+
+        private void StartFormulasAsync()
+        {
+            var traderService = IocManager.Resolve<ITraderService>();
+            traderService.StartScheduleFormulas();
         }
     }
 }

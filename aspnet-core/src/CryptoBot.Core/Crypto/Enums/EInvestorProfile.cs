@@ -2,10 +2,10 @@
 {
     public enum EInvestorProfile
     {
-        UltraConservative,
-        Conservative,
-        Moderate,
-        Aggressive,
-        UltraAggressive
+        UltraConservative = 1,
+        Conservative = 3,
+        Moderate = 5,
+        Aggressive = 7,
+        UltraAggressive = 9
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Abp.Localization;
 using Abp.Modules;
+using Abp.Quartz;
 using Abp.Reflection.Extensions;
 using Abp.Timing;
 using Abp.Zero;
@@ -13,7 +14,7 @@ using CryptoBot.Timing;
 
 namespace CryptoBot
 {
-    [DependsOn(typeof(AbpZeroCoreModule))]
+    [DependsOn(typeof(AbpZeroCoreModule), typeof(AbpQuartzModule))]
     public class CryptoBotCoreModule : AbpModule
     {
         public override void PreInitialize()

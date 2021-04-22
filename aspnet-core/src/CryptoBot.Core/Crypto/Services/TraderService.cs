@@ -1,6 +1,7 @@
-﻿using Abp.Domain.Repositories;
+﻿using Abp.Collections.Extensions;
+using Abp.Linq.Extensions;
+using Abp.Domain.Repositories;
 using Abp.Domain.Services;
-using Abp.Events.Bus;
 using Binance.Net.Enums;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Enums;
@@ -13,8 +14,12 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using CryptoBot.Crypto.Dtos.Services;
+using Abp.Quartz;
+using Quartz;
+using CryptoBot.Crypto.Background.Jobs;
+using Abp.ObjectMapping;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -23,6 +28,7 @@ namespace CryptoBot.Crypto.Services
         public readonly IRepository<Order, long> _orderRepository;
         public readonly IRepository<PredictionOrder, long> _predictionOrderRepository;
         public readonly IRepository<Prediction, long> _predictionRepository;
+        public readonly IRepository<Formula, long> _formulaRepository;
 
         private readonly IBinanceService _binanceService;
         private readonly IWalletService _walletService;
@@ -32,21 +38,28 @@ namespace CryptoBot.Crypto.Services
         private readonly IMicrotrendStrategy _simpleMicrotrendStrategy;
         private readonly Strategies.Simple.MLStrategy1.IMLStrategy1 _simpleMlStrategy1;
 
+        private readonly IQuartzScheduleJobManager _jobManager;
+        private readonly IObjectMapper _objectMapper;
+
         public TraderService(
             IRepository<Order, long> orderRepository,
             IRepository<Prediction, long> predictionRepository,
             IRepository<PredictionOrder, long> predictionOrderRepository,
+            IRepository<Formula, long> formulaRepository,
             IBinanceService binanceService,
             IWalletService walletService,
             IMLStrategy1 normalMlStrategy1,
             IMLStrategy2 normalMlStrategy2,
             IMeanReversionStrategy simpleMeanReversionStrategy,
             IMicrotrendStrategy simpleMicrotrendStrategy,
-            Strategies.Simple.MLStrategy1.IMLStrategy1 simpleMlStrategy1)
+            Strategies.Simple.MLStrategy1.IMLStrategy1 simpleMlStrategy1,
+            IQuartzScheduleJobManager jobManager,
+            IObjectMapper objectMapper)
         {
             _orderRepository = orderRepository;
             _predictionRepository = predictionRepository;
             _predictionOrderRepository = predictionOrderRepository;
+            _formulaRepository = formulaRepository;
 
             _binanceService = binanceService;
             _walletService = walletService;
@@ -55,6 +68,9 @@ namespace CryptoBot.Crypto.Services
             _simpleMeanReversionStrategy = simpleMeanReversionStrategy;
             _simpleMicrotrendStrategy = simpleMicrotrendStrategy;
             _simpleMlStrategy1 = simpleMlStrategy1;
+
+            _jobManager = jobManager;
+            _objectMapper = objectMapper;
         }
 
         public async Task<WhatToDoOutput> WhatToDo(
@@ -92,96 +108,54 @@ namespace CryptoBot.Crypto.Services
             }
         }
 
-        public async Task GenerateBetterPrediction1Async(
-            EStrategy strategy,
-            EInvestorProfile eInvestorProfile,
-            KlineInterval interval,
-            int limitOfDataToLearn = 1000)
+        public async Task GenerateBetterPredictionsAsync(FormulaDto formula)
         {
-            var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
-
-            foreach (var currency in allCurrencies)
-            {
-                if (currency == ECurrency.USDT)
-                    continue;
-
-                var data = GetRegressionData(currency, interval, limitOfDataToLearn);
-
-                var whatToDo = await WhatToDo(strategy, eInvestorProfile, data);
-
-                if (whatToDo.WhatToDo == EWhatToDo.Buy)
-                {
-                    await _predictionRepository.InsertAndGetIdAsync(new Prediction
-                    {
-                        CreationTime = DateTime.Now,
-                        Currency = currency,
-                        InvestorProfile = eInvestorProfile,
-                        Type = EPredictionType.Regression1,
-                        Strategy = strategy,
-                        WhatToDo = whatToDo.WhatToDo,
-                        Interval = interval,
-                        Score = whatToDo.Score.ToString(),
-                        DataLearned = limitOfDataToLearn
-                    });
-                }
-            }
-        }
-
-        public async Task GenerateBetterPrediction2Async(
-            List<EStrategy> strategies,
-            EInvestorProfile eInvestorProfile,
-            KlineInterval interval,
-            int limitOfDataToLearn = 1000)
-        {
-            if (!strategies.Any())
+            if (!Enum.IsDefined(formula.Strategy1))
             {
                 throw new ArgumentException("Must to have at least one strategy");
             }
 
             var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
-            var firstStrategy = strategies.First();
-            strategies.Remove(firstStrategy);
 
             foreach (var currency in allCurrencies)
             {
                 if (currency == ECurrency.USDT)
                     continue;
 
-                var data = GetRegressionData(currency, interval, limitOfDataToLearn);
+                var data = GetRegressionData(currency, formula.Interval, formula.LimitOfDataToLearn);
 
-                var whatToDo = await WhatToDo(firstStrategy, eInvestorProfile, data);
+                var whatToDo = await WhatToDo(formula.Strategy1, formula.InvestorProfile1, data);
 
                 if (whatToDo.WhatToDo == EWhatToDo.Buy)
                 {
-                    var runnedAllStrategies = true;
-                    var strategiesSb = new StringBuilder($"{firstStrategy}.");
-
-                    for (int i = 0; i < strategies.Count; i++)
+                    if (formula.Strategy2.HasValue && formula.InvestorProfile2.HasValue)
                     {
-                        var strategy = strategies[i];
-                        strategiesSb.Append($"{strategy}.");
-                        var whatToDoByStrategy = await WhatToDo(strategy, eInvestorProfile, data);
+                        whatToDo = await WhatToDo(formula.Strategy2.Value, formula.InvestorProfile2.Value, data);
 
-                        if (whatToDoByStrategy.WhatToDo != EWhatToDo.Buy)
+                        if (whatToDo.WhatToDo == EWhatToDo.Buy
+                            && formula.Strategy3.HasValue
+                            && formula.InvestorProfile3.HasValue)
                         {
-                            runnedAllStrategies = false;
-                            i = strategies.Count;
+                            whatToDo = await WhatToDo(formula.Strategy3.Value, formula.InvestorProfile3.Value, data);
                         }
                     }
 
-                    if (runnedAllStrategies)
+                    if (whatToDo.WhatToDo == EWhatToDo.Buy)
                     {
                         await _predictionRepository.InsertAndGetIdAsync(new Prediction
                         {
                             CreationTime = DateTime.Now,
                             Currency = currency,
-                            InvestorProfile = eInvestorProfile,
-                            Type = EPredictionType.Regression2,
-                            Strategies = strategiesSb.ToString(),
+                            Strategy1 = formula.Strategy1,
+                            InvestorProfile1 = formula.InvestorProfile1,
+                            Strategy2 = formula.Strategy2,
+                            InvestorProfile2 = formula.InvestorProfile2,
+                            Strategy3 = formula.Strategy3,
+                            InvestorProfile3 = formula.InvestorProfile3,
                             WhatToDo = whatToDo.WhatToDo,
-                            Interval = interval,
+                            Interval = formula.Interval,
                             Score = whatToDo.Score.ToString(),
-                            DataLearned = limitOfDataToLearn
+                            DataLearned = formula.LimitOfDataToLearn
                         });
                     }
                 }
@@ -206,7 +180,7 @@ namespace CryptoBot.Crypto.Services
             };
         }
 
-        public async Task AutoTraderBuyWithWalletVirtualAsync(long userId, KlineInterval interval, EInvestorProfile investorProfile, EStrategy strategy)
+        public async Task AutoTraderBuyWithWalletVirtualAsync(long userId, FormulaDto formula)
         {
             var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, 1000);
 
@@ -221,9 +195,17 @@ namespace CryptoBot.Crypto.Services
                 .Where(x =>
                     x.CreationTime > DateTime.Now.AddSeconds(-10)
                     && !x.Orders.Any(y => y.CreatorUserId == userId)
-                    && x.Interval == interval
-                    && x.InvestorProfile == investorProfile
-                    && x.Strategy == strategy)
+                    && x.Interval == formula.Interval
+                    && x.Strategy1 == formula.Strategy1
+                    && x.InvestorProfile1 == formula.InvestorProfile1)
+                .WhereIf(
+                    formula.Strategy2.HasValue && formula.InvestorProfile2.HasValue,
+                    x => x.Strategy2 == formula.Strategy2
+                            && x.InvestorProfile2 == formula.InvestorProfile2)
+                .WhereIf(
+                    formula.Strategy3.HasValue && formula.InvestorProfile3.HasValue,
+                    x => x.Strategy3 == formula.Strategy3
+                            && x.InvestorProfile3 == formula.InvestorProfile3)
                 .ToListAsync();
 
             if (predictions.Count == 0)
@@ -305,7 +287,7 @@ namespace CryptoBot.Crypto.Services
                     .GetAll()
                     .Include(x => x.Order)
                     .Include(x => x.Prediction)
-                    .Where(x => 
+                    .Where(x =>
                         x.Order.Status == EOrderStatus.Buyed
                         && (
                             x.Prediction.Interval == KlineInterval.OneMinute
@@ -343,6 +325,103 @@ namespace CryptoBot.Crypto.Services
                     predictionOrder.Order.Status = EOrderStatus.Selled;
                 }
             }
+        }
+
+        public async Task StartScheduleFormulas()
+        {
+            var formulas = await _formulaRepository
+                .GetAll()
+                .AsNoTracking()
+                .Where(x => x.IsActive)
+                .ToListAsync();
+
+            foreach (var formula in formulas)
+            {
+                var dto = _objectMapper.Map<FormulaDto>(formula);
+
+                await ScheduleGeneratePredictions(_objectMapper.Map<FormulaDto>(dto));
+                await ScheduleBuyVirtualTrader(3, dto);
+            }
+        }
+
+        public async Task UnscheduleGeneratePredictions(long formulaId)
+        {
+            await _jobManager.UnscheduleAsync(new TriggerKey($"GeneratePredictionsJob-{formulaId}"));
+        }
+
+        public async Task UnscheduleBuyVirtualTrader(long userId, long formulaId)
+        {
+            await _jobManager.UnscheduleAsync(new TriggerKey($"BuyVirtualTraderJob-User-{userId}-Formula-{formulaId}"));
+        }
+
+        public async Task ScheduleGeneratePredictions(FormulaDto formula)
+        {
+            await _jobManager.ScheduleAsync<GeneratePredictionsJob>(
+                job =>
+                {
+                    job
+                        .WithIdentity($"GeneratePredictionsJob-{formula.Id}")
+                        .UsingJobData("Id", formula.Id)
+                        .UsingJobData("Interval", (int)formula.Interval)
+                        .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
+                        .UsingJobData("Strategy1", (int)formula.Strategy1)
+                        .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)
+                        .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
+                        .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
+                        .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
+                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0);
+                },
+                trigger =>
+                {
+                    trigger
+                        .StartNow()
+                        .WithSimpleSchedule(schedule =>
+                        {
+                            schedule.RepeatForever()
+                                .WithIntervalInSeconds(1)
+                                .Build();
+                        });
+                });
+        }
+
+        public async Task ScheduleBuyVirtualTrader(long userId, FormulaDto formula)
+        {
+            var oneMinuteAfter = DateTimeOffset.Now.AddMinutes(1);
+
+            await _jobManager.ScheduleAsync<BuyVirtualTraderJob>(
+                job =>
+                {
+                    job
+                        .WithIdentity($"BuyVirtualTraderJob-User-{userId}-Formula-{formula.Id}")
+                        .UsingJobData("UserId", userId)
+                        .UsingJobData("Id", formula.Id)
+                        .UsingJobData("Interval", (int)formula.Interval)
+                        .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
+                        .UsingJobData("Strategy1", (int)formula.Strategy1)
+                        .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)
+                        .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
+                        .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
+                        .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
+                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0);
+                },
+                trigger =>
+                {
+                    trigger
+                        .StartAt(new DateTimeOffset(
+                            oneMinuteAfter.Year,
+                            oneMinuteAfter.Month,
+                            oneMinuteAfter.Day,
+                            oneMinuteAfter.Hour,
+                            oneMinuteAfter.Minute,
+                            0,
+                            oneMinuteAfter.Offset))
+                        .WithSimpleSchedule(schedule =>
+                        {
+                            schedule.RepeatForever()
+                                .WithIntervalInSeconds(1)
+                                .Build();
+                        });
+                });
         }
 
         private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data, EInvestorProfile eInvestorProfile)

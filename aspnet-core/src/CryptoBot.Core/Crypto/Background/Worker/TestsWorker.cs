@@ -11,15 +11,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CryptoBot.Crypto.BackgroundWorker.Trader
+namespace CryptoBot.Crypto.BackgroundWorker.Worker
 {
-    public class TraderBuyWorker : AsyncPeriodicBackgroundWorkerBase, ISingletonDependency
+    public class TestsWorker : AsyncPeriodicBackgroundWorkerBase, ISingletonDependency
     {
         private readonly ITraderService _traderService;
         private readonly IBinanceService _binanceService;
         private readonly ITraderTestService _traderTestService;
 
-        public TraderBuyWorker(
+        public TestsWorker(
             AbpAsyncTimer timer,
             ITraderService traderService,
             ITraderTestService traderTestService,
