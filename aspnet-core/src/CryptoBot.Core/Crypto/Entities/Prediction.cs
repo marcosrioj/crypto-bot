@@ -21,7 +21,8 @@ namespace CryptoBot.Crypto.Entities
         public EStrategy? Strategy3 { get; set; }
         public EInvestorProfile? InvestorProfile3 { get; set; }
 
-        public KlineInterval Interval { get; set; }
+        public KlineInterval IntervalToBuy { get; set; }
+        public KlineInterval IntervalToSell { get; set; }
 
         [Column(TypeName = "varchar(100)")]
         public string Score { get; set; }

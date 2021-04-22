@@ -1,6 +1,7 @@
 ﻿using Abp.Domain.Entities;
 using Binance.Net.Enums;
 using CryptoBot.Crypto.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CryptoBot.Crypto.Entities
 {
@@ -17,7 +18,12 @@ namespace CryptoBot.Crypto.Entities
         public EStrategy? Strategy3 { get; set; }
         public EInvestorProfile? InvestorProfile3 { get; set; }
 
-        public KlineInterval Interval { get; set; }
+        public KlineInterval IntervalToBuy { get; set; }
+        public KlineInterval IntervalToSell { get; set; }
+        public EBookOrdersAction BookOrdersAction { get; set; }
+
+        [Column(TypeName = "decimal(2, 2)")]
+        public decimal BookOrdersFactor { get; set; }
         public int LimitOfDataToLearn { get; set; }
     }
 }

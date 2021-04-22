@@ -124,7 +124,7 @@ namespace CryptoBot.Crypto.Services
                 if (currency == ECurrency.USDT)
                     continue;
 
-                var data = GetRegressionData(currency, formula.Interval, formula.LimitOfDataToLearn);
+                var data = GetRegressionData(currency, formula.IntervalToBuy, formula.LimitOfDataToLearn);
 
                 var whatToDo = await WhatToDo(formula.Strategy1, formula.InvestorProfile1, data);
 
@@ -155,7 +155,8 @@ namespace CryptoBot.Crypto.Services
                             Strategy3 = formula.Strategy3,
                             InvestorProfile3 = formula.InvestorProfile3,
                             WhatToDo = whatToDo.WhatToDo,
-                            Interval = formula.Interval,
+                            IntervalToBuy = formula.IntervalToBuy,
+                            IntervalToSell = formula.IntervalToSell,
                             Score = whatToDo.Score.ToString(),
                             DataLearned = formula.LimitOfDataToLearn
                         });
@@ -198,7 +199,7 @@ namespace CryptoBot.Crypto.Services
                 .Where(x =>
                     x.CreationTime > DateTime.Now.AddSeconds(-10)
                     && !x.Orders.Any(y => y.CreatorUserId == userId)
-                    && x.Interval == formula.Interval
+                    && x.IntervalToBuy == formula.IntervalToBuy
                     && x.Strategy1 == formula.Strategy1
                     && x.InvestorProfile1 == formula.InvestorProfile1)
                 .WhereIf(
@@ -231,7 +232,25 @@ namespace CryptoBot.Crypto.Services
                     var askQuantity = bookOrder.Data.Asks.Sum(x => x.Quantity);
                     var bidQuantity = bookOrder.Data.Bids.Sum(x => x.Quantity);
 
-                    if (bidQuantity > (askQuantity + (askQuantity * 0.1m)))
+                    var bookOrdersVerified = false;
+
+                    switch (formula.BookOrdersAction)
+                    {
+                        case EBookOrdersAction.BidGreaterThanAsk:
+                            bookOrdersVerified = bidQuantity > (askQuantity + (askQuantity * formula.BookOrdersFactor));
+                            break;
+                        case EBookOrdersAction.AskGreaterThanBid:
+                            bookOrdersVerified = askQuantity > (bidQuantity + (bidQuantity * formula.BookOrdersFactor));
+                            break;
+                        case EBookOrdersAction.None:
+                            bookOrdersVerified = true;
+                            break;
+                        default:
+                            bookOrdersVerified = false;
+                            break;
+                    }
+
+                    if (bookOrdersVerified)
                     {
                         if (mainWallet.Balance < bidQuantity * bookPrice.Data.BestAskPrice)
                         {
@@ -292,13 +311,13 @@ namespace CryptoBot.Crypto.Services
                 .Where(x =>
                     x.Order.Status == EOrderStatus.Buyed
                     && (
-                        x.Prediction.Interval == KlineInterval.OneMinute
-                        || (x.Prediction.Interval == KlineInterval.ThreeMinutes && x.CreationTime < DateTime.Now.AddSeconds(-180 + secondsEarlier))
-                        || (x.Prediction.Interval == KlineInterval.FiveMinutes && x.CreationTime < DateTime.Now.AddSeconds(-300 + secondsEarlier))
-                        || (x.Prediction.Interval == KlineInterval.FifteenMinutes && x.CreationTime < DateTime.Now.AddSeconds(-900 + secondsEarlier))
-                        || (x.Prediction.Interval == KlineInterval.ThirtyMinutes && x.CreationTime < DateTime.Now.AddSeconds(-1800 + secondsEarlier))
-                        || (x.Prediction.Interval == KlineInterval.OneHour && x.CreationTime < DateTime.Now.AddSeconds(-3600 + secondsEarlier))
-                        || (x.Prediction.Interval == KlineInterval.TwoHour && x.CreationTime < DateTime.Now.AddSeconds(-7200 + secondsEarlier))
+                        x.Prediction.IntervalToSell == KlineInterval.OneMinute
+                        || (x.Prediction.IntervalToSell == KlineInterval.ThreeMinutes && x.CreationTime < DateTime.Now.AddSeconds(-180 + secondsEarlier))
+                        || (x.Prediction.IntervalToSell == KlineInterval.FiveMinutes && x.CreationTime < DateTime.Now.AddSeconds(-300 + secondsEarlier))
+                        || (x.Prediction.IntervalToSell == KlineInterval.FifteenMinutes && x.CreationTime < DateTime.Now.AddSeconds(-900 + secondsEarlier))
+                        || (x.Prediction.IntervalToSell == KlineInterval.ThirtyMinutes && x.CreationTime < DateTime.Now.AddSeconds(-1800 + secondsEarlier))
+                        || (x.Prediction.IntervalToSell == KlineInterval.OneHour && x.CreationTime < DateTime.Now.AddSeconds(-3600 + secondsEarlier))
+                        || (x.Prediction.IntervalToSell == KlineInterval.TwoHour && x.CreationTime < DateTime.Now.AddSeconds(-7200 + secondsEarlier))
                     ))
                 .ToListAsync();
 
@@ -380,7 +399,8 @@ namespace CryptoBot.Crypto.Services
                     job
                         .WithIdentity($"GeneratePredictionsJob-{formula.Id}")
                         .UsingJobData("Id", formula.Id)
-                        .UsingJobData("Interval", (int)formula.Interval)
+                        .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
+                        .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
                         .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
                         .UsingJobData("Strategy1", (int)formula.Strategy1)
                         .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)
@@ -413,7 +433,8 @@ namespace CryptoBot.Crypto.Services
                         .WithIdentity($"BuyVirtualTraderJob-User-{userId}-Formula-{formula.Id}")
                         .UsingJobData("UserId", userId)
                         .UsingJobData("Id", formula.Id)
-                        .UsingJobData("Interval", (int)formula.Interval)
+                        .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
+                        .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
                         .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
                         .UsingJobData("Strategy1", (int)formula.Strategy1)
                         .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)

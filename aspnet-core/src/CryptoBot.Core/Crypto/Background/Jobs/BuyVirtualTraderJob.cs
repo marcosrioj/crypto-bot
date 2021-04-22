@@ -29,7 +29,8 @@ namespace CryptoBot.Crypto.Background.Jobs
             var formula = new FormulaDto
             {
                 Id = dataMap.GetLong("Id"),
-                Interval = (KlineInterval)dataMap.GetInt("Interval"),
+                IntervalToBuy = (KlineInterval)dataMap.GetInt("IntervalToBuy"),
+                IntervalToSell = (KlineInterval)dataMap.GetInt("IntervalToSell"),
                 LimitOfDataToLearn = dataMap.GetInt("LimitOfDataToLearn"),
                 Strategy1 = (EStrategy)dataMap.GetInt("Strategy1"),
                 InvestorProfile1 = (EInvestorProfile)dataMap.GetInt("InvestorProfile1"),

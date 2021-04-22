@@ -25,9 +25,19 @@ namespace CryptoBot.Crypto.Dtos.Services
         public EInvestorProfile? InvestorProfile3 { get; set; }
 
         [Required]
-        public KlineInterval Interval { get; set; }
+        public KlineInterval IntervalToBuy { get; set; }
+
+        [Required]
+        public KlineInterval IntervalToSell { get; set; }
+
+        [Required]
+        public EBookOrdersAction BookOrdersAction { get; set; }
+
+        [Required]
+        public decimal BookOrdersFactor { get; set; }
 
         [Required]
         public int LimitOfDataToLearn { get; set; }
+
     }
 }
