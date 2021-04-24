@@ -12,6 +12,9 @@ namespace CryptoBot.Crypto.Services.Dtos
         public bool IsActive { get; set; }
 
         [Required]
+        public decimal InitialAmount { get; set; }
+
+        [Required]
         public long FormulaId { get; set; }
 
         [Required]

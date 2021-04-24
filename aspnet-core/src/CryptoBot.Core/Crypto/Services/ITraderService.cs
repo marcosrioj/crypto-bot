@@ -23,7 +23,7 @@ namespace CryptoBot.Crypto.Services
             KlineInterval interval,
             int limitOfDataToLearn = 120);
 
-        Task AutoTraderBuyWithWalletVirtualAsync(long userId, FormulaDto formula);
+        Task AutoTraderBuyWithWalletVirtualAsync(long userId, FormulaDto formula, decimal robotInitialAmount);
 
         Task AutoTraderSellWithWalletVirtualAsync();
 
@@ -33,7 +33,7 @@ namespace CryptoBot.Crypto.Services
 
         Task ScheduleGeneratePredictions(FormulaDto formula);
 
-        Task ScheduleBuyVirtualTrader(long robotId, long userId, FormulaDto formula);
+        Task ScheduleBuyVirtualTrader(RobotDto robot, FormulaDto formula);
 
         Task StartScheduleRobots();
 

@@ -142,7 +142,9 @@ namespace CryptoBot.Crypto
 
             foreach (var robot in robots)
             {
-                await _traderService.ScheduleBuyVirtualTrader(robot.Id, robot.UserId, formulaDto);
+                var robotDto = ObjectMapper.Map<RobotDto>(robot);
+
+                await _traderService.ScheduleBuyVirtualTrader(robotDto, formulaDto);
             }
         }
     }

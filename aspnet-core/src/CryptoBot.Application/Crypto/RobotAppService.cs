@@ -37,8 +37,9 @@ namespace CryptoBot.Crypto
             {
                 var formula = await _formulaRepository.GetAsync(input.FormulaId);
                 var formulaDto = ObjectMapper.Map<FormulaDto>(formula);
+                var robotDto = ObjectMapper.Map<RobotDto>(robot);
 
-                await _traderService.ScheduleBuyVirtualTrader(robot.Id, robot.UserId, formulaDto);
+                await _traderService.ScheduleBuyVirtualTrader(robotDto, formulaDto);
             }
 
             return robot;
@@ -72,8 +73,9 @@ namespace CryptoBot.Crypto
             {
                 var formula = await _formulaRepository.GetAsync(input.FormulaId);
                 var formulaDto = ObjectMapper.Map<FormulaDto>(formula);
+                var robotDto = ObjectMapper.Map<RobotDto>(robot);
 
-                await _traderService.ScheduleBuyVirtualTrader(robot.Id, robot.UserId, formulaDto);
+                await _traderService.ScheduleBuyVirtualTrader(robotDto, formulaDto);
             }
 
             return robot;
@@ -122,8 +124,9 @@ namespace CryptoBot.Crypto
 
                 var formula = await _formulaRepository.GetAsync(robot.FormulaId);
                 var formulaDto = ObjectMapper.Map<FormulaDto>(formula);
+                var robotDto = ObjectMapper.Map<RobotDto>(robot);
 
-                await _traderService.ScheduleBuyVirtualTrader(robot.Id, robot.UserId, formulaDto);
+                await _traderService.ScheduleBuyVirtualTrader(robotDto, formulaDto);
             }
             catch
             {

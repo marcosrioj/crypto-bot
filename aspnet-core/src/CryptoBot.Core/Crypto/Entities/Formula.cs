@@ -40,18 +40,24 @@ namespace CryptoBot.Crypto.Entities
 
         public int LimitOfDataToLearn { get; set; }
 
-        [Column(TypeName = "decimal(10, 2)")]
+        [Column(TypeName = "decimal(18, 8)")]
         public decimal BalancePreserved { get; set; }
 
         public EOrderPriceType OrderPriceType { get; set; }
 
-        [Column(TypeName = "decimal(10, 2)")]
-        public decimal OrderPrice { get; set; }
+        [Column(TypeName = "decimal(18, 8)")]
+        public decimal MaxOrderPrice { get; set; }
+
+        [Column(TypeName = "decimal(18, 8)")]
+        public decimal OrderPricePerGroup { get; set; }
 
         public bool TryToSellByMinute { get; set; }
 
         [Column(TypeName = "decimal(4, 4)")]
-        public decimal TryToSellByMinutePercentage { get; set; }
+        public decimal TryToSellByMinutePercentageOfProfit { get; set; }
+
+        [Column(TypeName = "decimal(4, 4)")]
+        public decimal TryToSellByMinutePercentageOfLoss { get; set; }
 
     }
 }

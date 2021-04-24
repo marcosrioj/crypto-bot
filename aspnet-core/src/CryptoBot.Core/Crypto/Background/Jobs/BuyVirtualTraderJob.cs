@@ -25,6 +25,7 @@ namespace CryptoBot.Crypto.Background.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             var userId = dataMap.GetLong("UserId");
+            var robotInitialAmount = (decimal)dataMap.GetFloat("RobotInitialAmount");
                 
             var formula = new FormulaDto
             {
@@ -39,7 +40,8 @@ namespace CryptoBot.Crypto.Background.Jobs
                 Strategy3 = dataMap.GetInt("Strategy3") > 0 ? (EStrategy)dataMap.GetInt("Strategy3") : null,
                 InvestorProfile3 = dataMap.GetInt("InvestorProfile3") > 0 ? (EInvestorProfile)dataMap.GetInt("InvestorProfile3") : null,
                 BalancePreserved = (decimal)dataMap.GetFloat("BalancePreserved"),
-                OrderPrice = (decimal)dataMap.GetFloat("OrderPrice"),
+                OrderPricePerGroup = (decimal)dataMap.GetFloat("OrderPricePerGroup"),
+                MaxOrderPrice = (decimal)dataMap.GetFloat("MaxOrderPrice"),
                 OrderPriceType = (EOrderPriceType)dataMap.GetInt("OrderPriceType"),
                 LimitOfBookOrders = dataMap.GetInt("LimitOfBookOrders"),
                 Description = dataMap.GetString("Description"),
@@ -47,10 +49,11 @@ namespace CryptoBot.Crypto.Background.Jobs
                 BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),
                 BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor"),
                 TryToSellByMinute = dataMap.GetBoolean("TryToSellByMinute"),
-                TryToSellByMinutePercentage = (decimal)dataMap.GetFloat("TryToSellByMinutePercentage")
+                TryToSellByMinutePercentageOfLoss = (decimal)dataMap.GetFloat("TryToSellByMinutePercentageOfLoss"),
+                TryToSellByMinutePercentageOfProfit = (decimal)dataMap.GetFloat("TryToSellByMinutePercentageOfProfit")
             };
 
-            await _traderService.AutoTraderBuyWithWalletVirtualAsync(userId, formula);
+            await _traderService.AutoTraderBuyWithWalletVirtualAsync(userId, formula, robotInitialAmount);
         }
     }
 }

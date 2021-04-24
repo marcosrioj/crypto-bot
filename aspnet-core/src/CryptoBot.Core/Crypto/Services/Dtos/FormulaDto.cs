@@ -55,13 +55,19 @@ namespace CryptoBot.Crypto.Services.Dtos
         public EOrderPriceType OrderPriceType { get; set; }
 
         [Required]
-        public decimal OrderPrice { get; set; }
+        public decimal MaxOrderPrice { get; set; }
+
+        [Required]
+        public decimal OrderPricePerGroup { get; set; }
 
         [Required]
         public bool TryToSellByMinute { get; set; }
 
         [Required]
-        public decimal TryToSellByMinutePercentage { get; set; }
+        public decimal TryToSellByMinutePercentageOfProfit { get; set; }
+
+        [Required]
+        public decimal TryToSellByMinutePercentageOfLoss { get; set; }
 
     }
 }

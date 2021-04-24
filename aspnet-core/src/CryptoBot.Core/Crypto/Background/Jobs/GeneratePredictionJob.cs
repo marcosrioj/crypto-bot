@@ -37,7 +37,8 @@ namespace CryptoBot.Crypto.Background.Jobs
                 InvestorProfile2 = dataMap.GetInt("InvestorProfile2") > 0 ? (EInvestorProfile)dataMap.GetInt("InvestorProfile2") : null,
                 Strategy3 = dataMap.GetInt("Strategy3") > 0 ? (EStrategy)dataMap.GetInt("Strategy3") : null,
                 InvestorProfile3 = dataMap.GetInt("InvestorProfile3") > 0 ? (EInvestorProfile)dataMap.GetInt("InvestorProfile3") : null,
-                OrderPrice = (decimal)dataMap.GetFloat("OrderPrice"),
+                OrderPricePerGroup = (decimal)dataMap.GetFloat("OrderPricePerGroup"),
+                MaxOrderPrice = (decimal)dataMap.GetFloat("MaxOrderPrice"),
                 OrderPriceType = (EOrderPriceType)dataMap.GetInt("OrderPriceType"),
                 LimitOfBookOrders = dataMap.GetInt("LimitOfBookOrders"),
                 Description = dataMap.GetString("Description"),
@@ -45,7 +46,8 @@ namespace CryptoBot.Crypto.Background.Jobs
                 BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),
                 BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor"),
                 TryToSellByMinute = dataMap.GetBoolean("TryToSellByMinute"),
-                TryToSellByMinutePercentage = (decimal)dataMap.GetFloat("TryToSellByMinutePercentage"),
+                TryToSellByMinutePercentageOfLoss = (decimal)dataMap.GetFloat("TryToSellByMinutePercentageOfLoss"),
+                TryToSellByMinutePercentageOfProfit = (decimal)dataMap.GetFloat("TryToSellByMinutePercentageOfProfit"),
                 BalancePreserved = (decimal)dataMap.GetFloat("BalancePreserved")
             };
 

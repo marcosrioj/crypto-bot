@@ -169,7 +169,8 @@ namespace CryptoBot.Crypto.Services
                         Score = whatToDo.Score.ToString(),
                         DataLearned = formula.LimitOfDataToLearn,
                         TryToSellByMinute = formula.TryToSellByMinute,
-                        TryToSellByMinutePercentage = formula.TryToSellByMinutePercentage
+                        TryToSellByMinutePercentageOfLoss = formula.TryToSellByMinutePercentageOfLoss,
+                        TryToSellByMinutePercentageOfProfit = formula.TryToSellByMinutePercentageOfProfit
                     });
                 }
             }
@@ -194,11 +195,11 @@ namespace CryptoBot.Crypto.Services
         }
 
         [UnitOfWork(false)]
-        public async Task AutoTraderBuyWithWalletVirtualAsync(long userId, FormulaDto formula)
+        public async Task AutoTraderBuyWithWalletVirtualAsync(long userId, FormulaDto formula, decimal robotInitialAmount)
         {
-            var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, 1000);
+            var mainWallet = await _walletService.GetOrCreate(ECurrency.USDT, EWalletType.Virtual, userId, robotInitialAmount);
 
-            if (mainWallet.Balance < formula.BalancePreserved)
+            if (mainWallet.Balance < formula.BalancePreserved || mainWallet.Balance <= 0)
             {
                 return;
             }
@@ -285,11 +286,23 @@ namespace CryptoBot.Crypto.Services
 
             if (formula.OrderPriceType == EOrderPriceType.Percent)
             {
-                priceUsdtToBuyByPredictionFiltered = (mainWallet.Balance * formula.OrderPrice) / predictionsFiltered.Count;
+                priceUsdtToBuyByPredictionFiltered = (mainWallet.Balance * formula.OrderPricePerGroup) / predictionsFiltered.Count;
+
+                var maxPriceUsdtToBuy = mainWallet.Balance * formula.MaxOrderPrice;
+                
+                if (priceUsdtToBuyByPredictionFiltered > maxPriceUsdtToBuy)
+                {
+                    priceUsdtToBuyByPredictionFiltered = maxPriceUsdtToBuy;
+                }
             }
             else
             {
-                priceUsdtToBuyByPredictionFiltered = formula.OrderPrice / predictionsFiltered.Count;
+                priceUsdtToBuyByPredictionFiltered = formula.OrderPricePerGroup / predictionsFiltered.Count;
+
+                if (priceUsdtToBuyByPredictionFiltered > formula.MaxOrderPrice)
+                {
+                    priceUsdtToBuyByPredictionFiltered = formula.MaxOrderPrice;
+                }
             }
 
             foreach (var prediction in predictionsFiltered)
@@ -356,9 +369,10 @@ namespace CryptoBot.Crypto.Services
                 {
                     if (predictionOrder.Prediction.TryToSellByMinute)
                     {
-                        var IsProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentage);
+                        var isProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfProfit);
+                        var isLoss = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfLoss);
 
-                        if (!IsProfitable)
+                        if (!isProfitable || !isLoss)
                         {
                             continue;
                         }
@@ -416,8 +430,9 @@ namespace CryptoBot.Crypto.Services
             foreach (var robot in robots)
             {
                 var formulaDto = _objectMapper.Map<FormulaDto>(robot.Formula);
+                var robotDto = _objectMapper.Map<RobotDto>(robot);
 
-                await ScheduleBuyVirtualTrader(robot.Id, robot.UserId, formulaDto);
+                await ScheduleBuyVirtualTrader(robotDto, formulaDto);
             }
         }
 
@@ -467,7 +482,8 @@ namespace CryptoBot.Crypto.Services
                             .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
                             .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
                             .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
-                            .UsingJobData("OrderPrice", (float)formula.OrderPrice)
+                            .UsingJobData("OrderPricePerGroup", (float)formula.OrderPricePerGroup)
+                            .UsingJobData("MaxOrderPrice", (float)formula.MaxOrderPrice)
                             .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
                             .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                             .UsingJobData("Description", formula.Description)
@@ -475,7 +491,8 @@ namespace CryptoBot.Crypto.Services
                             .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                             .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
                             .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
-                            .UsingJobData("TryToSellByMinutePercentage", (float)formula.TryToSellByMinutePercentage);
+                            .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
+                            .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
                     },
                     trigger =>
                     {
@@ -487,7 +504,7 @@ namespace CryptoBot.Crypto.Services
             catch { }
         }
 
-        public async Task ScheduleBuyVirtualTrader(long robotId, long userId, FormulaDto formula)
+        public async Task ScheduleBuyVirtualTrader(RobotDto robot, FormulaDto formula)
         {
             var oneMinuteAfter = DateTimeOffset.Now.AddMinutes(1);
 
@@ -495,7 +512,8 @@ namespace CryptoBot.Crypto.Services
                 job =>
                 {
                     job
-                        .UsingJobData("UserId", userId)
+                        .UsingJobData("UserId", robot.UserId)
+                        .UsingJobData("RobotInitialAmount", (float)robot.InitialAmount)
                         .UsingJobData("Id", formula.Id)
                         .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
                         .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
@@ -507,7 +525,8 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
                         .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
                         .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
-                        .UsingJobData("OrderPrice", (float)formula.OrderPrice)
+                        .UsingJobData("OrderPricePerGroup", (float)formula.OrderPricePerGroup)
+                        .UsingJobData("MaxOrderPrice", (float)formula.MaxOrderPrice)
                         .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
                         .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                         .UsingJobData("Description", formula.Description)
@@ -515,12 +534,13 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
                         .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
-                        .UsingJobData("TryToSellByMinutePercentage", (float)formula.TryToSellByMinutePercentage);
+                        .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
+                        .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
                 },
                 trigger =>
                 {
                     trigger
-                        .WithIdentity($"BuyVirtualTraderJob-Robot-{robotId}-User-{userId}-Formula-{formula.Id}")
+                        .WithIdentity($"BuyVirtualTraderJob-Robot-{robot.Id}-User-{robot.UserId}-Formula-{formula.Id}")
                         .WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy, 10));
                 });
         }
@@ -542,7 +562,8 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
                         .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
                         .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
-                        .UsingJobData("OrderPrice", (float)formula.OrderPrice)
+                        .UsingJobData("OrderPricePerGroup", (float)formula.OrderPricePerGroup)
+                        .UsingJobData("MaxOrderPrice", (float)formula.MaxOrderPrice)
                         .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
                         .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                         .UsingJobData("Description", formula.Description)
@@ -551,7 +572,8 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
                         .UsingJobData("Currency", (int)currency)
                         .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
-                        .UsingJobData("TryToSellByMinutePercentage", (float)formula.TryToSellByMinutePercentage);
+                        .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
+                        .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
                 },
                 trigger =>
                 {
