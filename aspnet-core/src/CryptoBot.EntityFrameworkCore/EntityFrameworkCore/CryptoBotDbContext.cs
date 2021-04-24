@@ -19,6 +19,8 @@ namespace CryptoBot.EntityFrameworkCore
 
         public DbSet<Formula> Formulas { get; set; }
 
+        public DbSet<Robot> Robots { get; set; }
+
         public CryptoBotDbContext(DbContextOptions<CryptoBotDbContext> options)
             : base(options)
         {

@@ -37,7 +37,8 @@ namespace CryptoBot.Web.Host.Startup
 
             var traderService = IocManager.Resolve<ITraderService>();
             traderService.ScheduleAutoTraderSellWithWalletVirtualAsync();
-            traderService.StartScheduleFormulas();
+            traderService.StartSchedulePredictions();
+            traderService.StartScheduleRobots();
         }
     }
 }

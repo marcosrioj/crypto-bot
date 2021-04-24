@@ -30,6 +30,7 @@ namespace CryptoBot.Crypto.Services
         public readonly IRepository<PredictionOrder, long> _predictionOrderRepository;
         public readonly IRepository<Prediction, long> _predictionRepository;
         public readonly IRepository<Formula, long> _formulaRepository;
+        public readonly IRepository<Robot, long> _robotRepository;
 
         private readonly IBinanceService _binanceService;
         private readonly IWalletService _walletService;
@@ -47,6 +48,7 @@ namespace CryptoBot.Crypto.Services
             IRepository<Prediction, long> predictionRepository,
             IRepository<PredictionOrder, long> predictionOrderRepository,
             IRepository<Formula, long> formulaRepository,
+            IRepository<Robot, long> robotRepository,
             IBinanceService binanceService,
             IWalletService walletService,
             IMLStrategy1 normalMlStrategy1,
@@ -61,6 +63,7 @@ namespace CryptoBot.Crypto.Services
             _predictionRepository = predictionRepository;
             _predictionOrderRepository = predictionOrderRepository;
             _formulaRepository = formulaRepository;
+            _robotRepository = robotRepository;
 
             _binanceService = binanceService;
             _walletService = walletService;
@@ -359,7 +362,7 @@ namespace CryptoBot.Crypto.Services
                         {
                             continue;
                         }
-                    } 
+                    }
                     else
                     {
                         continue;
@@ -401,7 +404,25 @@ namespace CryptoBot.Crypto.Services
         }
 
         [UnitOfWork(false)]
-        public async Task StartScheduleFormulas()
+        public async Task StartScheduleRobots()
+        {
+            var robots = await _robotRepository
+                .GetAll()
+                .Include(x => x.Formula)
+                .AsNoTracking()
+                .Where(x => x.IsActive && x.Formula.IsActive)
+                .ToListAsync();
+
+            foreach (var robot in robots)
+            {
+                var formulaDto = _objectMapper.Map<FormulaDto>(robot.Formula);
+
+                await ScheduleBuyVirtualTrader(robot.Id, robot.UserId, formulaDto);
+            }
+        }
+
+        [UnitOfWork(false)]
+        public async Task StartSchedulePredictions()
         {
             var formulas = await _formulaRepository
                 .GetAll()
@@ -413,8 +434,7 @@ namespace CryptoBot.Crypto.Services
             {
                 var dto = _objectMapper.Map<FormulaDto>(formula);
 
-                await ScheduleGeneratePredictions(_objectMapper.Map<FormulaDto>(dto));
-                await ScheduleBuyVirtualTrader(3, dto);
+                await ScheduleGeneratePredictions(dto);
             }
         }
 
@@ -423,47 +443,51 @@ namespace CryptoBot.Crypto.Services
             await _jobManager.UnscheduleAsync(new TriggerKey($"GeneratePredictionsJob-{formulaId}"));
         }
 
-        public async Task UnscheduleBuyVirtualTrader(long userId, long formulaId)
+        public async Task UnscheduleBuyVirtualTrader(long robotId, long userId, long formulaId)
         {
-            await _jobManager.UnscheduleAsync(new TriggerKey($"BuyVirtualTraderJob-User-{userId}-Formula-{formulaId}"));
+            await _jobManager.UnscheduleAsync(new TriggerKey($"BuyVirtualTraderJob-Robot-{robotId}-User-{userId}-Formula-{formulaId}"));
         }
 
         public async Task ScheduleGeneratePredictions(FormulaDto formula)
         {
-            await _jobManager.ScheduleAsync<GeneratePredictionsJob>(
-                job =>
-                {
-                    job
-                        .UsingJobData("Id", formula.Id)
-                        .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
-                        .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
-                        .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
-                        .UsingJobData("Strategy1", (int)formula.Strategy1)
-                        .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)
-                        .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
-                        .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
-                        .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
-                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
-                        .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
-                        .UsingJobData("OrderPrice", (float)formula.OrderPrice)
-                        .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
-                        .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
-                        .UsingJobData("Description", formula.Description)
-                        .UsingJobData("Currencies", formula.Currencies)
-                        .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
-                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
-                        .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
-                        .UsingJobData("TryToSellByMinutePercentage", (float)formula.TryToSellByMinutePercentage);
-                },
-                trigger =>
-                {
-                    trigger
-                        .WithIdentity($"GeneratePredictionsJob-{formula.Id}")
-                        .WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy));
-                });
+            try
+            {
+                await _jobManager.ScheduleAsync<GeneratePredictionsJob>(
+                    job =>
+                    {
+                        job
+                            .UsingJobData("Id", formula.Id)
+                            .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
+                            .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
+                            .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
+                            .UsingJobData("Strategy1", (int)formula.Strategy1)
+                            .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)
+                            .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
+                            .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
+                            .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
+                            .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
+                            .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
+                            .UsingJobData("OrderPrice", (float)formula.OrderPrice)
+                            .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
+                            .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
+                            .UsingJobData("Description", formula.Description)
+                            .UsingJobData("Currencies", formula.Currencies)
+                            .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
+                            .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
+                            .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
+                            .UsingJobData("TryToSellByMinutePercentage", (float)formula.TryToSellByMinutePercentage);
+                    },
+                    trigger =>
+                    {
+                        trigger
+                            .WithIdentity($"GeneratePredictionsJob-{formula.Id}")
+                            .WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy));
+                    });
+            }
+            catch { }
         }
 
-        public async Task ScheduleBuyVirtualTrader(long userId, FormulaDto formula)
+        public async Task ScheduleBuyVirtualTrader(long robotId, long userId, FormulaDto formula)
         {
             var oneMinuteAfter = DateTimeOffset.Now.AddMinutes(1);
 
@@ -496,7 +520,7 @@ namespace CryptoBot.Crypto.Services
                 trigger =>
                 {
                     trigger
-                        .WithIdentity($"BuyVirtualTraderJob-User-{userId}-Formula-{formula.Id}")
+                        .WithIdentity($"BuyVirtualTraderJob-Robot-{robotId}-User-{userId}-Formula-{formula.Id}")
                         .WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy, 10));
                 });
         }

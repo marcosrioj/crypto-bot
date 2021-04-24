@@ -29,13 +29,15 @@ namespace CryptoBot.Crypto.Services
 
         Task UnscheduleGeneratePredictions(long formulaId);
 
-        Task UnscheduleBuyVirtualTrader(long userId, long formulaId);
+        Task UnscheduleBuyVirtualTrader(long robotId, long userId, long formulaId);
 
         Task ScheduleGeneratePredictions(FormulaDto formula);
 
-        Task ScheduleBuyVirtualTrader(long userId, FormulaDto formula);
+        Task ScheduleBuyVirtualTrader(long robotId, long userId, FormulaDto formula);
 
-        Task StartScheduleFormulas();
+        Task StartScheduleRobots();
+
+        Task StartSchedulePredictions();
 
         Task ScheduleAutoTraderSellWithWalletVirtualAsync();
     }

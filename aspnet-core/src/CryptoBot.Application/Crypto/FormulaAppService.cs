@@ -1,14 +1,14 @@
 ﻿using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
-using CryptoBot.Crypto.Services.Dtos;
+using Abp.Linq.Extensions;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Services;
+using CryptoBot.Crypto.Services.Dtos;
 using Microsoft.AspNetCore.Authorization;
-using System.Threading.Tasks;
-using System.Linq;
-using Abp.Linq.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto
 {
@@ -16,13 +16,16 @@ namespace CryptoBot.Crypto
     public class FormulaAppService : AsyncCrudAppService<Formula, FormulaDto, long>, IFormulaAppService
     {
         private readonly ITraderService _traderService;
+        public readonly IRepository<Robot, long> _robotRepository;
 
         public FormulaAppService(
             IRepository<Formula, long> repository,
+            IRepository<Robot, long> robotRepository,
             ITraderService traderService)
             : base(repository)
         {
             _traderService = traderService;
+            _robotRepository = robotRepository;
         }
 
         public override async Task<FormulaDto> CreateAsync(FormulaDto input)
@@ -32,7 +35,6 @@ namespace CryptoBot.Crypto
             if (formula.IsActive)
             {
                 await _traderService.ScheduleGeneratePredictions(formula);
-                await _traderService.ScheduleBuyVirtualTrader(3, formula);
             }
 
             return formula;
@@ -41,8 +43,10 @@ namespace CryptoBot.Crypto
         public override async Task DeleteAsync(EntityDto<long> input)
         {
             await base.DeleteAsync(input);
+
+            await UnscheduleRobots(input.Id);
+
             await _traderService.UnscheduleGeneratePredictions(input.Id);
-            await _traderService.UnscheduleBuyVirtualTrader(3, input.Id);
         }
 
         public override async Task<FormulaDto> UpdateAsync(FormulaDto input)
@@ -50,12 +54,14 @@ namespace CryptoBot.Crypto
             var formula = await base.UpdateAsync(input);
 
             await _traderService.UnscheduleGeneratePredictions(input.Id);
-            await _traderService.UnscheduleBuyVirtualTrader(3, input.Id);
+
+            await UnscheduleRobots(input.Id);
 
             if (formula.IsActive)
             {
                 await _traderService.ScheduleGeneratePredictions(formula);
-                await _traderService.ScheduleBuyVirtualTrader(3, formula);
+
+                await ScheduleRobots(formula);
             }
 
             return formula;
@@ -71,14 +77,11 @@ namespace CryptoBot.Crypto
                     .WhereIf(formulaId.HasValue, x => x.Id == formulaId.Value)
                     .ToListAsync();
 
-                if (formulas.Count > 0)
+                foreach (var formula in formulas)
                 {
-                    foreach (var formula in formulas)
-                    {
-                        formula.IsActive = false;
-                        await _traderService.UnscheduleGeneratePredictions(formula.Id);
-                        await _traderService.UnscheduleBuyVirtualTrader(3, formula.Id);
-                    }
+                    formula.IsActive = false;
+                    await _traderService.UnscheduleGeneratePredictions(formula.Id);
+                    await UnscheduleRobots(formula.Id);
                 }
             }
             catch
@@ -103,11 +106,11 @@ namespace CryptoBot.Crypto
                     return false;
                 }
 
-                formula.IsActive = false;
+                formula.IsActive = true;
                 var formulaDto = MapToEntityDto(formula);
 
                 await _traderService.ScheduleGeneratePredictions(formulaDto);
-                await _traderService.ScheduleBuyVirtualTrader(3, formulaDto);
+                await ScheduleRobots(formulaDto);
             }
             catch
             {
@@ -115,6 +118,32 @@ namespace CryptoBot.Crypto
             }
 
             return true;
+        }
+
+        private async Task UnscheduleRobots(long formulaId)
+        {
+            var robots = await _robotRepository
+                .GetAll()
+                .Where(x => x.IsActive && x.FormulaId == formulaId)
+                .ToListAsync();
+
+            foreach (var robot in robots)
+            {
+                await _traderService.UnscheduleBuyVirtualTrader(robot.Id, robot.UserId, robot.FormulaId);
+            }
+        }
+
+        private async Task ScheduleRobots(FormulaDto formulaDto)
+        {
+            var robots = await _robotRepository
+                .GetAll()
+                .Where(x => x.IsActive && x.FormulaId == formulaDto.Id)
+                .ToListAsync();
+
+            foreach (var robot in robots)
+            {
+                await _traderService.ScheduleBuyVirtualTrader(robot.Id, robot.UserId, formulaDto);
+            }
         }
     }
 }
