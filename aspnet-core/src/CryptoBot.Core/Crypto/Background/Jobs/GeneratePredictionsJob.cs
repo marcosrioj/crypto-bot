@@ -41,7 +41,10 @@ namespace CryptoBot.Crypto.Background.Jobs
                 Description = dataMap.GetString("Description"),
                 Currencies = dataMap.GetString("Currencies"),
                 BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),
-                BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor")
+                BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor"),
+                TryToSellByMinute = dataMap.GetBoolean("TryToSellByMinute"),
+                TryToSellByMinutePercentage = (decimal)dataMap.GetFloat("TryToSellByMinutePercentage"),
+                BalancePreserved = (decimal)dataMap.GetFloat("BalancePreserved")
             };
 
             await _traderService.GenerateBetterPredictionsAsync(formula);

@@ -4,14 +4,16 @@ using CryptoBot.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    partial class CryptoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210424153828_Updated_Prediction_Added_TryToSellByMinute")]
+    partial class Updated_Prediction_Added_TryToSellByMinute
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1589,7 +1591,7 @@ namespace CryptoBot.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("TryToSellByMinutePercentage")
-                        .HasColumnType("decimal(4,4)");
+                        .HasColumnType("decimal(2,2)");
 
                     b.HasKey("Id");
 
@@ -1687,7 +1689,7 @@ namespace CryptoBot.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("TryToSellByMinutePercentage")
-                        .HasColumnType("decimal(4,4)");
+                        .HasColumnType("decimal(2,2)");
 
                     b.Property<int>("WhatToDo")
                         .HasColumnType("int");

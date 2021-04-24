@@ -10,6 +10,7 @@ namespace CryptoBot.Crypto.Services.Dtos
     [AutoMap(typeof(Formula))]
     public class FormulaDto : EntityDto<long>
     {
+        [Required]
         public bool IsActive { get; set; }
 
         public string Description { get; set; }
@@ -52,6 +53,12 @@ namespace CryptoBot.Crypto.Services.Dtos
 
         [Required]
         public decimal OrderPrice { get; set; }
+
+        [Required]
+        public bool TryToSellByMinute { get; set; }
+
+        [Required]
+        public decimal TryToSellByMinutePercentage { get; set; }
 
     }
 }

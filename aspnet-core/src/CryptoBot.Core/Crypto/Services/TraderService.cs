@@ -164,7 +164,9 @@ namespace CryptoBot.Crypto.Services
                         IntervalToBuy = formula.IntervalToBuy,
                         IntervalToSell = formula.IntervalToSell,
                         Score = whatToDo.Score.ToString(),
-                        DataLearned = formula.LimitOfDataToLearn
+                        DataLearned = formula.LimitOfDataToLearn,
+                        TryToSellByMinute = formula.TryToSellByMinute,
+                        TryToSellByMinutePercentage = formula.TryToSellByMinutePercentage
                     });
                 }
             }
@@ -316,22 +318,19 @@ namespace CryptoBot.Crypto.Services
         public async Task AutoTraderSellWithWalletVirtualAsync()
         {
             var secondsEarlier = 40;
+            var now = DateTime.Now;
+            var threMinutesTime = now.AddSeconds(-180 + secondsEarlier);
+            var fiveMinutesTime = now.AddSeconds(-300 + secondsEarlier);
+            var fifteenMinutesTime = now.AddSeconds(-900 + secondsEarlier);
+            var thirtyMinutesTime = now.AddSeconds(-1800 + secondsEarlier);
+            var oneHourTime = now.AddSeconds(-3600 + secondsEarlier);
+            var twoHourTime = now.AddSeconds(-7200 + secondsEarlier);
 
             var predictionOrders = await _predictionOrderRepository
                 .GetAll()
                 .Include(x => x.Order)
                 .Include(x => x.Prediction)
-                .Where(x =>
-                    x.Order.Status == EOrderStatus.Buyed
-                    && (
-                        x.Prediction.IntervalToSell == KlineInterval.OneMinute
-                        || (x.Prediction.IntervalToSell == KlineInterval.ThreeMinutes && x.CreationTime < DateTime.Now.AddSeconds(-180 + secondsEarlier))
-                        || (x.Prediction.IntervalToSell == KlineInterval.FiveMinutes && x.CreationTime < DateTime.Now.AddSeconds(-300 + secondsEarlier))
-                        || (x.Prediction.IntervalToSell == KlineInterval.FifteenMinutes && x.CreationTime < DateTime.Now.AddSeconds(-900 + secondsEarlier))
-                        || (x.Prediction.IntervalToSell == KlineInterval.ThirtyMinutes && x.CreationTime < DateTime.Now.AddSeconds(-1800 + secondsEarlier))
-                        || (x.Prediction.IntervalToSell == KlineInterval.OneHour && x.CreationTime < DateTime.Now.AddSeconds(-3600 + secondsEarlier))
-                        || (x.Prediction.IntervalToSell == KlineInterval.TwoHour && x.CreationTime < DateTime.Now.AddSeconds(-7200 + secondsEarlier))
-                    ))
+                .Where(x => x.Order.Status == EOrderStatus.Buyed)
                 .ToListAsync();
 
             foreach (var predictionOrder in predictionOrders)
@@ -340,6 +339,26 @@ namespace CryptoBot.Crypto.Services
                 var bookPrice = _binanceService.GetBookPrice(pair);
 
                 var amount = bookPrice.Data.BestBidPrice * predictionOrder.Order.Amount;
+
+                if (predictionOrder.Prediction.TryToSellByMinute 
+                    && predictionOrder.Prediction.IntervalToSell != KlineInterval.OneMinute
+                    &&
+                        (
+                            (predictionOrder.Prediction.IntervalToSell == KlineInterval.ThreeMinutes && predictionOrder.Prediction.CreationTime > threMinutesTime)
+                            || (predictionOrder.Prediction.IntervalToSell == KlineInterval.FiveMinutes && predictionOrder.Prediction.CreationTime > fiveMinutesTime)
+                            || (predictionOrder.Prediction.IntervalToSell == KlineInterval.FifteenMinutes && predictionOrder.Prediction.CreationTime > fifteenMinutesTime)
+                            || (predictionOrder.Prediction.IntervalToSell == KlineInterval.ThirtyMinutes && predictionOrder.Prediction.CreationTime > thirtyMinutesTime)
+                            || (predictionOrder.Prediction.IntervalToSell == KlineInterval.OneHour && predictionOrder.Prediction.CreationTime > oneHourTime)
+                            || (predictionOrder.Prediction.IntervalToSell == KlineInterval.TwoHour && predictionOrder.Prediction.CreationTime > twoHourTime)
+                        ))
+                {
+                    var IsProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentage);
+
+                    if (!IsProfitable)
+                    {
+                        continue;
+                    }
+                }
 
                 var predictionOrderId = await _orderRepository.InsertAndGetIdAsync(
                     new Order
@@ -426,7 +445,9 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("Description", formula.Description)
                         .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
-                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor); ;
+                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
+                        .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
+                        .UsingJobData("TryToSellByMinutePercentage", (float)formula.TryToSellByMinutePercentage);
                 },
                 trigger =>
                 {
@@ -461,7 +482,9 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("Description", formula.Description)
                         .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
-                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor);
+                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
+                        .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
+                        .UsingJobData("TryToSellByMinutePercentage", (float)formula.TryToSellByMinutePercentage);
                 },
                 trigger =>
                 {
@@ -494,7 +517,9 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
-                        .UsingJobData("Currency", (int)currency);
+                        .UsingJobData("Currency", (int)currency)
+                        .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
+                        .UsingJobData("TryToSellByMinutePercentage", (float)formula.TryToSellByMinutePercentage);
                 },
                 trigger =>
                 {
