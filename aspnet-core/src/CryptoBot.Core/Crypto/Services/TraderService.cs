@@ -231,8 +231,8 @@ namespace CryptoBot.Crypto.Services
             foreach (var prediction in predictions)
             {
                 var pair = $"{prediction.Currency}{CryptoBotConsts.BaseCoinName}";
-                var bookPrice = _binanceService.GetBookPrice(pair);
-                var bookOrder = _binanceService.GetBookOrders(pair, formula.LimitOfBookOrders);
+                var bookPrice = _binanceService.GetBookPrice(userId, pair);
+                var bookOrder = _binanceService.GetBookOrders(userId, pair, formula.LimitOfBookOrders);
 
                 if (bookPrice.Data != null
                     && bookOrder.Data != null
@@ -339,7 +339,7 @@ namespace CryptoBot.Crypto.Services
             foreach (var predictionOrder in predictionOrders)
             {
                 var pair = $"{predictionOrder.Order.To}{CryptoBotConsts.BaseCoinName}";
-                var bookPrice = _binanceService.GetBookPrice(pair);
+                var bookPrice = _binanceService.GetBookPrice(CryptoBotConsts.DefaultUserId, pair);
 
                 var amount = bookPrice.Data.BestBidPrice * predictionOrder.Order.Amount;
 

@@ -29,32 +29,32 @@ namespace CryptoBot.Crypto.Services
             _settingManager = settingManager;
         }
 
-        public WebCallResult<BinanceBookPrice> GetBookPrice(string pair)
+        public WebCallResult<BinanceBookPrice> GetBookPrice(long userId, string pair)
         {
-            SetBinanceClients();
+            SetBinanceClients(userId);
 
             return _binanceClient.Spot.Market.GetBookPrice(pair);
         }
 
-        public WebCallResult<IEnumerable<IBinanceKline>> GetKlines(string pair, KlineInterval interval, int limit = 100, DateTime? startTime = null, DateTime? endTime = null)
+        public WebCallResult<IEnumerable<IBinanceKline>> GetKlines(string pair, KlineInterval interval, int limit = 100, long? userId = null, DateTime? startTime = null, DateTime? endTime = null)
         {
-            SetBinanceClients();
+            SetBinanceClients(userId);
 
             return _binanceClient.Spot.Market.GetKlines(pair, interval, startTime, endTime, limit);
         }
 
-        public IBinanceKline GetKline(string pair)
+        public IBinanceKline GetKline(string pair, long? userId = null)
         {
-            SetBinanceClients();
+            SetBinanceClients(userId);
 
             var result = _binanceClient.Spot.Market.GetKlines(pair, KlineInterval.OneMinute, limit: 1);
 
             return result.Data.FirstOrDefault();
         }
 
-        public WebCallResult<BinanceOrderBook> GetBookOrders(string pair, int? limit = null)
+        public WebCallResult<BinanceOrderBook> GetBookOrders(long userId, string pair, int? limit = null)
         {
-            SetBinanceClients(2);
+            SetBinanceClients(userId);
 
             using (var client = new BinanceClient())
             {
@@ -68,7 +68,8 @@ namespace CryptoBot.Crypto.Services
             KlineInterval interval,
             DateTime? startTime,
             DateTime? endTime,
-            int limitOfDetails)
+            int limitOfDetails,
+            long? userId = null)
         {
             var inputData = new List<IBinanceKline>();
             var pair = $"{currency}{CryptoBotConsts.BaseCoinName}";
@@ -77,7 +78,7 @@ namespace CryptoBot.Crypto.Services
                 ? CryptoBotConsts.BinanceApiItemLimit
                 : limitOfDetails;
 
-            var klinesResult = GetKlines(pair, interval, initialLimitOfDetails, startTime, endTime);
+            var klinesResult = GetKlines(pair, interval, initialLimitOfDetails, userId, startTime, endTime);
 
             if (klinesResult.Success)
             {
@@ -94,7 +95,7 @@ namespace CryptoBot.Crypto.Services
                     var endTimeItem = inputData.First().OpenTime.AddSeconds(-1);
                     var startTimeItem = DatetimeHelper.GetDateMinusIntervalMultipliedByLimit(endTimeItem, interval, newLimitOfDetails);
 
-                    var klinesResultItem = GetKlines(pair, interval, newLimitOfDetails, startTimeItem, endTimeItem);
+                    var klinesResultItem = GetKlines(pair, interval, newLimitOfDetails, userId, startTimeItem, endTimeItem);
 
                     if (klinesResultItem.Success)
                     {

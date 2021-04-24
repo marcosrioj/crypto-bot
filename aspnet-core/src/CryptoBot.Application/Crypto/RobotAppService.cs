@@ -1,5 +1,6 @@
 ﻿using Abp.Application.Services;
 using Abp.Application.Services.Dto;
+using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Linq.Extensions;
 using CryptoBot.Crypto.Entities;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto
 {
-    [Authorize]
+    [AbpAuthorize]
     public class RobotAppService : AsyncCrudAppService<Robot, RobotDto, long>, IRobotAppService
     {
         private readonly ITraderService _traderService;

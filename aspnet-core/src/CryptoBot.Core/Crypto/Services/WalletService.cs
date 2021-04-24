@@ -104,7 +104,7 @@ namespace CryptoBot.Crypto.Services
                 else
                 {
                     var pair = $"{wallet.Currency}{CryptoBotConsts.BaseCoinName}";
-                    var bookPrice = _binanceService.GetBookPrice(pair);
+                    var bookPrice = _binanceService.GetBookPrice(userId, pair);
 
                     balance = balance + bookPrice.Data.BestAskPrice * wallet.Balance;
                 }

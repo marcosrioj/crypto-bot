@@ -1,18 +1,18 @@
 ﻿using Abp.Application.Services;
 using Abp.Application.Services.Dto;
+using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Linq.Extensions;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Services.Dtos;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto
 {
-    [Authorize]
+    [AbpAuthorize]
     public class FormulaAppService : AsyncCrudAppService<Formula, FormulaDto, long>, IFormulaAppService
     {
         private readonly ITraderService _traderService;
