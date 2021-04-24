@@ -340,8 +340,7 @@ namespace CryptoBot.Crypto.Services
 
                 var amount = bookPrice.Data.BestBidPrice * predictionOrder.Order.Amount;
 
-                if (predictionOrder.Prediction.TryToSellByMinute 
-                    && predictionOrder.Prediction.IntervalToSell != KlineInterval.OneMinute
+                if (predictionOrder.Prediction.IntervalToSell != KlineInterval.OneMinute
                     &&
                         (
                             (predictionOrder.Prediction.IntervalToSell == KlineInterval.ThreeMinutes && predictionOrder.Prediction.CreationTime > threMinutesTime)
@@ -352,9 +351,16 @@ namespace CryptoBot.Crypto.Services
                             || (predictionOrder.Prediction.IntervalToSell == KlineInterval.TwoHour && predictionOrder.Prediction.CreationTime > twoHourTime)
                         ))
                 {
-                    var IsProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentage);
+                    if (predictionOrder.Prediction.TryToSellByMinute)
+                    {
+                        var IsProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentage);
 
-                    if (!IsProfitable)
+                        if (!IsProfitable)
+                        {
+                            continue;
+                        }
+                    } 
+                    else
                     {
                         continue;
                     }
@@ -385,13 +391,12 @@ namespace CryptoBot.Crypto.Services
             await _jobManager.ScheduleAsync<SellVirtualTraderJob>(
                 job =>
                 {
-                    job.WithIdentity("SellTrader");
                 },
                 trigger =>
                 {
                     trigger
                         .StartNow()
-                        .WithCronSchedule("58 * * * * ?");
+                        .WithCronSchedule("55 * * * * ?");
                 });
         }
 
