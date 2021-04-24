@@ -5,7 +5,5 @@
         public const string BinanceKey = "BinanceKey";
 
         public const string BinanceSecret = "BinanceSecret";
-
-        public const string ActiveCurrencies = "ActiveCurrencies";
     }
 }

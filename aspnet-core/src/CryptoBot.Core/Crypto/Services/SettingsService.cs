@@ -16,37 +16,6 @@ namespace CryptoBot.Crypto.Services
             _settingManager = settingManager;
         }
 
-        public async Task<IEnumerable<ECurrency>> GetActiveCurrencies()
-        {
-            var activeCurrencies = await _settingManager.GetSettingValueAsync(CryptoBotNames.ActiveCurrencies);
-
-            if (!string.IsNullOrWhiteSpace(activeCurrencies))
-            {
-                var coins = new List<ECurrency>();
-                var activeCurrenciesSplited = activeCurrencies.Split(',');
-
-                foreach (var activeCurrency in activeCurrenciesSplited)
-                {
-                    var activeCurrencyTrimmed = activeCurrency.Trim().ToUpper();
-                    if (activeCurrencyTrimmed.Length >= 2)
-                    {
-                        var coinEnum = (ECurrency)Enum.Parse(typeof(ECurrency), activeCurrencyTrimmed);
-
-                        if (Enum.IsDefined(typeof(ECurrency), coinEnum))
-                        {
-                            coins.Add(coinEnum);
-                        }
-                    }
-                }
-
-                return coins;
-            }
-            else
-            {
-                return new ECurrency[] { ECurrency.BTC, ECurrency.ETH };
-            }
-        }
-
         //TODO Apply on strategies
         public float GetInvestorProfileFactor(EStrategy strategy, EInvestorProfile investorProfile = EInvestorProfile.UltraConservative)
         {

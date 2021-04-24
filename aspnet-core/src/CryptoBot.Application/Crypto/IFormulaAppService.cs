@@ -1,5 +1,5 @@
 ﻿using Abp.Application.Services;
-using CryptoBot.Crypto.Dtos.Services;
+using CryptoBot.Crypto.Services.Dtos;
 
 namespace CryptoBot.Crypto
 {

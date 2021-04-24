@@ -1,7 +1,7 @@
 ﻿using Abp.Dependency;
 using Abp.Quartz;
 using Binance.Net.Enums;
-using CryptoBot.Crypto.Dtos.Services;
+using CryptoBot.Crypto.Services.Dtos;
 using CryptoBot.Crypto.Enums;
 using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services;
@@ -40,6 +40,7 @@ namespace CryptoBot.Crypto.Background.Jobs
                 OrderPrice = (decimal)dataMap.GetFloat("OrderPrice"),
                 OrderPriceType = (EOrderPriceType)dataMap.GetInt("OrderPriceType"),
                 Description = dataMap.GetString("Description"),
+                Currencies = dataMap.GetString("Currencies"),
                 BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),
                 BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor")
             };

@@ -5,7 +5,7 @@ using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace CryptoBot.Crypto.Dtos.Services
+namespace CryptoBot.Crypto.Services.Dtos
 {
     [AutoMap(typeof(Formula))]
     public class FormulaDto : EntityDto<long>
@@ -13,6 +13,9 @@ namespace CryptoBot.Crypto.Dtos.Services
         public bool IsActive { get; set; }
 
         public string Description { get; set; }
+
+        [Required]
+        public string Currencies { get; set; }
 
         [Required]
         public EStrategy Strategy1 { get; set; }

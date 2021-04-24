@@ -90,7 +90,7 @@ namespace CryptoBot.Crypto.Services
             var wallets = await _repository
                 .GetAll()
                 .AsNoTracking()
-                .Where(x => x.UserId == userId)
+                .Where(x => x.UserId == userId && x.Balance > 0)
                 .ToListAsync();
 
             var balance = 0m;

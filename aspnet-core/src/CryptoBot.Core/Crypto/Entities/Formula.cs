@@ -12,6 +12,9 @@ namespace CryptoBot.Crypto.Entities
         [Column(TypeName = "varchar(1000)")]
         public string Description { get; set; }
 
+        [Column(TypeName = "varchar(1000)")]
+        public string Currencies { get; set; }
+
         public EStrategy Strategy1 { get; set; }
 
         public EInvestorProfile InvestorProfile1 { get; set; }

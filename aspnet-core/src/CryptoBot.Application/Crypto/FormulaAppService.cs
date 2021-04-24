@@ -3,7 +3,7 @@ using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
 using Abp.Quartz;
 using CryptoBot.Crypto.Background.Jobs;
-using CryptoBot.Crypto.Dtos.Services;
+using CryptoBot.Crypto.Services.Dtos;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Services;
 using Microsoft.AspNetCore.Authorization;

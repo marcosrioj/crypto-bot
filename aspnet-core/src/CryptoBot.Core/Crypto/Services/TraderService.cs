@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CryptoBot.Crypto.Dtos.Services;
 using Abp.Quartz;
 using Quartz;
 using CryptoBot.Crypto.Background.Jobs;
@@ -118,7 +117,7 @@ namespace CryptoBot.Crypto.Services
                 throw new ArgumentException("Must to have at least one strategy");
             }
 
-            var allCurrencies = Enum.GetValues(typeof(ECurrency)).Cast<ECurrency>();
+            var allCurrencies = CurrencyHelper.GetCurrencies(formula.Currencies);
 
             foreach (var currency in allCurrencies)
             {
@@ -426,43 +425,13 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("OrderPrice", (float)formula.OrderPrice)
                         .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
                         .UsingJobData("Description", formula.Description)
+                        .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor); ;
                 },
                 trigger =>
                 {
                     trigger.WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy));
-                });
-        }
-
-        private async Task ScheduleGeneratePrediction(FormulaDto formula, ECurrency currency)
-        {
-            await _jobManager.ScheduleAsync<GeneratePredictionJob>(
-                job =>
-                {
-                    job
-                        .WithIdentity($"GeneratePredictionJob-formula{formula.Id}-currency{currency}")
-                        .UsingJobData("Id", formula.Id)
-                        .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
-                        .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
-                        .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
-                        .UsingJobData("Strategy1", (int)formula.Strategy1)
-                        .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)
-                        .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
-                        .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
-                        .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
-                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
-                        .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
-                        .UsingJobData("OrderPrice", (float)formula.OrderPrice)
-                        .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
-                        .UsingJobData("Description", formula.Description)
-                        .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
-                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
-                        .UsingJobData("Currency", (int)currency);
-                },
-                trigger =>
-                {
-                    trigger.StartNow();
                 });
         }
 
@@ -490,12 +459,44 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("OrderPrice", (float)formula.OrderPrice)
                         .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
                         .UsingJobData("Description", formula.Description)
+                        .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor);
                 },
                 trigger =>
                 {
                     trigger.WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy, 10));
+                });
+        }
+
+        private async Task ScheduleGeneratePrediction(FormulaDto formula, ECurrency currency)
+        {
+            await _jobManager.ScheduleAsync<GeneratePredictionJob>(
+                job =>
+                {
+                    job
+                        .UsingJobData("Id", formula.Id)
+                        .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
+                        .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
+                        .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
+                        .UsingJobData("Strategy1", (int)formula.Strategy1)
+                        .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)
+                        .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
+                        .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
+                        .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
+                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
+                        .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
+                        .UsingJobData("OrderPrice", (float)formula.OrderPrice)
+                        .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
+                        .UsingJobData("Description", formula.Description)
+                        .UsingJobData("Currencies", formula.Currencies)
+                        .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
+                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
+                        .UsingJobData("Currency", (int)currency);
+                },
+                trigger =>
+                {
+                    trigger.StartNow();
                 });
         }
 

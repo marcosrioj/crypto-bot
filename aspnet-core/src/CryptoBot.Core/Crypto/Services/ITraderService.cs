@@ -1,9 +1,8 @@
 ﻿using Abp.Domain.Services;
 using Binance.Net.Enums;
-using CryptoBot.Crypto.Dtos.Services;
+using CryptoBot.Crypto.Services.Dtos;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Enums;
-using CryptoBot.Crypto.Services.Dtos;
 using System.Threading.Tasks;
 
 namespace CryptoBot.Crypto.Services

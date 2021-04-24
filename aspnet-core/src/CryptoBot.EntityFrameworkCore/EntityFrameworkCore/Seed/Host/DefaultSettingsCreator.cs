@@ -32,9 +32,6 @@ namespace CryptoBot.EntityFrameworkCore.Seed.Host
             // Languages
             AddSettingIfNotExists(LocalizationSettingNames.DefaultLanguage, "en", tenantId);
 
-            //Binance General
-            AddSettingIfNotExists(CryptoBotNames.ActiveCurrencies, "BTC,ETH,BNB,ONE,ANKR");
-
             //Binance Marcos
             AddSettingIfNotExists(CryptoBotNames.BinanceKey, "ogIoauli5sR4XhHUy0TdoUVLlpHjbQHXx283KW9ydYaalRkOg1cjxWBGVwMdPfKy", null, 2);
             AddSettingIfNotExists(CryptoBotNames.BinanceSecret, "HWSANdKZkBnXrfYfSDwnOWeCMddtKbGdk0KZb1sWycxDXkSPWLeFFk3RVUTQ1w2g", null, 2);
