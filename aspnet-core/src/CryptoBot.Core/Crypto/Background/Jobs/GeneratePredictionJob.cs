@@ -39,6 +39,7 @@ namespace CryptoBot.Crypto.Background.Jobs
                 InvestorProfile3 = dataMap.GetInt("InvestorProfile3") > 0 ? (EInvestorProfile)dataMap.GetInt("InvestorProfile3") : null,
                 OrderPrice = (decimal)dataMap.GetFloat("OrderPrice"),
                 OrderPriceType = (EOrderPriceType)dataMap.GetInt("OrderPriceType"),
+                LimitOfBookOrders = dataMap.GetInt("LimitOfBookOrders"),
                 Description = dataMap.GetString("Description"),
                 Currencies = dataMap.GetString("Currencies"),
                 BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),

@@ -36,6 +36,8 @@ namespace CryptoBot.Crypto.Entities
         [Column(TypeName = "decimal(2, 2)")]
         public decimal BookOrdersFactor { get; set; }
 
+        public int LimitOfBookOrders { get; set; }
+
         public int LimitOfDataToLearn { get; set; }
 
         [Column(TypeName = "decimal(10, 2)")]

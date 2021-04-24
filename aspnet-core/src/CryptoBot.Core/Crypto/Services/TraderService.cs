@@ -229,7 +229,7 @@ namespace CryptoBot.Crypto.Services
             {
                 var pair = $"{prediction.Currency}{CryptoBotConsts.BaseCoinName}";
                 var bookPrice = _binanceService.GetBookPrice(pair);
-                var bookOrder = _binanceService.GetBookOrders(pair, 20);
+                var bookOrder = _binanceService.GetBookOrders(pair, formula.LimitOfBookOrders);
 
                 if (bookPrice.Data != null
                     && bookOrder.Data != null
@@ -447,6 +447,7 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
                         .UsingJobData("OrderPrice", (float)formula.OrderPrice)
                         .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
+                        .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                         .UsingJobData("Description", formula.Description)
                         .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
@@ -484,6 +485,7 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
                         .UsingJobData("OrderPrice", (float)formula.OrderPrice)
                         .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
+                        .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                         .UsingJobData("Description", formula.Description)
                         .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
@@ -518,6 +520,7 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
                         .UsingJobData("OrderPrice", (float)formula.OrderPrice)
                         .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
+                        .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                         .UsingJobData("Description", formula.Description)
                         .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)

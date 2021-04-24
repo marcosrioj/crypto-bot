@@ -41,6 +41,7 @@ namespace CryptoBot.Crypto.Background.Jobs
                 BalancePreserved = (decimal)dataMap.GetFloat("BalancePreserved"),
                 OrderPrice = (decimal)dataMap.GetFloat("OrderPrice"),
                 OrderPriceType = (EOrderPriceType)dataMap.GetInt("OrderPriceType"),
+                LimitOfBookOrders = dataMap.GetInt("LimitOfBookOrders"),
                 Description = dataMap.GetString("Description"),
                 Currencies = dataMap.GetString("Currencies"),
                 BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),

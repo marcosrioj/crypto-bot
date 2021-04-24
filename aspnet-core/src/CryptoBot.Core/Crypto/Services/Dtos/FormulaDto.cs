@@ -43,6 +43,9 @@ namespace CryptoBot.Crypto.Services.Dtos
         public decimal BookOrdersFactor { get; set; }
 
         [Required]
+        public int LimitOfBookOrders { get; set; }
+
+        [Required]
         public int LimitOfDataToLearn { get; set; }
 
         [Required]
