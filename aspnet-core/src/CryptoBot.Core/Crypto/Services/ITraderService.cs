@@ -17,6 +17,8 @@ namespace CryptoBot.Crypto.Services
 
         Task GenerateBetterPredictionsAsync(FormulaDto formula);
 
+        Task GenerateBetterPredictionAsync(FormulaDto formula, ECurrency currency);
+
         RegressionDataOutput GetRegressionData(
             ECurrency currency,
             KlineInterval interval,

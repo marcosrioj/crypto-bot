@@ -21,6 +21,7 @@ using Quartz;
 using CryptoBot.Crypto.Background.Jobs;
 using Abp.ObjectMapping;
 using Abp.Domain.Uow;
+using CryptoBot.Crypto.Helpers;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -124,43 +125,48 @@ namespace CryptoBot.Crypto.Services
                 if (currency == ECurrency.USDT)
                     continue;
 
-                var data = GetRegressionData(currency, formula.IntervalToBuy, formula.LimitOfDataToLearn);
+                await ScheduleGeneratePrediction(formula, currency);
+            }
+        }
 
-                var whatToDo = await WhatToDo(formula.Strategy1, formula.InvestorProfile1, data);
+        public async Task GenerateBetterPredictionAsync(FormulaDto formula, ECurrency currency)
+        {
+            var data = GetRegressionData(currency, formula.IntervalToBuy, formula.LimitOfDataToLearn);
+
+            var whatToDo = await WhatToDo(formula.Strategy1, formula.InvestorProfile1, data);
+
+            if (whatToDo.WhatToDo == EWhatToDo.Buy)
+            {
+                if (formula.Strategy2.HasValue && formula.InvestorProfile2.HasValue)
+                {
+                    whatToDo = await WhatToDo(formula.Strategy2.Value, formula.InvestorProfile2.Value, data);
+
+                    if (whatToDo.WhatToDo == EWhatToDo.Buy
+                        && formula.Strategy3.HasValue
+                        && formula.InvestorProfile3.HasValue)
+                    {
+                        whatToDo = await WhatToDo(formula.Strategy3.Value, formula.InvestorProfile3.Value, data);
+                    }
+                }
 
                 if (whatToDo.WhatToDo == EWhatToDo.Buy)
                 {
-                    if (formula.Strategy2.HasValue && formula.InvestorProfile2.HasValue)
+                    await _predictionRepository.InsertAndGetIdAsync(new Prediction
                     {
-                        whatToDo = await WhatToDo(formula.Strategy2.Value, formula.InvestorProfile2.Value, data);
-
-                        if (whatToDo.WhatToDo == EWhatToDo.Buy
-                            && formula.Strategy3.HasValue
-                            && formula.InvestorProfile3.HasValue)
-                        {
-                            whatToDo = await WhatToDo(formula.Strategy3.Value, formula.InvestorProfile3.Value, data);
-                        }
-                    }
-
-                    if (whatToDo.WhatToDo == EWhatToDo.Buy)
-                    {
-                        await _predictionRepository.InsertAndGetIdAsync(new Prediction
-                        {
-                            CreationTime = DateTime.Now,
-                            Currency = currency,
-                            Strategy1 = formula.Strategy1,
-                            InvestorProfile1 = formula.InvestorProfile1,
-                            Strategy2 = formula.Strategy2,
-                            InvestorProfile2 = formula.InvestorProfile2,
-                            Strategy3 = formula.Strategy3,
-                            InvestorProfile3 = formula.InvestorProfile3,
-                            WhatToDo = whatToDo.WhatToDo,
-                            IntervalToBuy = formula.IntervalToBuy,
-                            IntervalToSell = formula.IntervalToSell,
-                            Score = whatToDo.Score.ToString(),
-                            DataLearned = formula.LimitOfDataToLearn
-                        });
-                    }
+                        CreationTime = DateTime.Now,
+                        Currency = currency,
+                        Strategy1 = formula.Strategy1,
+                        InvestorProfile1 = formula.InvestorProfile1,
+                        Strategy2 = formula.Strategy2,
+                        InvestorProfile2 = formula.InvestorProfile2,
+                        Strategy3 = formula.Strategy3,
+                        InvestorProfile3 = formula.InvestorProfile3,
+                        WhatToDo = whatToDo.WhatToDo,
+                        IntervalToBuy = formula.IntervalToBuy,
+                        IntervalToSell = formula.IntervalToSell,
+                        Score = whatToDo.Score.ToString(),
+                        DataLearned = formula.LimitOfDataToLearn
+                    });
                 }
             }
         }
@@ -197,7 +203,7 @@ namespace CryptoBot.Crypto.Services
                 .GetAll()
                 .AsNoTracking()
                 .Where(x =>
-                    x.CreationTime > DateTime.Now.AddSeconds(-10)
+                    x.CreationTime > DateTime.Now.AddSeconds(-20)
                     && !x.Orders.Any(y => y.CreatorUserId == userId)
                     && x.IntervalToBuy == formula.IntervalToBuy
                     && x.Strategy1 == formula.Strategy1
@@ -276,7 +282,7 @@ namespace CryptoBot.Crypto.Services
             if (formula.OrderPriceType == EOrderPriceType.Percent)
             {
                 priceUsdtToBuyByPredictionFiltered = (mainWallet.Balance * formula.OrderPrice) / predictionsFiltered.Count;
-            } 
+            }
             else
             {
                 priceUsdtToBuyByPredictionFiltered = formula.OrderPrice / predictionsFiltered.Count;
@@ -310,7 +316,7 @@ namespace CryptoBot.Crypto.Services
         [UnitOfWork(false)]
         public async Task AutoTraderSellWithWalletVirtualAsync()
         {
-            var secondsEarlier = 20;
+            var secondsEarlier = 40;
 
             var predictionOrders = await _predictionOrderRepository
                 .GetAll()
@@ -425,14 +431,38 @@ namespace CryptoBot.Crypto.Services
                 },
                 trigger =>
                 {
-                    trigger
-                        .StartNow()
-                        .WithSimpleSchedule(schedule =>
-                        {
-                            schedule.RepeatForever()
-                                .WithIntervalInSeconds(1)
-                                .Build();
-                        });
+                    trigger.WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy));
+                });
+        }
+
+        private async Task ScheduleGeneratePrediction(FormulaDto formula, ECurrency currency)
+        {
+            await _jobManager.ScheduleAsync<GeneratePredictionJob>(
+                job =>
+                {
+                    job
+                        .WithIdentity($"GeneratePredictionJob-formula{formula.Id}-currency{currency}")
+                        .UsingJobData("Id", formula.Id)
+                        .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
+                        .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
+                        .UsingJobData("LimitOfDataToLearn", formula.LimitOfDataToLearn)
+                        .UsingJobData("Strategy1", (int)formula.Strategy1)
+                        .UsingJobData("InvestorProfile1", (int)formula.InvestorProfile1)
+                        .UsingJobData("Strategy2", formula.Strategy2.HasValue ? (int)formula.Strategy2 : 0)
+                        .UsingJobData("InvestorProfile2", formula.InvestorProfile2.HasValue ? (int)formula.InvestorProfile2 : 0)
+                        .UsingJobData("Strategy3", formula.Strategy3.HasValue ? (int)formula.Strategy3 : 0)
+                        .UsingJobData("InvestorProfile3", formula.InvestorProfile3.HasValue ? (int)formula.InvestorProfile3 : 0)
+                        .UsingJobData("BalancePreserved", (float)formula.BalancePreserved)
+                        .UsingJobData("OrderPrice", (float)formula.OrderPrice)
+                        .UsingJobData("OrderPriceType", (int)formula.OrderPriceType)
+                        .UsingJobData("Description", formula.Description)
+                        .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
+                        .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
+                        .UsingJobData("Currency", (int)currency);
+                },
+                trigger =>
+                {
+                    trigger.StartNow();
                 });
         }
 
@@ -465,21 +495,7 @@ namespace CryptoBot.Crypto.Services
                 },
                 trigger =>
                 {
-                    trigger
-                        .StartAt(new DateTimeOffset(
-                            oneMinuteAfter.Year,
-                            oneMinuteAfter.Month,
-                            oneMinuteAfter.Day,
-                            oneMinuteAfter.Hour,
-                            oneMinuteAfter.Minute,
-                            0,
-                            oneMinuteAfter.Offset))
-                        .WithSimpleSchedule(schedule =>
-                        {
-                            schedule.RepeatForever()
-                                .WithIntervalInSeconds(1)
-                                .Build();
-                        });
+                    trigger.WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy, 10));
                 });
         }
 

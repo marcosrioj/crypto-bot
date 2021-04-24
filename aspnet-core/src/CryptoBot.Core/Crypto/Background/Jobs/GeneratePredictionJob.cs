@@ -1,0 +1,52 @@
+﻿using Abp.Dependency;
+using Abp.Quartz;
+using Binance.Net.Enums;
+using CryptoBot.Crypto.Dtos.Services;
+using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Helpers;
+using CryptoBot.Crypto.Services;
+using Quartz;
+using System;
+using System.Threading.Tasks;
+
+namespace CryptoBot.Crypto.Background.Jobs
+{
+    public class GeneratePredictionJob : JobBase, ITransientDependency
+    {
+        private readonly ITraderService _traderService;
+
+        public GeneratePredictionJob(ITraderService traderService)
+        {
+            _traderService = traderService;
+        }
+
+        public override async Task Execute(IJobExecutionContext context)
+        {
+            JobKey key = context.JobDetail.Key;
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+
+            var formula = new FormulaDto
+            {
+                Id = dataMap.GetLong("Id"),
+                IntervalToBuy = (KlineInterval)dataMap.GetInt("IntervalToBuy"),
+                IntervalToSell = (KlineInterval)dataMap.GetInt("IntervalToSell"),
+                LimitOfDataToLearn = dataMap.GetInt("LimitOfDataToLearn"),
+                Strategy1 = (EStrategy)dataMap.GetInt("Strategy1"),
+                InvestorProfile1 = (EInvestorProfile)dataMap.GetInt("InvestorProfile1"),
+                Strategy2 = dataMap.GetInt("Strategy2") > 0 ? (EStrategy)dataMap.GetInt("Strategy2") : null,
+                InvestorProfile2 = dataMap.GetInt("InvestorProfile2") > 0 ? (EInvestorProfile)dataMap.GetInt("InvestorProfile2") : null,
+                Strategy3 = dataMap.GetInt("Strategy3") > 0 ? (EStrategy)dataMap.GetInt("Strategy3") : null,
+                InvestorProfile3 = dataMap.GetInt("InvestorProfile3") > 0 ? (EInvestorProfile)dataMap.GetInt("InvestorProfile3") : null,
+                OrderPrice = (decimal)dataMap.GetFloat("OrderPrice"),
+                OrderPriceType = (EOrderPriceType)dataMap.GetInt("OrderPriceType"),
+                Description = dataMap.GetString("Description"),
+                BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),
+                BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor")
+            };
+
+            var currency = (ECurrency)dataMap.GetInt("Currency");
+
+            await _traderService.GenerateBetterPredictionAsync(formula, currency);
+        }
+    }
+}

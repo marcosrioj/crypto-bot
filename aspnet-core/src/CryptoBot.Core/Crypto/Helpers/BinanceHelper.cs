@@ -59,5 +59,61 @@ namespace CryptoBot.Crypto.Helpers
 
             return seconds;
         }
+
+        public static string GetCronExpression(KlineInterval interval, int seconds = 0)
+        {
+            var cronExpression = string.Empty;
+
+            switch (interval)
+            {
+                case KlineInterval.OneMinute:
+                    cronExpression = $"{seconds} * * * * ?";
+                    break;
+                case KlineInterval.ThreeMinutes:
+                    cronExpression = $"{seconds} */3 * * * ?";
+                    break;
+                case KlineInterval.FiveMinutes:
+                    cronExpression = $"{seconds} */5 * * * ?";
+                    break;
+                case KlineInterval.FifteenMinutes:
+                    cronExpression = $"{seconds} */15 * * * ?";
+                    break;
+                case KlineInterval.ThirtyMinutes:
+                    cronExpression = $"{seconds} */30 * * * ?";
+                    break;
+                case KlineInterval.OneHour:
+                    cronExpression = $"{seconds} 0 * * * ?";
+                    break;
+                case KlineInterval.TwoHour:
+                    cronExpression = $"{seconds} 0 */2 * * ?";
+                    break;
+                case KlineInterval.FourHour:
+                    cronExpression = $"{seconds} 0 */4 * * ?";
+                    break;
+                case KlineInterval.SixHour:
+                    cronExpression = $"{seconds} 0 */6 * * ?";
+                    break;
+                case KlineInterval.EightHour:
+                    cronExpression = $"{seconds} 0 */8 * * ?";
+                    break;
+                case KlineInterval.TwelveHour:
+                    cronExpression = $"{seconds} 0 */12 * * ?";
+                    break;
+                case KlineInterval.OneDay:
+                    cronExpression = $"{seconds} 0 0 * * ?";
+                    break;
+                case KlineInterval.ThreeDay:
+                    cronExpression = $"{seconds} 0 0 */3 * ?";
+                    break;
+                case KlineInterval.OneWeek:
+                    cronExpression = $"{seconds} 0 0 */7 * ?";
+                    break;
+                case KlineInterval.OneMonth:
+                    cronExpression = $"{seconds} 0 0 0 * ?";
+                    break;
+            }
+
+            return cronExpression;
+        }
     }
 }
