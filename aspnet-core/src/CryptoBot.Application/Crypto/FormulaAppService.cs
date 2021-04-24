@@ -1,15 +1,14 @@
 ﻿using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
-using Abp.Quartz;
-using CryptoBot.Crypto.Background.Jobs;
 using CryptoBot.Crypto.Services.Dtos;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Services;
 using Microsoft.AspNetCore.Authorization;
-using Quartz;
-using System;
 using System.Threading.Tasks;
+using System.Linq;
+using Abp.Linq.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace CryptoBot.Crypto
 {
@@ -43,14 +42,15 @@ namespace CryptoBot.Crypto
         {
             await base.DeleteAsync(input);
             await _traderService.UnscheduleGeneratePredictions(input.Id);
-            _traderService.UnscheduleBuyVirtualTrader(3, input.Id);
+            await _traderService.UnscheduleBuyVirtualTrader(3, input.Id);
         }
 
         public override async Task<FormulaDto> UpdateAsync(FormulaDto input)
         {
             var formula = await base.UpdateAsync(input);
+
             await _traderService.UnscheduleGeneratePredictions(input.Id);
-            _traderService.UnscheduleBuyVirtualTrader(3, input.Id);
+            await _traderService.UnscheduleBuyVirtualTrader(3, input.Id);
 
             if (formula.IsActive)
             {
@@ -59,6 +59,62 @@ namespace CryptoBot.Crypto
             }
 
             return formula;
+        }
+
+        public async Task<bool> Disable(long? formulaId)
+        {
+            try
+            {
+                var formulas = await Repository
+                    .GetAll()
+                    .Where(x => x.IsActive)
+                    .WhereIf(formulaId.HasValue, x => x.Id == formulaId.Value)
+                    .ToListAsync();
+
+                if (formulas.Count > 0)
+                {
+                    foreach (var formula in formulas)
+                    {
+                        formula.IsActive = false;
+                        await _traderService.UnscheduleGeneratePredictions(formula.Id);
+                        await _traderService.UnscheduleBuyVirtualTrader(3, formula.Id);
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task<bool> Enable(long formulaId)
+        {
+            try
+            {
+                var formula = await Repository
+                    .GetAll()
+                    .Where(x => !x.IsActive && x.Id == formulaId)
+                    .FirstOrDefaultAsync();
+
+                if (formula == null)
+                {
+                    return false;
+                }
+
+                formula.IsActive = false;
+                var formulaDto = MapToEntityDto(formula);
+
+                await _traderService.ScheduleGeneratePredictions(formulaDto);
+                await _traderService.ScheduleBuyVirtualTrader(3, formulaDto);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

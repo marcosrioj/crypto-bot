@@ -1,26 +1,26 @@
 ﻿using Abp.Collections.Extensions;
-using Abp.Linq.Extensions;
 using Abp.Domain.Repositories;
 using Abp.Domain.Services;
+using Abp.Domain.Uow;
+using Abp.Linq.Extensions;
+using Abp.ObjectMapping;
+using Abp.Quartz;
 using Binance.Net.Enums;
+using CryptoBot.Crypto.Background.Jobs;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Enums;
+using CryptoBot.Crypto.Helpers;
 using CryptoBot.Crypto.Services.Dtos;
 using CryptoBot.Crypto.Strategies.Normal.MLStrategy1;
 using CryptoBot.Crypto.Strategies.Normal.MLStrategy2;
 using CryptoBot.Crypto.Strategies.Simple.MeanReversionStrategy;
 using CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Abp.Quartz;
-using Quartz;
-using CryptoBot.Crypto.Background.Jobs;
-using Abp.ObjectMapping;
-using Abp.Domain.Uow;
-using CryptoBot.Crypto.Helpers;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -372,7 +372,7 @@ namespace CryptoBot.Crypto.Services
                 {
                     trigger
                         .StartNow()
-                        .WithCronSchedule("50 * * * * ?");
+                        .WithCronSchedule("58 * * * * ?");
                 });
         }
 
@@ -410,7 +410,6 @@ namespace CryptoBot.Crypto.Services
                 job =>
                 {
                     job
-                        .WithIdentity($"GeneratePredictionsJob-{formula.Id}")
                         .UsingJobData("Id", formula.Id)
                         .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
                         .UsingJobData("IntervalToSell", (int)formula.IntervalToSell)
@@ -431,7 +430,9 @@ namespace CryptoBot.Crypto.Services
                 },
                 trigger =>
                 {
-                    trigger.WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy));
+                    trigger
+                        .WithIdentity($"GeneratePredictionsJob-{formula.Id}")
+                        .WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy));
                 });
         }
 
@@ -443,7 +444,6 @@ namespace CryptoBot.Crypto.Services
                 job =>
                 {
                     job
-                        .WithIdentity($"BuyVirtualTraderJob-User-{userId}-Formula-{formula.Id}")
                         .UsingJobData("UserId", userId)
                         .UsingJobData("Id", formula.Id)
                         .UsingJobData("IntervalToBuy", (int)formula.IntervalToBuy)
@@ -465,7 +465,9 @@ namespace CryptoBot.Crypto.Services
                 },
                 trigger =>
                 {
-                    trigger.WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy, 10));
+                    trigger
+                        .WithIdentity($"BuyVirtualTraderJob-User-{userId}-Formula-{formula.Id}")
+                        .WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy, 10));
                 });
         }
 
