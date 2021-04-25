@@ -367,14 +367,29 @@ namespace CryptoBot.Crypto.Services
                             || (predictionOrder.Prediction.IntervalToSell == KlineInterval.TwoHour && predictionOrder.Prediction.CreationTime > twoHourTime)
                         ))
                 {
-                    if (predictionOrder.Prediction.TryToSellByMinute)
+                    // TODO It just used in Virtual traders. IN real life should be a SpotLimit
+                    if (predictionOrder.Prediction.TryToSellByMinute != ETryToSellByMinute.None)
                     {
-                        var isProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfProfit);
-                        var isLoss = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfLoss);
-
-                        if (!isProfitable || !isLoss)
+                        if (predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.Profit
+                            || predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.ProfitAndLoss)
                         {
-                            continue;
+                            var isProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfProfit);
+
+                            if (!isProfitable)
+                            {
+                                continue;
+                            }
+                        }
+
+                        if (predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.Loss
+                            || predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.ProfitAndLoss)
+                        {
+                            var isLoss = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfLoss);
+
+                            if (!isLoss)
+                            {
+                                continue;
+                            }
                         }
                     }
                     else
@@ -490,7 +505,7 @@ namespace CryptoBot.Crypto.Services
                             .UsingJobData("Currencies", formula.Currencies)
                             .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                             .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
-                            .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
+                            .UsingJobData("TryToSellByMinute", (int)formula.TryToSellByMinute)
                             .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
                             .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
                     },
@@ -533,7 +548,7 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("Currencies", formula.Currencies)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
-                        .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
+                        .UsingJobData("TryToSellByMinute", (int)formula.TryToSellByMinute)
                         .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
                         .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
                 },
@@ -571,7 +586,7 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
                         .UsingJobData("Currency", (int)currency)
-                        .UsingJobData("TryToSellByMinute", formula.TryToSellByMinute)
+                        .UsingJobData("TryToSellByMinute", (int)formula.TryToSellByMinute)
                         .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
                         .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
                 },

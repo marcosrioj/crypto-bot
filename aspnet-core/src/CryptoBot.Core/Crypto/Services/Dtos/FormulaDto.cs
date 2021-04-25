@@ -61,7 +61,7 @@ namespace CryptoBot.Crypto.Services.Dtos
         public decimal OrderPricePerGroup { get; set; }
 
         [Required]
-        public bool TryToSellByMinute { get; set; }
+        public ETryToSellByMinute TryToSellByMinute { get; set; }
 
         [Required]
         public decimal TryToSellByMinutePercentageOfProfit { get; set; }

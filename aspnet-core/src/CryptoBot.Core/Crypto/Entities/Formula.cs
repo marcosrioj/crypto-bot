@@ -51,7 +51,7 @@ namespace CryptoBot.Crypto.Entities
         [Column(TypeName = "decimal(18, 8)")]
         public decimal OrderPricePerGroup { get; set; }
 
-        public bool TryToSellByMinute { get; set; }
+        public ETryToSellByMinute TryToSellByMinute { get; set; }
 
         [Column(TypeName = "decimal(4, 4)")]
         public decimal TryToSellByMinutePercentageOfProfit { get; set; }

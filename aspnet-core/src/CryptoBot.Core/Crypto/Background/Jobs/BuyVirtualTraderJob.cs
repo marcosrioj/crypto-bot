@@ -48,7 +48,7 @@ namespace CryptoBot.Crypto.Background.Jobs
                 Currencies = dataMap.GetString("Currencies"),
                 BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),
                 BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor"),
-                TryToSellByMinute = dataMap.GetBoolean("TryToSellByMinute"),
+                TryToSellByMinute = (ETryToSellByMinute)dataMap.GetInt("TryToSellByMinute"),
                 TryToSellByMinutePercentageOfLoss = (decimal)dataMap.GetFloat("TryToSellByMinutePercentageOfLoss"),
                 TryToSellByMinutePercentageOfProfit = (decimal)dataMap.GetFloat("TryToSellByMinutePercentageOfProfit")
             };

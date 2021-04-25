@@ -29,7 +29,7 @@ namespace CryptoBot.Crypto.Entities
 
         public int DataLearned { get; set; }
 
-        public bool TryToSellByMinute { get; set; }
+        public ETryToSellByMinute TryToSellByMinute { get; set; }
 
         [Column(TypeName = "decimal(4, 4)")]
         public decimal TryToSellByMinutePercentageOfProfit { get; set; }
