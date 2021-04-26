@@ -115,8 +115,6 @@ namespace CryptoBot.Crypto.Services
                 inputData.RemoveAt(inputData.Count - 1);
             }
 
-            LogHelper.Log($"{DateTime.UtcNow.ToString("HH:mm:ss")} - {inputData.Last().CloseTime.ToString("HH:mm:ss")}", "time");
-
             return inputData;
         }
 
