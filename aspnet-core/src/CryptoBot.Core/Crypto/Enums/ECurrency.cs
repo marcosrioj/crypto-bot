@@ -91,7 +91,7 @@
         LUNA,
         MANA,
         MATIC,
-        MITH,
+        //MITH, DIFF - is MITH/UDST on binance (Now support like that USDT/MITH - Fix)
         MKR,
         MTL,
         NEAR,
@@ -108,7 +108,7 @@
         OXT,
         PERP,
         PNT,
-        PSG,
+        //PSG, DIFF - is MITH/UDST on binance (Now support like that USDT/MITH - Fix)
         QTUM,
         RAMP,
         REEF,
@@ -136,7 +136,7 @@
         TOMO,
         TRB,
         TROY,
-        TRY,
+        //TRY, DIFF - is MITH/UDST on binance (Now support like that USDT/MITH - Fix)
         TRX,
         UNFI,
         UNI,
