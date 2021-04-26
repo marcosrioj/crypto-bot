@@ -110,6 +110,13 @@ namespace CryptoBot.Crypto.Services
                 }
             }
 
+            if (inputData.Last().CloseTime > DateTime.UtcNow) // Fix binance data. Sometimes come from future. Ex 5m: Now: 12:20:07 - DataFromBinance 12:24:59 
+            {
+                inputData.RemoveAt(inputData.Count - 1);
+            }
+
+            LogHelper.Log($"{DateTime.UtcNow.ToString("HH:mm:ss")} - {inputData.Last().CloseTime.ToString("HH:mm:ss")}", "time");
+
             return inputData;
         }
 
