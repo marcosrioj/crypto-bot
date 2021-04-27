@@ -556,7 +556,7 @@ namespace CryptoBot.Crypto.Services
                 {
                     trigger
                         .WithIdentity($"BuyVirtualTraderJob-Robot-{robot.Id}-User-{robot.UserId}-Formula-{formula.Id}")
-                        .WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy, 10));
+                        .WithCronSchedule(BinanceHelper.GetCronExpression(formula.IntervalToBuy, 15));
                 });
         }
 
