@@ -31,67 +31,91 @@ namespace CryptoBot.Crypto
             _walletRepository = walletRepository;
         }
 
-        public async Task<object> OrdersPeformance()
+        public async Task<object> OrdersPeformance(long robotId)
         {
-            var query = from order in _orderRepository.GetAll().Where(o => o.OriginOrderId.HasValue)
-                        join originOrder in _orderRepository.GetAll()
-                            on order.OriginOrderId equals originOrder.Id
-                        select new { order, originOrder };
+            var query = from originOrder in _orderRepository.GetAll().Where(o => !o.OriginOrderId.HasValue && o.Status == Enums.EOrderStatus.Selled)
+                        from predictionOrder in _predictionOrderRepository.GetAll().Include(x => x.Prediction).Where(o => o.OrderId == originOrder.Id)
+                        join order in _orderRepository.GetAll()
+                            on originOrder.Id equals order.OriginOrderId
+                        select new { order, originOrder, predictionOrder };
 
             var orders = await query.ToListAsync();
 
-            var result = new List<dynamic>();
-            var avgSuccessPerc = 0m;
-            var avgFailedPerc = 0m;
-            var totalSuccess = 0;
-            var totalFailed = 0;
-            var balance = 1000m;
-
-            foreach (var order in orders)
-            { 
-                var perc = order.order.UsdtPriceFrom / order.originOrder.UsdtPriceTo - 1;
-
-                balance = balance - (order.originOrder.Amount * order.originOrder.UsdtPriceTo) + order.order.Amount;
-
-                var item = new
+            var result = new Dictionary<string, dynamic>();
+            var keys = orders
+                .Select(x => new
                 {
-                    Id = order.order.Id,
-                    OriginOrderId = order.order.OriginOrderId,
-                    Currency = order.order.From.ToString(),
-                    Perc = perc,
-                    CreationTime = order.originOrder.CreationTime,
-                    CloseTime = order.order.CreationTime,
-                    UserId = order.order.CreatorUserId,
-                    balance = balance
+                    x.predictionOrder.Prediction.IntervalToBuy,
+                    x.predictionOrder.Prediction.IntervalToSell
+                })
+                .Distinct()
+                .ToList();
+
+            foreach (var key in keys)
+            {
+                var keyDic = $"Buy{key.IntervalToBuy}-Sell{key.IntervalToSell}";
+                dynamic itemResult = new List<dynamic>();
+
+                var avgSuccessPerc = 0m;
+                var avgFailedPerc = 0m;
+                var totalSuccess = 0;
+                var totalFailed = 0;
+                var balance = 1000m;
+
+                foreach (var order in orders)
+                {
+                    if (key.IntervalToSell == order.predictionOrder.Prediction.IntervalToSell
+                        && key.IntervalToBuy == order.predictionOrder.Prediction.IntervalToBuy)
+                    {
+                        var perc = order.order.UsdtPriceFrom / order.originOrder.UsdtPriceTo - 1;
+
+                        balance = balance - (order.originOrder.Amount * order.originOrder.UsdtPriceTo) + order.order.Amount;
+
+                        var item = new
+                        {
+                            Id = order.order.Id,
+                            OriginOrderId = order.order.OriginOrderId,
+                            Currency = order.order.From.ToString(),
+                            Perc = perc,
+                            CreationTime = order.originOrder.CreationTime,
+                            CloseTime = order.order.CreationTime,
+                            UserId = order.order.CreatorUserId,
+                            balance = balance
+                        };
+
+                        itemResult.Add(item);
+
+                        if (perc > 0)
+                        {
+                            ++totalSuccess;
+                            avgSuccessPerc = avgSuccessPerc + perc;
+                        }
+                        else
+                        {
+                            ++totalFailed;
+                            avgFailedPerc = avgFailedPerc + perc;
+                        }
+                    }
+                }
+
+                avgFailedPerc = avgFailedPerc / totalFailed;
+                avgSuccessPerc = avgSuccessPerc / totalSuccess;
+
+                dynamic itemFinalResult = new
+                {
+                    FinalBalance = balance,
+                    TotalSuccess = totalSuccess,
+                    TotalCount = result.Count,
+                    TotalFailed = totalFailed,
+                    AvgSuccessPerc = $"{avgSuccessPerc:P6}",
+                    AvgFailedPerc = $"{avgFailedPerc:P6}",
+                    Results = itemResult
                 };
 
-                result.Add(item);
-
-                if (perc > 0)
-                {
-                    ++totalSuccess;
-                    avgSuccessPerc = avgSuccessPerc + perc;
-                }
-                else
-                {
-                    ++totalFailed;
-                    avgFailedPerc = avgFailedPerc + perc;
-                }
+                result.Add(keyDic, itemFinalResult);
             }
 
-            avgFailedPerc = avgFailedPerc / totalFailed;
-            avgSuccessPerc = avgSuccessPerc / totalSuccess;
-
-            return new
-            {
-                FinalBalance = balance,
-                TotalSuccess = totalSuccess,
-                TotalCount = result.Count,
-                TotalFailed = totalFailed,
-                AvgSuccessPerc = $"{avgSuccessPerc:P6}",
-                AvgFailedPerc = $"{avgFailedPerc:P6}",
-                Results = result.OrderByDescending(x => x.Perc).ToList()
-            };
+            return result;
         }
     }
 }
