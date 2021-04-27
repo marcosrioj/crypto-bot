@@ -384,7 +384,7 @@ namespace CryptoBot.Crypto.Services
                         if (predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.Loss
                             || predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.ProfitAndLoss)
                         {
-                            var isLoss = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfLoss);
+                            var isLoss = bookPrice.Data.BestAskQuantity > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfLoss);
 
                             if (!isLoss)
                             {

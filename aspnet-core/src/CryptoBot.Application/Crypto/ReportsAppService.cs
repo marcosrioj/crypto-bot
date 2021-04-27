@@ -31,7 +31,7 @@ namespace CryptoBot.Crypto
             _walletRepository = walletRepository;
         }
 
-        public async Task<object> OrdersPeformance(long robotId)
+        public async Task<object> OrdersPeformance()
         {
             var query = from originOrder in _orderRepository.GetAll().Where(o => !o.OriginOrderId.HasValue && o.Status == Enums.EOrderStatus.Selled)
                         from predictionOrder in _predictionOrderRepository.GetAll().Include(x => x.Prediction).Where(o => o.OrderId == originOrder.Id)
