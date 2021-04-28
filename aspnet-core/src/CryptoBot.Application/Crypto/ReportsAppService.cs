@@ -76,7 +76,7 @@ namespace CryptoBot.Crypto
                             Id = order.order.Id,
                             OriginOrderId = order.order.OriginOrderId,
                             Currency = order.order.From.ToString(),
-                            Perc = perc,
+                            Perc = perc * 100,
                             CreationTime = order.originOrder.CreationTime,
                             CloseTime = order.order.CreationTime,
                             UserId = order.order.CreatorUserId,
@@ -98,8 +98,8 @@ namespace CryptoBot.Crypto
                     }
                 }
 
-                avgFailedPerc = avgFailedPerc / totalFailed;
-                avgSuccessPerc = avgSuccessPerc / totalSuccess;
+                avgFailedPerc = totalFailed == 0 ? avgFailedPerc : avgFailedPerc / totalFailed;
+                avgSuccessPerc = totalSuccess == 0 ? avgSuccessPerc : avgSuccessPerc / totalSuccess;
 
                 dynamic itemFinalResult = new
                 {
@@ -109,6 +109,8 @@ namespace CryptoBot.Crypto
                     TotalFailed = totalFailed,
                     AvgSuccessPerc = $"{avgSuccessPerc:P6}",
                     AvgFailedPerc = $"{avgFailedPerc:P6}",
+                    key.IntervalToBuy,
+                    key.IntervalToSell,
                     Results = itemResult
                 };
 
