@@ -4,6 +4,7 @@ using CryptoBot.Crypto.Services.Dtos;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Enums;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace CryptoBot.Crypto.Services
 {
@@ -18,10 +19,14 @@ namespace CryptoBot.Crypto.Services
 
         Task GenerateBetterPredictionAsync(FormulaDto formula, ECurrency currency);
 
+        Task<WhatToDoOutput> GetDecisionAsync(FormulaDto formula, ECurrency currency);
+
         RegressionDataOutput GetRegressionData(
             ECurrency currency,
             KlineInterval interval,
             int limitOfDataToLearn = 120);
+
+        Task<List<GetDecisionsOutputDto>> GetDecisionsAsync(FormulaDto formula);
 
         Task AutoTraderBuyWithWalletVirtualAsync(long userId, FormulaDto formula, decimal robotInitialAmount);
 

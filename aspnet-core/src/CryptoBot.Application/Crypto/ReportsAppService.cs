@@ -1,6 +1,7 @@
 ﻿using Abp.Domain.Repositories;
 using CryptoBot.Crypto.Entities;
 using CryptoBot.Crypto.Services;
+using CryptoBot.Crypto.Services.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,21 +15,28 @@ namespace CryptoBot.Crypto
         private readonly IRepository<Order, long> _orderRepository;
         private readonly IRepository<Prediction, long> _predictionRepository;
         private readonly IRepository<PredictionOrder, long> _predictionOrderRepository;
+        private readonly IRepository<Formula, long> _formulaRepository;
         private readonly IRepository<Wallet, long> _walletRepository;
+
+        private readonly ITraderService _traderService;
 
         public ReportsAppService(
             IRepository<Robot, long> robotRepository,
             IRepository<Order, long> orderRepository,
             IRepository<Prediction, long> predictionRepository,
+            IRepository<Formula, long> formulaRepository,
             IRepository<PredictionOrder, long> predictionOrderRepository,
-            IRepository<Wallet, long> walletRepository
+            IRepository<Wallet, long> walletRepository,
+            ITraderService traderService
             )
         {
             _robotRepository = robotRepository;
             _orderRepository = orderRepository;
             _predictionRepository = predictionRepository;
             _predictionOrderRepository = predictionOrderRepository;
+            _formulaRepository = formulaRepository;
             _walletRepository = walletRepository;
+            _traderService = traderService;
         }
 
         public async Task<object> OrdersPeformance()
@@ -118,6 +126,13 @@ namespace CryptoBot.Crypto
             }
 
             return result;
+        }
+
+        public async Task<object> GetPredictions(long formulaId)
+        {
+            var formula = await _formulaRepository.SingleAsync(x => x.Id == formulaId);
+            var formulaDto = ObjectMapper.Map<FormulaDto>(formula);
+            return await _traderService.GetDecisionsAsync(formulaDto);
         }
     }
 }

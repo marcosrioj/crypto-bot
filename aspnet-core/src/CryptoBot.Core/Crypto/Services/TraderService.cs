@@ -131,7 +131,66 @@ namespace CryptoBot.Crypto.Services
             }
         }
 
+        public async Task<List<GetDecisionsOutputDto>> GetDecisionsAsync(FormulaDto formula)
+        {
+            if (!Enum.IsDefined(formula.Strategy1))
+            {
+                throw new ArgumentException("Must to have at least one strategy");
+            }
+
+            var allCurrencies = CurrencyHelper.GetCurrencies(formula.Currencies);
+
+            var result = new List<GetDecisionsOutputDto>();
+
+            foreach (var currency in allCurrencies)
+            {
+                if (currency == ECurrency.USDT)
+                    continue;
+
+                var whatTodo = await GetDecisionAsync(formula, currency);
+
+                if (whatTodo.WhatToDo == EWhatToDo.Buy)
+                {
+                    result.Add(new GetDecisionsOutputDto
+                    {
+                        Currency = currency.ToString(),
+                        Buy = true
+                    });
+                }
+            }
+
+            return result;
+        }
+
         public async Task GenerateBetterPredictionAsync(FormulaDto formula, ECurrency currency)
+        {
+            var whatToDo = await GetDecisionAsync(formula, currency);
+
+            if (whatToDo.WhatToDo == EWhatToDo.Buy)
+            {
+                await _predictionRepository.InsertAndGetIdAsync(new Prediction
+                {
+                    CreationTime = DateTime.Now,
+                        Currency = currency,
+                        Strategy1 = formula.Strategy1,
+                        InvestorProfile1 = formula.InvestorProfile1,
+                        Strategy2 = formula.Strategy2,
+                        InvestorProfile2 = formula.InvestorProfile2,
+                        Strategy3 = formula.Strategy3,
+                        InvestorProfile3 = formula.InvestorProfile3,
+                        WhatToDo = whatToDo.WhatToDo,
+                        IntervalToBuy = formula.IntervalToBuy,
+                        IntervalToSell = formula.IntervalToSell,
+                        Score = whatToDo.Score.ToString(),
+                        DataLearned = formula.LimitOfDataToLearn,
+                        TryToSellByMinute = formula.TryToSellByMinute,
+                        TryToSellByMinutePercentageOfLoss = formula.TryToSellByMinutePercentageOfLoss,
+                        TryToSellByMinutePercentageOfProfit = formula.TryToSellByMinutePercentageOfProfit
+                    });
+            }
+        }
+
+        public async Task<WhatToDoOutput> GetDecisionAsync(FormulaDto formula, ECurrency currency)
         {
             var data = GetRegressionData(currency, formula.IntervalToBuy, formula.LimitOfDataToLearn);
 
@@ -151,29 +210,10 @@ namespace CryptoBot.Crypto.Services
                     }
                 }
 
-                if (whatToDo.WhatToDo == EWhatToDo.Buy)
-                {
-                    await _predictionRepository.InsertAndGetIdAsync(new Prediction
-                    {
-                        CreationTime = DateTime.Now,
-                        Currency = currency,
-                        Strategy1 = formula.Strategy1,
-                        InvestorProfile1 = formula.InvestorProfile1,
-                        Strategy2 = formula.Strategy2,
-                        InvestorProfile2 = formula.InvestorProfile2,
-                        Strategy3 = formula.Strategy3,
-                        InvestorProfile3 = formula.InvestorProfile3,
-                        WhatToDo = whatToDo.WhatToDo,
-                        IntervalToBuy = formula.IntervalToBuy,
-                        IntervalToSell = formula.IntervalToSell,
-                        Score = whatToDo.Score.ToString(),
-                        DataLearned = formula.LimitOfDataToLearn,
-                        TryToSellByMinute = formula.TryToSellByMinute,
-                        TryToSellByMinutePercentageOfLoss = formula.TryToSellByMinutePercentageOfLoss,
-                        TryToSellByMinutePercentageOfProfit = formula.TryToSellByMinutePercentageOfProfit
-                    });
-                }
+                return whatToDo;
             }
+
+            return whatToDo;
         }
 
         public RegressionDataOutput GetRegressionData(
