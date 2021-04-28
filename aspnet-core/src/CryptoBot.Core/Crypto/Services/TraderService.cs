@@ -373,7 +373,7 @@ namespace CryptoBot.Crypto.Services
                         if (predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.Profit
                             || predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.ProfitAndLoss)
                         {
-                            var isProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfProfit);
+                            var isProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfProfit / 100);
 
                             if (!isProfitable)
                             {
@@ -384,7 +384,7 @@ namespace CryptoBot.Crypto.Services
                         if (predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.Loss
                             || predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.ProfitAndLoss)
                         {
-                            var isLoss = bookPrice.Data.BestAskQuantity > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfLoss);
+                            var isLoss = bookPrice.Data.BestAskQuantity < (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfLoss / 100);
 
                             if (!isLoss)
                             {

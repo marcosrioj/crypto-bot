@@ -31,10 +31,10 @@ namespace CryptoBot.Crypto.Entities
 
         public ETryToSellByMinute TryToSellByMinute { get; set; }
 
-        [Column(TypeName = "decimal(4, 4)")]
+        [Column(TypeName = "decimal(4, 2)")]
         public decimal TryToSellByMinutePercentageOfProfit { get; set; }
 
-        [Column(TypeName = "decimal(4, 4)")]
+        [Column(TypeName = "decimal(4, 2)")]
         public decimal TryToSellByMinutePercentageOfLoss { get; set; }
 
         public List<PredictionOrder> Orders { get; set; }

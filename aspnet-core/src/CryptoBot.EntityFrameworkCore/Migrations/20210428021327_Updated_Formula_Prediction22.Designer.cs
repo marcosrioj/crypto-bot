@@ -4,14 +4,16 @@ using CryptoBot.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    partial class CryptoBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210428021327_Updated_Formula_Prediction22")]
+    partial class Updated_Formula_Prediction22
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1595,10 +1597,10 @@ namespace CryptoBot.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("TryToSellByMinutePercentageOfLoss")
-                        .HasColumnType("decimal(4,2)");
+                        .HasColumnType("decimal(2,2)");
 
                     b.Property<decimal>("TryToSellByMinutePercentageOfProfit")
-                        .HasColumnType("decimal(4,2)");
+                        .HasColumnType("decimal(2,2)");
 
                     b.HasKey("Id");
 
@@ -1696,10 +1698,10 @@ namespace CryptoBot.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("TryToSellByMinutePercentageOfLoss")
-                        .HasColumnType("decimal(4,2)");
+                        .HasColumnType("decimal(2,2)");
 
                     b.Property<decimal>("TryToSellByMinutePercentageOfProfit")
-                        .HasColumnType("decimal(4,2)");
+                        .HasColumnType("decimal(2,2)");
 
                     b.Property<int>("WhatToDo")
                         .HasColumnType("int");
