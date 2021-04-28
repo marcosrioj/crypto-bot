@@ -248,10 +248,10 @@ namespace CryptoBot.Crypto.Services
                     switch (formula.BookOrdersAction)
                     {
                         case EBookOrdersAction.BidGreaterThanAsk:
-                            bookOrdersVerified = bidQuantity > (askQuantity + (askQuantity * formula.BookOrdersFactor));
+                            bookOrdersVerified = bidQuantity > (askQuantity + (askQuantity * formula.BookOrdersFactor / 100));
                             break;
                         case EBookOrdersAction.AskGreaterThanBid:
-                            bookOrdersVerified = askQuantity > (bidQuantity + (bidQuantity * formula.BookOrdersFactor));
+                            bookOrdersVerified = askQuantity > (bidQuantity + (bidQuantity * formula.BookOrdersFactor / 100));
                             break;
                         case EBookOrdersAction.None:
                             bookOrdersVerified = true;

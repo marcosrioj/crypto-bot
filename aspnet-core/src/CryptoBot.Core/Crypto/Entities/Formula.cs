@@ -33,7 +33,7 @@ namespace CryptoBot.Crypto.Entities
 
         public EBookOrdersAction BookOrdersAction { get; set; }
 
-        [Column(TypeName = "decimal(2, 2)")]
+        [Column(TypeName = "decimal(2, 0)")]
         public decimal BookOrdersFactor { get; set; }
 
         public int LimitOfBookOrders { get; set; }
