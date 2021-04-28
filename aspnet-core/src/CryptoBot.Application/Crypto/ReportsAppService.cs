@@ -105,7 +105,7 @@ namespace CryptoBot.Crypto
                 {
                     FinalBalance = balance,
                     TotalSuccess = totalSuccess,
-                    TotalCount = result.Count,
+                    TotalCount = totalSuccess + totalSuccess,
                     TotalFailed = totalFailed,
                     AvgSuccessPerc = $"{avgSuccessPerc:P6}",
                     AvgFailedPerc = $"{avgFailedPerc:P6}",
