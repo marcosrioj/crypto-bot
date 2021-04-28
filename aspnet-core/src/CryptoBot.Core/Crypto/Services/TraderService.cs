@@ -248,7 +248,7 @@ namespace CryptoBot.Crypto.Services
                 .GetAll()
                 .AsNoTracking()
                 .Where(x =>
-                    x.CreationTime > DateTime.Now.AddSeconds(-20)
+                    x.CreationTime > DateTime.Now.AddSeconds(-30)
                     && !x.Orders.Any(y => y.CreatorUserId == userId)
                     && x.IntervalToBuy == formula.IntervalToBuy
                     && x.Strategy1 == formula.Strategy1
