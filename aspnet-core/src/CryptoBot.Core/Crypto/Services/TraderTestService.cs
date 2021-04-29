@@ -116,7 +116,7 @@ namespace CryptoBot.Crypto.Services
 
             if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.MainLog)
             {
-                LogHelper.Log($"\nRegressionTest - Coin: {newData.Currency}, InitialWallet: {newData.InitialWallet:C2}, Interval: {newData.Interval}, Strategy: {strategy}, InvestorProfile: {eInvestorProfile}, ItemsLearned: {newData.LimitOfDataToLearn} (Requested {newData.LimitOfDataToLearnAndTest}), ItemsTested: {newData.LimitOfDataToTest}", "regression_test");
+                LogHelper.Log($"\nRegressionTest - Coin {newData.Currency}, IWallet {newData.InitialWallet:C2}, Interval {newData.Interval}, Strategy {strategy}, InvestorProfile {eInvestorProfile}, ILearned {newData.LimitOfDataToLearn} (Requested {newData.LimitOfDataToLearnAndTest}), ITested {newData.LimitOfDataToTest}", "regression_test");
             }
 
             var result = new List<RegressionTestOutputDto>();
@@ -157,7 +157,7 @@ namespace CryptoBot.Crypto.Services
 
                     }
 
-                    message.AppendLine(LogHelper.CreateRegressionItemMessage(i, item.FutureStock, item.TradingWallet, item.Wallet, item.WhatToDo, item.FuturePercDiff, item.ActualStock));
+                    message.AppendLine(LogHelper.CreateRegressionItemMessage(i, item));
                     ++i;
                 }
 
@@ -313,6 +313,10 @@ namespace CryptoBot.Crypto.Services
 
             var percFuturuValueDiff = (futureStock.Close / actualStock.Close) - 1;
 
+            var percOpenLowFutureDiff = (futureStock.Low / futureStock.Open) - 1;
+
+            var percOpenHighFutureDiff = (futureStock.High / futureStock.Open) - 1;
+
             var newWalletPrice = walletPrice * (percFuturuValueDiff + 1);
 
             var newTradingWalletPrice = resultTraderService.WhatToDo == EWhatToDo.Buy ? tradingWalletPrice * (percFuturuValueDiff + 1) : tradingWalletPrice;
@@ -324,7 +328,9 @@ namespace CryptoBot.Crypto.Services
                 TradingWallet = newTradingWalletPrice,
                 Wallet = newWalletPrice,
                 WhatToDo = resultTraderService,
-                FuturePercDiff = percFuturuValueDiff
+                FuturePercDiff = percFuturuValueDiff,
+                OpenLowFuturePercDiff = percOpenLowFutureDiff,
+                OpenHighFuturePercDiff = percOpenHighFutureDiff
             });
 
             if (data.DataToTest.Count > 0)

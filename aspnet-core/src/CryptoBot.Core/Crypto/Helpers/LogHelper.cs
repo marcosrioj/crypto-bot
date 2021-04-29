@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,27 +21,28 @@ namespace CryptoBot.Crypto.Helpers
             }
         }
 
-        public static string CreateRegressionItemMessage(int index, IBinanceKline futureStock, decimal newWalletInvestingPrice,
-            decimal newWalletPrice, WhatToDoOutput result, decimal percFuturuValueDiff, IBinanceKline actualStock)
+        public static string CreateRegressionItemMessage(int index, RegressionTestOutputDto item)
         {
-            var resultTrade = newWalletInvestingPrice > newWalletPrice ? "winner".PadRight(6, ' ') : "loser".PadRight(6, ' ');
+            var resultTrade = item.TradingWallet > item.Wallet ? "winner".PadRight(6, ' ') : "loser".PadRight(6, ' ');
 
-            string action = result.WhatToDo == EWhatToDo.Buy
+            string action = item.WhatToDo.WhatToDo == EWhatToDo.Buy
                 ? "BUY".PadRight(8, ' ')
                 : "DONT BUY".PadRight(8, ' ');
 
-            var score = $"{result.Score}".PadLeft(11, ' ');
+            var score = $"{item.WhatToDo.Score.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
 
-            var i = index.ToString().PadLeft(5, ' ');
+            var i = index.ToString().PadLeft(3, ' ');
 
-            var newWalletPriceStr = $"{newWalletPrice:C2}".PadLeft(9, ' ');
-            var newWalletInvestingPriceStr = $"{newWalletInvestingPrice:C2}".PadLeft(9, ' ');   
+            var newWalletPriceStr = $"{item.Wallet:C2}".PadLeft(9, ' ');
+            var newWalletInvestingPriceStr = $"{item.TradingWallet:C2}".PadLeft(9, ' ');
 
-            var percFuturuValueDiffStr = $"{percFuturuValueDiff:P2}".PadLeft(7, ' ');
+            var percFuturuCloseValueDiffStr = $"{item.FuturePercDiff:P2}".PadLeft(7, ' ');
+            var percOpenHighDiffStr = $"{item.OpenHighFuturePercDiff:P2}".PadLeft(7, ' ');
+            var percOpenLowDiffStr = $"{item.OpenLowFuturePercDiff:P2}".PadLeft(7, ' ');
 
-            var dateStr = actualStock.CloseTime.ToString("yyyy-MM-dd HH:mm:ss K").PadLeft(21, ' ');
+            var dateStr = item.ActualStock.CloseTime.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Hours).ToString("yyyy-MM-dd HH:mm:ss").PadLeft(19, ' ');
 
-            return $"{i} - {dateStr} - ActualPrice: {actualStock.Close}, FuturePrice: {futureStock.Close}, Diff: {percFuturuValueDiffStr}, {action} {score}, {resultTrade}, FutureWallet: {newWalletPriceStr}, FutureTradingWallet: {newWalletInvestingPriceStr}";
+            return $"{i} - {dateStr} - OpenHighDiff: {percOpenHighDiffStr}, OpenLowDiff: {percOpenLowDiffStr}, CloseDiff: {percFuturuCloseValueDiffStr}, {action} {score}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
         }
 
         public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, EInvestorProfile investorProfile, IEnumerable<BetterCoinsToTestTradeRightNowOutputDto> result)

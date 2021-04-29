@@ -1,6 +1,8 @@
 ﻿using Abp.Modules;
 using Abp.Reflection.Extensions;
+using Abp.Threading.BackgroundWorkers;
 using CryptoBot.Configuration;
+using CryptoBot.Crypto.BackgroundWorker.Worker;
 using CryptoBot.Crypto.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

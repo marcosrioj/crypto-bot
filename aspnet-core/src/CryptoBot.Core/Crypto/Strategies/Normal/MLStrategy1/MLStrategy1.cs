@@ -50,13 +50,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
                 Close = (float)x.Close,
                 Date = x.CloseTime,
                 High = (float)x.High,
-                Low = (float)x.Low,
-                Open = (float)x.Open,
-                BaseVolume = (float)x.BaseVolume,
-                QuoteVolume = (float)x.QuoteVolume,
-                TakerBuyBaseVolume = (float)x.TakerBuyBaseVolume,
-                TakerBuyQuoteVolume = (float)x.TakerBuyQuoteVolume,
-                TradeCount = x.TradeCount
+                Low = (float)x.Low
 
             }).ToList();
 
@@ -64,8 +58,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
             IDataView dataview = context.Data.LoadFromEnumerable(input);
 
             // Remove as linhas que contiverem algum valor nulo.
-            dataview = context.Data.FilterRowsByMissingValues(dataview, "Open",
-            "High", "Low", "BaseVolume");
+            dataview = context.Data.FilterRowsByMissingValues(dataview, "High", "Low", "Close");
 
             // Divide o dataset em uma base de treino (70%) e uma de teste (20%).
             TrainTestData trainTestData = context.Data.TrainTestSplit(dataview, 0.2);
@@ -77,7 +70,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
         {
             var trainer = context.Regression.Trainers.Sdca();
 
-            string[] featureColumns = { "Open", "High", "Low", "BaseVolume", "QuoteVolume", "TakerBuyBaseVolume", "TakerBuyQuoteVolume", "TradeCount" };
+            string[] featureColumns = { "High", "Low" };
 
             // Constroi o fluxo de transformação de dados e processamento do modelo.
             IEstimator<ITransformer> pipeline = context.Transforms
@@ -139,13 +132,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
             {
                 Date = sampleStock.CloseTime,
                 High = (float)sampleStock.High,
-                Low = (float)sampleStock.Low,
-                Open = (float)sampleStock.Open,
-                BaseVolume = (float)sampleStock.BaseVolume,
-                QuoteVolume = (float)sampleStock.QuoteVolume,
-                TakerBuyBaseVolume = (float)sampleStock.TakerBuyBaseVolume,
-                TakerBuyQuoteVolume = (float)sampleStock.TakerBuyQuoteVolume,
-                TradeCount = sampleStock.TradeCount
+                Low = (float)sampleStock.Low
             };
 
             StockInfoPrediction prediction = predictor.Predict(actualInput);

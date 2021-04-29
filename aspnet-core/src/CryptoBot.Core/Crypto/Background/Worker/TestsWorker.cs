@@ -35,6 +35,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Worker
         [UnitOfWork(false)]
         protected override async Task DoWorkAsync()
         {
+            Test2();
         }
 
         private async Task BinanceTest()
@@ -157,7 +158,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Worker
 
                 data = _traderTestService.GetRegressionData(ECurrency.HOT, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 await _traderTestService.RegressionExec(EStrategy.NormalMlStrategy1, investorProfile, data, ELogLevel.FullLog);
-            }
+                }
             catch (Exception e)
             {
                 LogHelper.Log($"Worker error: TraderWorker - Message: {e.Message}", $"regression_test-ERROR");

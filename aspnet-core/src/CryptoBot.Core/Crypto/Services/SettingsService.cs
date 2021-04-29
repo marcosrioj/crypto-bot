@@ -16,10 +16,8 @@ namespace CryptoBot.Crypto.Services
             _settingManager = settingManager;
         }
 
-        //TODO Apply on strategies
         public float GetInvestorProfileFactor(EStrategy strategy, EInvestorProfile investorProfile = EInvestorProfile.UltraConservative)
         {
-            //TODO Put in the Settings Table
             switch (strategy)
             {
                 case EStrategy.SimpleMeanReversionStrategy:
@@ -68,18 +66,17 @@ namespace CryptoBot.Crypto.Services
                         case EInvestorProfile.UltraAggressive:
                             return 0;
                         case EInvestorProfile.Aggressive:
-                            return 0.01f;
+                            return 0.0003f;
                         case EInvestorProfile.Moderate:
-                            return 0.02f;
+                            return 0.0006f;
                         case EInvestorProfile.Conservative:
-                            return 0.03f;
+                            return 0.0009f;
                         case EInvestorProfile.UltraConservative:
-                            return 0.04f;
+                            return 0.0012f;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }
 
-                //TODO verify levels
                 case EStrategy.NormalMlStrategy2:
                     switch (investorProfile)
                     {
@@ -87,13 +84,13 @@ namespace CryptoBot.Crypto.Services
                         case EInvestorProfile.UltraAggressive:
                             return 0;
                         case EInvestorProfile.Aggressive:
-                            return 0.1f;
+                            return 0.075f;
                         case EInvestorProfile.Moderate:
-                            return 0.2f;
+                            return 0.15f;
                         case EInvestorProfile.Conservative:
-                            return 0.3f;
+                            return 0.225f;
                         case EInvestorProfile.UltraConservative:
-                            return 0.4f;
+                            return 0.3f;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }
