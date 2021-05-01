@@ -153,12 +153,12 @@ namespace CryptoBot.Crypto.BackgroundWorker.Worker
             {
                 var initialWallet = 1000;
                 var interval = KlineInterval.FifteenMinutes;
-                var tradingType = ETradingType.Futures;
+                var tradingType = ETradingType.Spot;
                 var profitWay = EProfitWay.ProfitFromLoss;
-                var limitOfDataToLearnAndTest = 1000;
+                var limitOfDataToLearnAndTest = 10000;
                 var limitOfDataToTest = 120;
                 var investorProfile = EInvestorProfile.UltraConservative;
-                var strategies = new List<EStrategy>() { EStrategy.SimpleMlStrategy1 };
+                var strategies = new List<EStrategy>() { EStrategy.NormalMlStrategy2 };
 
                 var data = _traderTestService.GetRegressionData(ECurrency.BTC, interval, tradingType, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 if (data == null)
