@@ -63,7 +63,7 @@ namespace CryptoBot.Crypto.BackgroundWorker.Worker
                     throw new Exception($"No data: {tradingType} {currency}");
                 }
 
-                await _traderTestService.RegressionExec(EStrategy.SimpleMlStrategy1, investorProfile, tradingType, profitWay, data1, ELogLevel.FullLog);
+                await _traderTestService.RegressionExec(new List<EStrategy>() { EStrategy.SimpleMlStrategy1 }, investorProfile, tradingType, profitWay, data1, ELogLevel.FullLog);
 
                 //var data2 = _traderService.GetRegressionData(ECurrency.BNB, interval, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 //await _traderService.RegressionExec(EStrategy.NormalMlStrategy2, investorProfile, data2, ELogLevel.FullLog);
@@ -119,15 +119,15 @@ namespace CryptoBot.Crypto.BackgroundWorker.Worker
                 var tradingType = ETradingType.Futures;
                 var profitWay = EProfitWay.ProfitFromLoss;
                 var limitOfDataToLearnAndTest = 1000;
-                var strategy = EStrategy.SimpleMeanReversionStrategy;
+                var strategies = new List<EStrategy>() { EStrategy.SimpleMeanReversionStrategy };
                 var investorProfile = EInvestorProfile.UltraConservative;
 
                 DateTime start = DateTime.UtcNow;
-                var result = await _traderTestService.GetBetterCoinsToTraderRightNowAsync(strategy, investorProfile, interval, tradingType, profitWay, initialWallet, limitOfDataToLearnAndTest);
-                var messageResult1 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, investorProfile, tradingType, profitWay, result);
+                var result = await _traderTestService.GetBetterCoinsToTraderRightNowAsync(strategies, investorProfile, interval, tradingType, profitWay, initialWallet, limitOfDataToLearnAndTest);
+                var messageResult1 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategies, investorProfile, tradingType, profitWay, result);
 
-                var result2 = await _traderTestService.FilterBetterCoinsToTraderRightNowAsync(EStrategy.NormalMlStrategy1, investorProfile, tradingType, profitWay, result);
-                var messageResult2 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, EStrategy.NormalMlStrategy1, investorProfile, tradingType, profitWay, result2);
+                var result2 = await _traderTestService.FilterBetterCoinsToTraderRightNowAsync(strategies, investorProfile, tradingType, profitWay, result);
+                var messageResult2 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategies, investorProfile, tradingType, profitWay, result2);
 
                 //var result3 = await _traderTestService.FilterBetterCoinsToTraderRightNowAsync(EStrategy.NormalMlStrategy2, investorProfile, tradingType, profitWay, result2);
                 //var messageResult3 = LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, EStrategy.NormalMlStrategy2, investorProfile, tradingType, profitWay, result3);
@@ -158,41 +158,42 @@ namespace CryptoBot.Crypto.BackgroundWorker.Worker
                 var limitOfDataToLearnAndTest = 1000;
                 var limitOfDataToTest = 120;
                 var investorProfile = EInvestorProfile.UltraConservative;
+                var strategies = new List<EStrategy>() { EStrategy.SimpleMlStrategy1 };
 
                 var data = _traderTestService.GetRegressionData(ECurrency.BTC, interval, tradingType, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 if (data == null)
                 {
                     throw new Exception($"No data: {tradingType} {ECurrency.BTC}");
                 }
-                await _traderTestService.RegressionExec(EStrategy.SimpleMlStrategy1, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
+                await _traderTestService.RegressionExec(strategies, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
 
                 data = _traderTestService.GetRegressionData(ECurrency.ETH, interval, tradingType, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 if (data == null)
                 {
                     throw new Exception($"No data: {tradingType} {ECurrency.ETH}");
                 }
-                await _traderTestService.RegressionExec(EStrategy.SimpleMlStrategy1, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
+                await _traderTestService.RegressionExec(strategies, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
 
                 data = _traderTestService.GetRegressionData(ECurrency.XRP, interval, tradingType, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 if (data == null)
                 {
                     throw new Exception($"No data: {tradingType} {ECurrency.XRP}");
                 }
-                await _traderTestService.RegressionExec(EStrategy.SimpleMlStrategy1, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
+                await _traderTestService.RegressionExec(strategies, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
 
                 data = _traderTestService.GetRegressionData(ECurrency.BNB, interval, tradingType, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 if (data == null)
                 {
                     throw new Exception($"No data: {tradingType} {ECurrency.BNB}");
                 }
-                await _traderTestService.RegressionExec(EStrategy.SimpleMlStrategy1, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
+                await _traderTestService.RegressionExec(strategies, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
 
                 data = _traderTestService.GetRegressionData(ECurrency.HOT, interval, tradingType, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest);
                 if (data == null)
                 {
                     throw new Exception($"No data: {tradingType} {ECurrency.HOT}");
                 }
-                await _traderTestService.RegressionExec(EStrategy.SimpleMlStrategy1, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
+                await _traderTestService.RegressionExec(strategies, investorProfile, tradingType, profitWay, data, ELogLevel.FullLog);
             }
             catch (Exception e)
             {

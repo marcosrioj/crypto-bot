@@ -32,7 +32,7 @@ namespace CryptoBot.Crypto.Services
             DateTime? endTime = null);
 
         Task<List<RegressionTestOutputDto>> RegressionExec(
-                    EStrategy strategy,
+                    IEnumerable<EStrategy> strategies,
                     EInvestorProfile eInvestorProfile,
                     ETradingType tradingType,
                     EProfitWay profitWay,
@@ -40,7 +40,7 @@ namespace CryptoBot.Crypto.Services
                     ELogLevel logLevel = ELogLevel.NoLog);
 
         Task<List<BetterCoinsToTestTradeRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
-            EStrategy strategy,
+            IEnumerable<EStrategy> strategies,
             EInvestorProfile eInvestorProfile,
             KlineInterval interval,
             ETradingType tradingType,
@@ -51,7 +51,7 @@ namespace CryptoBot.Crypto.Services
             DateTime? endTime = null);
 
         Task<List<BetterCoinsToTestTradeRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
-            EStrategy strategy,
+            IEnumerable<EStrategy> strategies,
             EInvestorProfile eInvestorProfile,
             ETradingType tradingType,
              EProfitWay profitWay,

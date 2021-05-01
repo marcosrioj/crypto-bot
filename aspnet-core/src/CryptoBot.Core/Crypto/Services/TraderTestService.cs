@@ -60,7 +60,7 @@ namespace CryptoBot.Crypto.Services
                 {
                     try
                     {
-                        var regressionTestResult = await RegressionExec(strategy, investorProfile, tradingType, profitWay, data, ELogLevel.NoLog);
+                        var regressionTestResult = await RegressionExec(new List<EStrategy>() { strategy }, investorProfile, tradingType, profitWay, data, ELogLevel.NoLog);
 
                         result.Add(new CompleteRegressionTestOutputDto
                         {
@@ -114,13 +114,18 @@ namespace CryptoBot.Crypto.Services
         }
 
         public async Task<List<RegressionTestOutputDto>> RegressionExec(
-            EStrategy strategy,
+            IEnumerable<EStrategy> strategies,
             EInvestorProfile eInvestorProfile,
             ETradingType tradingType,
             EProfitWay profitWay,
             RegressionTestDataOutput data,
             ELogLevel logLevel = ELogLevel.NoLog)
         {
+            if (!strategies.Any())
+            {
+                throw new ArgumentException("Must to have at least one strategy");
+            }
+
             var newData = data.Clone();
 
             //Prepare the first stock to test//TODO
@@ -129,13 +134,13 @@ namespace CryptoBot.Crypto.Services
 
             if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.MainLog)
             {
-                LogHelper.Log($"\nRegressionTest - Coin {newData.Currency}, IWallet {newData.InitialWallet:C2}, Interval {newData.Interval}, TType {tradingType}, PWay {profitWay}, Strategy {strategy}, IProfile {eInvestorProfile}, ILearned {newData.LimitOfDataToLearn} (Requested {newData.LimitOfDataToLearnAndTest}), ITested {newData.LimitOfDataToTest}", "regression_test");
+                LogHelper.Log($"\nRegressionTest - Coin {newData.Currency}, IWallet {newData.InitialWallet:C2}, Interval {newData.Interval}, TType {tradingType}, PWay {profitWay}, Strategy {string.Join('.', strategies)}, IProfile {eInvestorProfile}, ILearned {newData.LimitOfDataToLearn} (Requested {newData.LimitOfDataToLearnAndTest}), ITested {newData.LimitOfDataToTest}", "regression_test");
             }
 
             var result = new List<RegressionTestOutputDto>();
 
             await RegressionItemExec(
-                1, strategy, eInvestorProfile, profitWay, newData, fisrtStockToTest, newData.InitialWallet, newData.InitialWallet, logLevel, result);
+                1, strategies, eInvestorProfile, profitWay, newData, fisrtStockToTest, newData.InitialWallet, newData.InitialWallet, logLevel, result);
 
             if (logLevel == ELogLevel.FullLog)
             {
@@ -190,7 +195,7 @@ namespace CryptoBot.Crypto.Services
         }
 
         public async Task<List<BetterCoinsToTestTradeRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
-            EStrategy strategy,
+            IEnumerable<EStrategy> strategies,
             EInvestorProfile eInvestorProfile,
             KlineInterval interval,
             ETradingType tradingType,
@@ -214,7 +219,7 @@ namespace CryptoBot.Crypto.Services
                 if (data == null)
                     continue;
 
-                var regressionTestResult = await RegressionExec(strategy, eInvestorProfile, tradingType, profitWay, data, ELogLevel.NoLog);
+                var regressionTestResult = await RegressionExec(strategies, eInvestorProfile, tradingType, profitWay, data, ELogLevel.NoLog);
                 var firstRegressionTestResult = regressionTestResult.First();
 
                 results.Add(new BetterCoinsToTestTradeRightNowOutputDto
@@ -256,20 +261,20 @@ namespace CryptoBot.Crypto.Services
             var firstStrategy = strategies.First();
             strategies.Remove(firstStrategy);
 
-            var result = await GetBetterCoinsToTraderRightNowAsync(firstStrategy, eInvestorProfile, interval, tradingType, profitWay, initialWallet, limitOfDataToLearnAndTest, startTime, endTime);
+            var result = await GetBetterCoinsToTraderRightNowAsync(new List<EStrategy>() { firstStrategy }, eInvestorProfile, interval, tradingType, profitWay, initialWallet, limitOfDataToLearnAndTest, startTime, endTime);
 
             if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.FullLog)
             {
-                messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, firstStrategy, eInvestorProfile, tradingType, profitWay, result).ToString());
+                messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, new List<EStrategy>() { firstStrategy }, eInvestorProfile, tradingType, profitWay, result).ToString());
             }
 
             foreach (var strategy in strategies)
             {
-                result = await FilterBetterCoinsToTraderRightNowAsync(strategy, eInvestorProfile, tradingType, profitWay, result);
+                result = await FilterBetterCoinsToTraderRightNowAsync(new List<EStrategy>() { strategy }, eInvestorProfile, tradingType, profitWay, result);
 
                 if (logLevel == ELogLevel.FullLog || logLevel == ELogLevel.FullLog)
                 {
-                    messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, strategy, eInvestorProfile, tradingType, profitWay, result).ToString());
+                    messageLogger.AppendLine(LogHelper.CreateBetterCoinsToTraderRightNowMessage(initialWallet, interval, limitOfDataToLearnAndTest, new List<EStrategy>() { strategy }, eInvestorProfile, tradingType, profitWay, result).ToString());
                 }
             }
 
@@ -288,7 +293,7 @@ namespace CryptoBot.Crypto.Services
         }
 
         public async Task<List<BetterCoinsToTestTradeRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
-            EStrategy strategy,
+            IEnumerable<EStrategy> strategies,
             EInvestorProfile eInvestorProfile,
             ETradingType tradingType,
             EProfitWay profitWay,
@@ -298,7 +303,7 @@ namespace CryptoBot.Crypto.Services
 
             foreach (var item in input)
             {
-                var regressionTestResult = await RegressionExec(strategy, eInvestorProfile, tradingType, profitWay, item.Data, ELogLevel.NoLog);
+                var regressionTestResult = await RegressionExec(strategies, eInvestorProfile, tradingType, profitWay, item.Data, ELogLevel.NoLog);
                 var firstRegressionTestResult = regressionTestResult.First();
 
                 if (firstRegressionTestResult.WhatToDo.WhatToDo == EWhatToDo.Buy)
@@ -322,7 +327,7 @@ namespace CryptoBot.Crypto.Services
 
         private async Task RegressionItemExec(
             int index,
-            EStrategy strategy,
+            IEnumerable<EStrategy> strategies,
             EInvestorProfile eInvestorProfile,
             EProfitWay profitWay,
             RegressionTestDataOutput data,
@@ -332,7 +337,15 @@ namespace CryptoBot.Crypto.Services
             ELogLevel logLevel,
             List<RegressionTestOutputDto> result)
         {
-            var resultTraderService = await _traderService.WhatToDo(strategy, eInvestorProfile, profitWay, data);
+            WhatToDoOutput whatToDo = null;
+
+            foreach (var strategy in strategies)
+            {
+                if (whatToDo == null || whatToDo.WhatToDo == EWhatToDo.Buy)
+                {
+                    whatToDo = await _traderService.WhatToDo(strategy, eInvestorProfile, profitWay, data);
+                }
+            }
 
             var actualStock = data.DataToLearn.Last();
 
@@ -346,7 +359,7 @@ namespace CryptoBot.Crypto.Services
 
             var newWalletPrice = walletPrice * (percFuturuValueDiffToCalc + 1);
 
-            var newTradingWalletPrice = resultTraderService.WhatToDo == EWhatToDo.Buy
+            var newTradingWalletPrice = whatToDo.WhatToDo == EWhatToDo.Buy
                 ? tradingWalletPrice * (percFuturuValueDiffToCalc + 1)
                 : tradingWalletPrice;
 
@@ -356,7 +369,7 @@ namespace CryptoBot.Crypto.Services
                 FutureStock = futureStock,
                 TradingWallet = newTradingWalletPrice,
                 Wallet = newWalletPrice,
-                WhatToDo = resultTraderService,
+                WhatToDo = whatToDo,
                 FuturePercDiff = percFuturuValueDiff,
                 OpenLowFuturePercDiff = percOpenLowFutureDiff,
                 OpenHighFuturePercDiff = percOpenHighFutureDiff
@@ -372,7 +385,7 @@ namespace CryptoBot.Crypto.Services
                 data.DataToLearn.Add(futureStock);
 
                 await RegressionItemExec(
-                    ++index, strategy, eInvestorProfile, profitWay, data, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel, result);
+                    ++index, strategies, eInvestorProfile, profitWay, data, nextStockToTest, newWalletPrice, newTradingWalletPrice, logLevel, result);
             }
         }
     }

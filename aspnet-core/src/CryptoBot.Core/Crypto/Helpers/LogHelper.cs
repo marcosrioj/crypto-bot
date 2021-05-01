@@ -45,7 +45,7 @@ namespace CryptoBot.Crypto.Helpers
             return $"{i} - {dateStr} - OpenHighDiff: {percOpenHighDiffStr}, OpenLowDiff: {percOpenLowDiffStr}, CloseDiff: {percFuturuCloseValueDiffStr}, {action} {score}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
         }
 
-        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, EStrategy strategy, EInvestorProfile investorProfile, ETradingType tradingType, EProfitWay profitWay, IEnumerable<BetterCoinsToTestTradeRightNowOutputDto> result)
+        public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, IEnumerable<EStrategy> strategies, EInvestorProfile investorProfile, ETradingType tradingType, EProfitWay profitWay, IEnumerable<BetterCoinsToTestTradeRightNowOutputDto> result)
         {
             var success = 0m;
             var failed = 0m;
@@ -55,7 +55,7 @@ namespace CryptoBot.Crypto.Helpers
             var tradingWalletTotal = 0m;
 
             var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss K").PadLeft(21, ' ');
-            finalResult.AppendLine($"GetBetterCoinsToTraderRightNow: Date: {date} - Strategy: {strategy} - TType: {tradingType} - PWay: {profitWay} - IProfile: {investorProfile} - Interval: {interval} - ILearned: {limitOfDataToLearnAndTest}\n");
+            finalResult.AppendLine($"GetBetterCoinsToTraderRightNow: Date: {date} - Strategy: {string.Join('.', strategies)} - TType: {tradingType} - PWay: {profitWay} - IProfile: {investorProfile} - Interval: {interval} - ILearned: {limitOfDataToLearnAndTest}\n");
 
             result = result.OrderByDescending(x => x.WhatToDo.Score);
 
