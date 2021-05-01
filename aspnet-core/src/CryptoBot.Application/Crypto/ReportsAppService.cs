@@ -77,7 +77,9 @@ namespace CryptoBot.Crypto
                     {
                         var perc = order.order.UsdtPriceFrom / order.originOrder.UsdtPriceTo - 1;
 
-                        balance = balance - (order.originOrder.Amount * order.originOrder.UsdtPriceTo) + order.order.Amount;
+                        balance = order.predictionOrder.Prediction.ProfitWay == Enums.EProfitWay.ProfitFromGain
+                            ? balance - (order.originOrder.Amount * order.originOrder.UsdtPriceTo) + order.order.Amount
+                            : balance + (order.originOrder.Amount * order.originOrder.UsdtPriceTo) + order.order.Amount; //TODO CHECK LOGIC
 
                         var item = new
                         {

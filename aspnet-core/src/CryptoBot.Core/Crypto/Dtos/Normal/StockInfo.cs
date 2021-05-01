@@ -17,6 +17,4 @@ namespace CryptoBot.Crypto.Dtos.Normal
         [LoadColumn(3)]
         public float Close { get; set; }
     }
-
-
 }

@@ -65,20 +65,27 @@ namespace CryptoBot.Crypto.Services
 
         public IBinanceKline GetKline(string pair, ETradingType tradingType, long? userId = null)
         {
-            SetBinanceClients(userId);
-
-            WebCallResult<IEnumerable<IBinanceKline>> result = null;
-            
-            if (tradingType == ETradingType.Spot)
+            try
             {
-                result = _binanceClient.Spot.Market.GetKlines(pair, KlineInterval.OneMinute, limit: 1);
-            }
-            else
-            {
-                result = _binanceClient.FuturesUsdt.Market.GetKlines(pair, KlineInterval.OneMinute, limit: 1);
-            }
+                SetBinanceClients(userId);
 
-            return result.Data.FirstOrDefault();
+                WebCallResult<IEnumerable<IBinanceKline>> result = null;
+
+                if (tradingType == ETradingType.Spot)
+                {
+                    result = _binanceClient.Spot.Market.GetKlines(pair, KlineInterval.OneMinute, limit: 1);
+                }
+                else
+                {
+                    result = _binanceClient.FuturesUsdt.Market.GetKlines(pair, KlineInterval.OneMinute, limit: 1);
+                }
+
+                return result.Data.FirstOrDefault();
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public WebCallResult<BinanceOrderBook> GetBookOrders(long userId, string pair, ETradingType tradingType, int? limit = null)

@@ -51,6 +51,11 @@ namespace CryptoBot.Crypto.Services
             {
                 var data = GetRegressionData(currency, interval, tradingType, initialWallet, limitOfDataToLearnAndTest, limitOfDataToTest, startTime, endTime);
 
+                if (data == null)
+                {
+                    continue;
+                }
+
                 foreach (var strategy in strategies)
                 {
                     try
@@ -85,8 +90,14 @@ namespace CryptoBot.Crypto.Services
             DateTime? startTime = null,
             DateTime? endTime = null)
         {
-            var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}", tradingType);
-            var dataToLearnAndTest = _binanceService.GetData(currency, interval, tradingType, startTime, endTime, limitOfDataToLearnAndTest);
+            var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}", tradingType, CryptoBotConsts.DefaultUserId);
+
+            if (sampleStock == null)
+            {
+                return null;
+            }
+
+            var dataToLearnAndTest = _binanceService.GetData(currency, interval, tradingType, startTime, endTime, limitOfDataToLearnAndTest, CryptoBotConsts.DefaultUserId);
             var limitOfDataToLearn = dataToLearnAndTest.Count - limitOfDataToTest;
 
             return new RegressionTestDataOutput
@@ -199,6 +210,9 @@ namespace CryptoBot.Crypto.Services
                     continue;
 
                 var data = GetRegressionData(currency, interval, tradingType, initialWallet, limitOfDataToLearnAndTest, 1, startTime, endTime);
+
+                if (data == null)
+                    continue;
 
                 var regressionTestResult = await RegressionExec(strategy, eInvestorProfile, tradingType, profitWay, data, ELogLevel.NoLog);
                 var firstRegressionTestResult = regressionTestResult.First();
@@ -328,9 +342,9 @@ namespace CryptoBot.Crypto.Services
 
             var percOpenHighFutureDiff = (futureStock.High / futureStock.Open) - 1;
 
-            var newWalletPrice = walletPrice * (percFuturuValueDiff + 1);
-
             var percFuturuValueDiffToCalc = profitWay == EProfitWay.ProfitFromGain ? percFuturuValueDiff : -percFuturuValueDiff;
+
+            var newWalletPrice = walletPrice * (percFuturuValueDiffToCalc + 1);
 
             var newTradingWalletPrice = resultTraderService.WhatToDo == EWhatToDo.Buy
                 ? tradingWalletPrice * (percFuturuValueDiffToCalc + 1)

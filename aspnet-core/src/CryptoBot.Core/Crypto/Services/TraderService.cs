@@ -150,6 +150,11 @@ namespace CryptoBot.Crypto.Services
 
                 var whatTodo = await GetDecisionAsync(formula, currency);
 
+                if (whatTodo == null)
+                {
+                    continue;
+                }
+
                 if (whatTodo.WhatToDo == EWhatToDo.Buy)
                 {
                     result.Add(new GetDecisionsOutputDto
@@ -166,6 +171,11 @@ namespace CryptoBot.Crypto.Services
         public async Task GenerateBetterPredictionAsync(FormulaDto formula, ECurrency currency)
         {
             var whatToDo = await GetDecisionAsync(formula, currency);
+
+            if (whatToDo == null)
+            {
+                return;
+            }
 
             if (whatToDo.WhatToDo == EWhatToDo.Buy)
             {
@@ -197,6 +207,11 @@ namespace CryptoBot.Crypto.Services
         {
             var data = GetRegressionData(currency, formula.IntervalToBuy, formula.TradingType, formula.LimitOfDataToLearn);
 
+            if (data == null)
+            {
+                return null;
+            }
+
             var whatToDo = await WhatToDo(formula.Strategy1, formula.InvestorProfile1, formula.ProfitWay, data);
 
             if (whatToDo.WhatToDo == EWhatToDo.Buy)
@@ -226,6 +241,12 @@ namespace CryptoBot.Crypto.Services
             int limitOfDataToLearn = 120)
         {
             var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}", tradingType);
+
+            if (sampleStock == null)
+            {
+                return null;
+            }
+
             var dataToLearn = _binanceService.GetData(currency, interval, tradingType, null, null, limitOfDataToLearn);
 
             return new RegressionDataOutput
