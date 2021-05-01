@@ -19,6 +19,7 @@ using Abp.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Converters;
 
 namespace CryptoBot.Web.Host.Startup
 {
@@ -51,6 +52,7 @@ namespace CryptoBot.Web.Host.Startup
                 {
                     NamingStrategy = new CamelCaseNamingStrategy()
                 };
+                options.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
 
 
@@ -109,6 +111,8 @@ namespace CryptoBot.Web.Host.Startup
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey
                 });
+
+                options.UseInlineDefinitionsForEnums();
             });
 
             // Configure Abp and Dependency Injection

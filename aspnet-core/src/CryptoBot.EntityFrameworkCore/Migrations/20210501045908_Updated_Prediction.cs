@@ -2,33 +2,33 @@
 
 namespace CryptoBot.Migrations
 {
-    public partial class Updated_Prediction_Added_TryToSellByMinute : Migration
+    public partial class Updated_Prediction : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "TryToSellByMinute",
+            migrationBuilder.AddColumn<int>(
+                name: "ProfitWay",
                 table: "Predictions",
-                type: "bit",
+                type: "int",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: 0);
 
-            migrationBuilder.AddColumn<decimal>(
-                name: "TryToSellByMinutePercentage",
+            migrationBuilder.AddColumn<int>(
+                name: "TradingType",
                 table: "Predictions",
-                type: "decimal(2,2)",
+                type: "int",
                 nullable: false,
-                defaultValue: 0m);
+                defaultValue: 0);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "TryToSellByMinute",
+                name: "ProfitWay",
                 table: "Predictions");
 
             migrationBuilder.DropColumn(
-                name: "TryToSellByMinutePercentage",
+                name: "TradingType",
                 table: "Predictions");
         }
     }

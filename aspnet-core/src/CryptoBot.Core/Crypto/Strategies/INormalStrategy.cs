@@ -9,6 +9,6 @@ namespace CryptoBot.Crypto.Strategies
 {
     public interface INormalStrategy
     {
-        Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, IBinanceKline actualStock);
+        Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay, IBinanceKline actualStock);
     }
 }

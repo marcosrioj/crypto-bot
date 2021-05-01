@@ -18,9 +18,9 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
             _settingsService = settingsService;
         }
 
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay)
         {
-            var numberOfTest = (int)_settingsService.GetInvestorProfileFactor(Enums.EStrategy.SimpleMicrotrendStrategy, eInvestorProfile);
+            var numberOfTest = (int)_settingsService.GetInvestorProfileFactor(Enums.EStrategy.SimpleMicrotrendStrategy, profitWay, eInvestorProfile);
 
             var lastValues = historicalData.Skip(historicalData.Count - numberOfTest).Take(numberOfTest).Select(x => x.Close).ToList();
 
@@ -42,7 +42,8 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                     continue;
                 }
 
-                if (value > previousValue)
+                if ((profitWay == EProfitWay.ProfitFromGain && value > previousValue)
+                    || value < previousValue)
                 {
                     return await Task.FromResult(new ShouldBuyStockOutput
                     {

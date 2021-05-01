@@ -18,9 +18,9 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
             _settingsService = settingsService;
         }
 
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay)
         {
-            var percFactor = _settingsService.GetInvestorProfileFactor(EStrategy.SimpleMlStrategy1, eInvestorProfile);
+            var percFactor = _settingsService.GetInvestorProfileFactor(EStrategy.SimpleMlStrategy1, profitWay, eInvestorProfile);
 
             var modelBuilder = new ModelBuilder();
             var model = modelBuilder.BuildModel(historicalData.Select(x => new ModelInput
@@ -30,9 +30,13 @@ namespace CryptoBot.Crypto.Strategies.Simple.MLStrategy1
             }).ToList());
             var result = model.Predict();
 
+            var buy = profitWay == EProfitWay.ProfitFromGain
+                ? result.ForecastedPriceDiffrence[0] > percFactor
+                : result.ForecastedPriceDiffrence[0] < percFactor;
+
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = result.ForecastedPriceDiffrence[0] > percFactor,
+                Buy = buy,
                 Score = (decimal)result.ForecastedPriceDiffrence[0]
             });
         }

@@ -29,13 +29,17 @@ namespace CryptoBot.Crypto.Entities
 
         public int DataLearned { get; set; }
 
-        public ETryToSellByMinute TryToSellByMinute { get; set; }
+        public EStopLimit StopLimit { get; set; }
+
+        public EProfitWay ProfitWay { get; set; }
+
+        public ETradingType TradingType { get; set; }
 
         [Column(TypeName = "decimal(4, 2)")]
-        public decimal TryToSellByMinutePercentageOfProfit { get; set; }
+        public decimal StopLimitPercentageOfProfit { get; set; }
 
         [Column(TypeName = "decimal(4, 2)")]
-        public decimal TryToSellByMinutePercentageOfLoss { get; set; }
+        public decimal StopLimitPercentageOfLoss { get; set; }
 
         public List<PredictionOrder> Orders { get; set; }
     }

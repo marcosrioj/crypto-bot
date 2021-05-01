@@ -42,11 +42,13 @@ namespace CryptoBot.Crypto.Background.Jobs
                 LimitOfBookOrders = dataMap.GetInt("LimitOfBookOrders"),
                 Description = dataMap.GetString("Description"),
                 Currencies = dataMap.GetString("Currencies"),
+                TradingType = (ETradingType)dataMap.GetInt("TradingType"),
+                ProfitWay = (EProfitWay)dataMap.GetInt("ProfitWay"),
                 BookOrdersAction = (EBookOrdersAction)dataMap.GetInt("BookOrdersAction"),
                 BookOrdersFactor = (decimal)dataMap.GetFloat("BookOrdersFactor"),
-                TryToSellByMinute = (ETryToSellByMinute)dataMap.GetInt("TryToSellByMinute"),
-                TryToSellByMinutePercentageOfLoss = (decimal)dataMap.GetFloat("TryToSellByMinutePercentageOfLoss"),
-                TryToSellByMinutePercentageOfProfit = (decimal)dataMap.GetFloat("TryToSellByMinutePercentageOfProfit"),
+                StopLimit = (EStopLimit)dataMap.GetInt("StopLimit"),
+                StopLimitPercentageOfLoss = (decimal)dataMap.GetFloat("StopLimitPercentageOfLoss"),
+                StopLimitPercentageOfProfit = (decimal)dataMap.GetFloat("StopLimitPercentageOfProfit"),
                 BalancePreserved = (decimal)dataMap.GetFloat("BalancePreserved")
             };
 

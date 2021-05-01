@@ -40,6 +40,12 @@ namespace CryptoBot.Crypto.Services.Dtos
         public EBookOrdersAction BookOrdersAction { get; set; }
 
         [Required]
+        public ETradingType TradingType { get; set; }
+
+        [Required]
+        public EProfitWay ProfitWay { get; set; }
+
+        [Required]
         public decimal BookOrdersFactor { get; set; }
 
         [Required]
@@ -61,13 +67,13 @@ namespace CryptoBot.Crypto.Services.Dtos
         public decimal OrderPricePerGroup { get; set; }
 
         [Required]
-        public ETryToSellByMinute TryToSellByMinute { get; set; }
+        public EStopLimit StopLimit { get; set; }
 
         [Required]
-        public decimal TryToSellByMinutePercentageOfProfit { get; set; }
+        public decimal StopLimitPercentageOfProfit { get; set; }
 
         [Required]
-        public decimal TryToSellByMinutePercentageOfLoss { get; set; }
+        public decimal StopLimitPercentageOfLoss { get; set; }
 
     }
 }

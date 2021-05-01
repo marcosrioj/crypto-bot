@@ -1,6 +1,6 @@
 ﻿namespace CryptoBot.Crypto.Enums
 {
-    public enum ETryToSellByMinute
+    public enum EStopLimit
     {
         Profit,
         Loss,

@@ -14,14 +14,29 @@ namespace CryptoBot.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Description = table.Column<string>(type: "varchar(1000)", nullable: true),
+                    Currencies = table.Column<string>(type: "varchar(1000)", nullable: true),
                     Strategy1 = table.Column<int>(type: "int", nullable: false),
                     InvestorProfile1 = table.Column<int>(type: "int", nullable: false),
                     Strategy2 = table.Column<int>(type: "int", nullable: true),
                     InvestorProfile2 = table.Column<int>(type: "int", nullable: true),
                     Strategy3 = table.Column<int>(type: "int", nullable: true),
                     InvestorProfile3 = table.Column<int>(type: "int", nullable: true),
-                    Interval = table.Column<int>(type: "int", nullable: false),
-                    LimitOfDataToLearn = table.Column<int>(type: "int", nullable: false)
+                    IntervalToBuy = table.Column<int>(type: "int", nullable: false),
+                    IntervalToSell = table.Column<int>(type: "int", nullable: false),
+                    BookOrdersAction = table.Column<int>(type: "int", nullable: false),
+                    BookOrdersFactor = table.Column<decimal>(type: "decimal(2,0)", nullable: false),
+                    LimitOfBookOrders = table.Column<int>(type: "int", nullable: false),
+                    LimitOfDataToLearn = table.Column<int>(type: "int", nullable: false),
+                    BalancePreserved = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    OrderPriceType = table.Column<int>(type: "int", nullable: false),
+                    ProfitWay = table.Column<int>(type: "int", nullable: false),
+                    TradingType = table.Column<int>(type: "int", nullable: false),
+                    MaxOrderPrice = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    OrderPricePerGroup = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    StopLimit = table.Column<int>(type: "int", nullable: false),
+                    StopLimitPercentageOfProfit = table.Column<decimal>(type: "decimal(4,2)", nullable: false),
+                    StopLimitPercentageOfLoss = table.Column<decimal>(type: "decimal(4,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -69,9 +84,13 @@ namespace CryptoBot.Migrations
                     InvestorProfile2 = table.Column<int>(type: "int", nullable: true),
                     Strategy3 = table.Column<int>(type: "int", nullable: true),
                     InvestorProfile3 = table.Column<int>(type: "int", nullable: true),
-                    Interval = table.Column<int>(type: "int", nullable: false),
+                    IntervalToBuy = table.Column<int>(type: "int", nullable: false),
+                    IntervalToSell = table.Column<int>(type: "int", nullable: false),
                     Score = table.Column<string>(type: "varchar(100)", nullable: true),
                     DataLearned = table.Column<int>(type: "int", nullable: false),
+                    StopLimit = table.Column<int>(type: "int", nullable: false),
+                    StopLimitPercentageOfProfit = table.Column<decimal>(type: "decimal(4,2)", nullable: false),
+                    StopLimitPercentageOfLoss = table.Column<decimal>(type: "decimal(4,2)", nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatorUserId = table.Column<long>(type: "bigint", nullable: true)
                 },
@@ -100,6 +119,41 @@ namespace CryptoBot.Migrations
                         name: "FK_Wallets_AbpUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Robots",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    InitialAmount = table.Column<decimal>(type: "decimal(18,8)", nullable: false),
+                    FormulaId = table.Column<long>(type: "bigint", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatorUserId = table.Column<long>(type: "bigint", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastModifierUserId = table.Column<long>(type: "bigint", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeleterUserId = table.Column<long>(type: "bigint", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Robots", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Robots_AbpUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AbpUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Robots_Formulas_FormulaId",
+                        column: x => x.FormulaId,
+                        principalTable: "Formulas",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -148,6 +202,16 @@ namespace CryptoBot.Migrations
                 column: "PredictionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Robots_FormulaId",
+                table: "Robots",
+                column: "FormulaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Robots_UserId",
+                table: "Robots",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Wallets_UserId",
                 table: "Wallets",
                 column: "UserId");
@@ -156,10 +220,10 @@ namespace CryptoBot.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Formulas");
+                name: "PredictionOrders");
 
             migrationBuilder.DropTable(
-                name: "PredictionOrders");
+                name: "Robots");
 
             migrationBuilder.DropTable(
                 name: "Wallets");
@@ -169,6 +233,9 @@ namespace CryptoBot.Migrations
 
             migrationBuilder.DropTable(
                 name: "Predictions");
+
+            migrationBuilder.DropTable(
+                name: "Formulas");
         }
     }
 }

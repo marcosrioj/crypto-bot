@@ -1582,6 +1582,18 @@ namespace CryptoBot.Migrations
                     b.Property<int>("OrderPriceType")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProfitWay")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StopLimit")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("StopLimitPercentageOfLoss")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("StopLimitPercentageOfProfit")
+                        .HasColumnType("decimal(4,2)");
+
                     b.Property<int>("Strategy1")
                         .HasColumnType("int");
 
@@ -1591,14 +1603,8 @@ namespace CryptoBot.Migrations
                     b.Property<int?>("Strategy3")
                         .HasColumnType("int");
 
-                    b.Property<int>("TryToSellByMinute")
+                    b.Property<int>("TradingType")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("TryToSellByMinutePercentageOfLoss")
-                        .HasColumnType("decimal(4,2)");
-
-                    b.Property<decimal>("TryToSellByMinutePercentageOfProfit")
-                        .HasColumnType("decimal(4,2)");
 
                     b.HasKey("Id");
 
@@ -1680,8 +1686,20 @@ namespace CryptoBot.Migrations
                     b.Property<int?>("InvestorProfile3")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProfitWay")
+                        .HasColumnType("int");
+
                     b.Property<string>("Score")
                         .HasColumnType("varchar(100)");
+
+                    b.Property<int>("StopLimit")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("StopLimitPercentageOfLoss")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("StopLimitPercentageOfProfit")
+                        .HasColumnType("decimal(4,2)");
 
                     b.Property<int>("Strategy1")
                         .HasColumnType("int");
@@ -1692,14 +1710,8 @@ namespace CryptoBot.Migrations
                     b.Property<int?>("Strategy3")
                         .HasColumnType("int");
 
-                    b.Property<int>("TryToSellByMinute")
+                    b.Property<int>("TradingType")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("TryToSellByMinutePercentageOfLoss")
-                        .HasColumnType("decimal(4,2)");
-
-                    b.Property<decimal>("TryToSellByMinutePercentageOfProfit")
-                        .HasColumnType("decimal(4,2)");
 
                     b.Property<int>("WhatToDo")
                         .HasColumnType("int");

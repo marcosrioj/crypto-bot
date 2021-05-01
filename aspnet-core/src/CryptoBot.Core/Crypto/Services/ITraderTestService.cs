@@ -13,6 +13,8 @@ namespace CryptoBot.Crypto.Services
         Task<IEnumerable<CompleteRegressionTestOutputDto>> CompleteRegressionTest(
             EInvestorProfile investorProfile,
             KlineInterval interval,
+            ETradingType tradingType,
+            EProfitWay profitWay,
             decimal initialWallet,
             int limitOfDetailsToLearnAndTest = 1000,
             int limitOfDetailsToTest = 120,
@@ -22,6 +24,7 @@ namespace CryptoBot.Crypto.Services
         RegressionTestDataOutput GetRegressionData(
             ECurrency currency,
             KlineInterval interval,
+            ETradingType tradingType,
             decimal initialWallet,
             int limitOfDataToLearnAndTest = 240,
             int limitOfDataToTest = 120,
@@ -31,6 +34,8 @@ namespace CryptoBot.Crypto.Services
         Task<List<RegressionTestOutputDto>> RegressionExec(
                     EStrategy strategy,
                     EInvestorProfile eInvestorProfile,
+                    ETradingType tradingType,
+                    EProfitWay profitWay,
                     RegressionTestDataOutput data,
                     ELogLevel logLevel = ELogLevel.NoLog);
 
@@ -38,6 +43,8 @@ namespace CryptoBot.Crypto.Services
             EStrategy strategy,
             EInvestorProfile eInvestorProfile,
             KlineInterval interval,
+            ETradingType tradingType,
+            EProfitWay profitWay,
             decimal initialWallet,
             int limitOfDataToLearnAndTest = 1000,
             DateTime? startTime = null,
@@ -46,16 +53,20 @@ namespace CryptoBot.Crypto.Services
         Task<List<BetterCoinsToTestTradeRightNowOutputDto>> FilterBetterCoinsToTraderRightNowAsync(
             EStrategy strategy,
             EInvestorProfile eInvestorProfile,
+            ETradingType tradingType,
+             EProfitWay profitWay,
             List<BetterCoinsToTestTradeRightNowOutputDto> input);
 
         Task<List<BetterCoinsToTestTradeRightNowOutputDto>> GetBetterCoinsToTraderRightNowAsync(
-                    List<EStrategy> strategies,
-                    EInvestorProfile eInvestorProfile,
-                    KlineInterval interval,
-                    decimal initialWallet,
-                    int limitOfDataToLearnAndTest = 1000,
-                    ELogLevel logLevel = ELogLevel.NoLog,
-                    DateTime? startTime = null,
-                    DateTime? endTime = null);
+            List<EStrategy> strategies,
+            EInvestorProfile eInvestorProfile,
+            KlineInterval interval,
+            ETradingType tradingType,
+            EProfitWay profitWay,
+            decimal initialWallet,
+            int limitOfDataToLearnAndTest = 1000,
+            ELogLevel logLevel = ELogLevel.NoLog,
+            DateTime? startTime = null,
+            DateTime? endTime = null);
     }
 }

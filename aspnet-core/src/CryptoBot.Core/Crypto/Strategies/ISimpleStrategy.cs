@@ -10,6 +10,6 @@ namespace CryptoBot.Crypto.Strategies
 {
     public interface ISimpleStrategy
     {
-        Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile);
+        Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay);
     }
 }

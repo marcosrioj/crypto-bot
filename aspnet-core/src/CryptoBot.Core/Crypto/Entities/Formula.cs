@@ -45,19 +45,23 @@ namespace CryptoBot.Crypto.Entities
 
         public EOrderPriceType OrderPriceType { get; set; }
 
+        public EProfitWay ProfitWay { get; set; }
+
+        public ETradingType TradingType { get; set; }
+
         [Column(TypeName = "decimal(18, 8)")]
         public decimal MaxOrderPrice { get; set; }
 
         [Column(TypeName = "decimal(18, 8)")]
         public decimal OrderPricePerGroup { get; set; }
 
-        public ETryToSellByMinute TryToSellByMinute { get; set; }
+        public EStopLimit StopLimit { get; set; }
 
         [Column(TypeName = "decimal(4, 2)")]
-        public decimal TryToSellByMinutePercentageOfProfit { get; set; }
+        public decimal StopLimitPercentageOfProfit { get; set; }
 
         [Column(TypeName = "decimal(4, 2)")]
-        public decimal TryToSellByMinutePercentageOfLoss { get; set; }
+        public decimal StopLimitPercentageOfLoss { get; set; }
 
     }
 }

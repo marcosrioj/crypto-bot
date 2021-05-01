@@ -7,6 +7,6 @@ namespace CryptoBot.Crypto.Services
 {
     public interface ISettingsService : IDomainService
     {
-        float GetInvestorProfileFactor(EStrategy strategy, EInvestorProfile investorProfile = EInvestorProfile.UltraConservative);
+        float GetInvestorProfileFactor(EStrategy strategy, EProfitWay profitWay, EInvestorProfile investorProfile = EInvestorProfile.UltraConservative);
     }
 }

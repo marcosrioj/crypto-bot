@@ -24,7 +24,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
             _settingsService = settingsService;
         }
 
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, IBinanceKline sampleStock)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay, IBinanceKline sampleStock)
         {
             // Cria o contexto que trabalhará com aprendizado de máquina.
             MLContext context = new MLContext();
@@ -40,7 +40,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
             //PrintMetrics(metrics);
 
-            return await Task.FromResult(PredictPrice(context, model, sampleStock, eInvestorProfile));
+            return await Task.FromResult(PredictPrice(context, model, sampleStock, eInvestorProfile, profitWay));
         }
 
         private static TrainTestData Sanitize(MLContext context, IList<IBinanceKline> historicalData)
@@ -123,7 +123,7 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
         //    Console.WriteLine("--------------------------------------------------");
         //}
 
-        private ShouldBuyStockOutput PredictPrice(MLContext context, ITransformer model, IBinanceKline sampleStock, EInvestorProfile eInvestorProfile)
+        private ShouldBuyStockOutput PredictPrice(MLContext context, ITransformer model, IBinanceKline sampleStock, EInvestorProfile eInvestorProfile, EProfitWay profitWay)
         {
             PredictionEngine<StockInfo, StockInfoPrediction> predictor = context.Model
             .CreatePredictionEngine<StockInfo, StockInfoPrediction>(model);
@@ -137,14 +137,16 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
             StockInfoPrediction prediction = predictor.Predict(actualInput);
 
-            var percFactor = _settingsService.GetInvestorProfileFactor(EStrategy.NormalMlStrategy1, eInvestorProfile);
+            var percFactor = _settingsService.GetInvestorProfileFactor(EStrategy.NormalMlStrategy1, profitWay, eInvestorProfile);
 
             var realTimeClosePrice = (float)sampleStock.Close;
             realTimeClosePrice = realTimeClosePrice * (1 + percFactor);
 
+            var buy = profitWay == EProfitWay.ProfitFromGain ? prediction.Close > realTimeClosePrice : prediction.Close <= realTimeClosePrice;
+
             return new ShouldBuyStockOutput
             {
-                Buy = prediction.Close > realTimeClosePrice,  // Really coin price
+                Buy = buy,  // Really coin price
                 Score = (decimal)prediction.Close
             };
 

@@ -20,9 +20,9 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
             _settingsService = settingsService;
         }
 
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, IBinanceKline sampleStock)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay, IBinanceKline sampleStock)
         {
-            var percFactor = _settingsService.GetInvestorProfileFactor(Enums.EStrategy.NormalMlStrategy2, eInvestorProfile);
+            var percFactor = _settingsService.GetInvestorProfileFactor(Enums.EStrategy.NormalMlStrategy2, profitWay, eInvestorProfile);
 
             MLContext mlContext = new MLContext();
 
@@ -48,9 +48,11 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
 
             var finalPrice = (float)sampleStock.Close * (1 + percFactor);
 
+            var buy = profitWay == EProfitWay.ProfitFromGain ? price.Price > (float)sampleStock.Close : price.Price <= (float)sampleStock.Close;
+
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = price.Price > (float)sampleStock.Close,
+                Buy = buy,
                 Score = (decimal)price.Price // Really coin price
             });
         }

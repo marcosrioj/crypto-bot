@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CryptoBot.Migrations
 {
     [DbContext(typeof(CryptoBotDbContext))]
-    [Migration("20210424175303_Added_Robots")]
-    partial class Added_Robots
+    [Migration("20210501043719_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1537,13 +1537,13 @@ namespace CryptoBot.Migrations
                         .UseIdentityColumn();
 
                     b.Property<decimal>("BalancePreserved")
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<int>("BookOrdersAction")
                         .HasColumnType("int");
 
                     b.Property<decimal>("BookOrdersFactor")
-                        .HasColumnType("decimal(2,2)");
+                        .HasColumnType("decimal(2,0)");
 
                     b.Property<string>("Currencies")
                         .HasColumnType("varchar(1000)");
@@ -1575,11 +1575,26 @@ namespace CryptoBot.Migrations
                     b.Property<int>("LimitOfDataToLearn")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("OrderPrice")
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<decimal>("MaxOrderPrice")
+                        .HasColumnType("decimal(18,8)");
+
+                    b.Property<decimal>("OrderPricePerGroup")
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<int>("OrderPriceType")
                         .HasColumnType("int");
+
+                    b.Property<int>("ProfitWay")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StopLimit")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("StopLimitPercentageOfLoss")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("StopLimitPercentageOfProfit")
+                        .HasColumnType("decimal(4,2)");
 
                     b.Property<int>("Strategy1")
                         .HasColumnType("int");
@@ -1590,11 +1605,8 @@ namespace CryptoBot.Migrations
                     b.Property<int?>("Strategy3")
                         .HasColumnType("int");
 
-                    b.Property<bool>("TryToSellByMinute")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("TryToSellByMinutePercentage")
-                        .HasColumnType("decimal(4,4)");
+                    b.Property<int>("TradingType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1679,6 +1691,15 @@ namespace CryptoBot.Migrations
                     b.Property<string>("Score")
                         .HasColumnType("varchar(100)");
 
+                    b.Property<int>("StopLimit")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("StopLimitPercentageOfLoss")
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<decimal>("StopLimitPercentageOfProfit")
+                        .HasColumnType("decimal(4,2)");
+
                     b.Property<int>("Strategy1")
                         .HasColumnType("int");
 
@@ -1687,12 +1708,6 @@ namespace CryptoBot.Migrations
 
                     b.Property<int?>("Strategy3")
                         .HasColumnType("int");
-
-                    b.Property<bool>("TryToSellByMinute")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("TryToSellByMinutePercentage")
-                        .HasColumnType("decimal(4,4)");
 
                     b.Property<int>("WhatToDo")
                         .HasColumnType("int");
@@ -1751,6 +1766,9 @@ namespace CryptoBot.Migrations
 
                     b.Property<long>("FormulaId")
                         .HasColumnType("bigint");
+
+                    b.Property<decimal>("InitialAmount")
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");

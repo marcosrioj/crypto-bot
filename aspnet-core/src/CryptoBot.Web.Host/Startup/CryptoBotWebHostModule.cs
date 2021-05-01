@@ -34,13 +34,13 @@ namespace CryptoBot.Web.Host.Startup
 
         public override void PostInitialize()
         {
-            //var workManager = IocManager.Resolve<IBackgroundWorkerManager>();
-            //workManager.Add(IocManager.Resolve<TestsWorker>());
+            var workManager = IocManager.Resolve<IBackgroundWorkerManager>();
+            workManager.Add(IocManager.Resolve<TestsWorker>());
 
-            var traderService = IocManager.Resolve<ITraderService>();
-            traderService.ScheduleAutoTraderSellWithWalletVirtualAsync();
-            traderService.StartSchedulePredictions();
-            traderService.StartScheduleRobots();
+            //var traderService = IocManager.Resolve<ITraderService>();
+            //traderService.ScheduleAutoTraderSellWithWalletVirtualAsync();
+            //traderService.StartSchedulePredictions();
+            //traderService.StartScheduleRobots();
         }
     }
 }

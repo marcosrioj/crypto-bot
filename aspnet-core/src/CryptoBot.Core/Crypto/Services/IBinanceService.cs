@@ -11,21 +11,23 @@ namespace CryptoBot.Crypto.Services
 {
     public interface IBinanceService : IDomainService
     {
-        WebCallResult<BinanceBookPrice> GetBookPrice(long userId, string pair);
+        BinanceBookPrice GetBookPrice(long userId, string pair, ETradingType tradingType);
 
         WebCallResult<IEnumerable<IBinanceKline>> GetKlines(
             string pair,
-            KlineInterval interval, 
+            KlineInterval interval,
+            ETradingType tradingType,
             int limit = 100,
             long? userId = null, 
             DateTime? startTime = null,
             DateTime? endTime = null);
 
-        IBinanceKline GetKline(string pair, long? userId = null);
+        IBinanceKline GetKline(string pair, ETradingType tradingType, long? userId = null);
 
         List<IBinanceKline> GetData(
             ECurrency currency,
             KlineInterval interval,
+            ETradingType tradingType,
             DateTime? startTime,
             DateTime? endTime,
             int limitOfDetails,
@@ -33,6 +35,6 @@ namespace CryptoBot.Crypto.Services
 
         void Samples();
 
-        WebCallResult<BinanceOrderBook> GetBookOrders(long userId, string pair, int? limit = null);
+        WebCallResult<BinanceOrderBook> GetBookOrders(long userId, string pair, ETradingType tradingType, int? limit = null);
     }
 }

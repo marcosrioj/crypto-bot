@@ -18,9 +18,9 @@ namespace CryptoBot.Crypto.Strategies.Simple.MeanReversionStrategy
             _settingsService = settingsService;
         }
 
-        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile)
+        public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay)
         {
-            var numberOfValues = (int)_settingsService.GetInvestorProfileFactor(EStrategy.SimpleMeanReversionStrategy, eInvestorProfile);
+            var numberOfValues = (int)_settingsService.GetInvestorProfileFactor(EStrategy.SimpleMeanReversionStrategy, profitWay, eInvestorProfile);
 
             if (historicalData.Count > numberOfValues)
             {
@@ -31,7 +31,9 @@ namespace CryptoBot.Crypto.Strategies.Simple.MeanReversionStrategy
                 var avg = histData.Select(x => x.Close).Average();
                 var diff = avg - lastPrice;
 
-                return await Task.FromResult(new ShouldBuyStockOutput { Buy = diff >= 0, Score = diff });
+                var buy = profitWay == EProfitWay.ProfitFromGain ? diff >= 0 : diff < 0;
+
+                return await Task.FromResult(new ShouldBuyStockOutput { Buy = buy, Score = diff });
             }
 
             return await Task.FromResult(new ShouldBuyStockOutput());

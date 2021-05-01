@@ -16,7 +16,7 @@ namespace CryptoBot.Crypto.Services
             _settingManager = settingManager;
         }
 
-        public float GetInvestorProfileFactor(EStrategy strategy, EInvestorProfile investorProfile = EInvestorProfile.UltraConservative)
+        public float GetInvestorProfileFactor(EStrategy strategy, EProfitWay profitWay, EInvestorProfile investorProfile = EInvestorProfile.UltraConservative)
         {
             switch (strategy)
             {
@@ -44,17 +44,18 @@ namespace CryptoBot.Crypto.Services
                 case EStrategy.SimpleMlStrategy1:
                     switch (investorProfile)
                     {
+                        //TODO LOSS PROFIT
                         //Score
                         case EInvestorProfile.UltraAggressive:
                             return 0;
                         case EInvestorProfile.Aggressive:
-                            return 0.0025f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.0025f : -0.0025f;
                         case EInvestorProfile.Moderate:
-                            return 0.005f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.005f : -0.005f;
                         case EInvestorProfile.Conservative:
-                            return 0.0075f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.0075f : -0.0075f;
                         case EInvestorProfile.UltraConservative:
-                            return 0.01f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.01f : -0.01f;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }
@@ -66,13 +67,13 @@ namespace CryptoBot.Crypto.Services
                         case EInvestorProfile.UltraAggressive:
                             return 0;
                         case EInvestorProfile.Aggressive:
-                            return 0.0003f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.0003f : -0.0015f;
                         case EInvestorProfile.Moderate:
-                            return 0.0006f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.0006f : -0.003f;
                         case EInvestorProfile.Conservative:
-                            return 0.0009f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.0009f : -0.0045f;
                         case EInvestorProfile.UltraConservative:
-                            return 0.0012f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.0012f : -0.006f;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }
@@ -80,17 +81,18 @@ namespace CryptoBot.Crypto.Services
                 case EStrategy.NormalMlStrategy2:
                     switch (investorProfile)
                     {
+                        //TODO LOSS PROFIT
                         //Percent of real value of prediction Sample: 1%, 5% etc.
                         case EInvestorProfile.UltraAggressive:
                             return 0;
                         case EInvestorProfile.Aggressive:
-                            return 0.075f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.075f : -0.075f;
                         case EInvestorProfile.Moderate:
-                            return 0.15f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.15f : -0.15f;
                         case EInvestorProfile.Conservative:
-                            return 0.225f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.225f : -0.225f;
                         case EInvestorProfile.UltraConservative:
-                            return 0.3f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.3f : -0.3f;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }

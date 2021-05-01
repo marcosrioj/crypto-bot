@@ -13,6 +13,7 @@ namespace CryptoBot.Crypto.Services
         Task<WhatToDoOutput> WhatToDo(
             EStrategy strategy,
             EInvestorProfile eInvestorProfile,
+            EProfitWay profitWay,
             RegressionDataOutput data);
 
         Task GenerateBetterPredictionsAsync(FormulaDto formula);
@@ -24,6 +25,7 @@ namespace CryptoBot.Crypto.Services
         RegressionDataOutput GetRegressionData(
             ECurrency currency,
             KlineInterval interval,
+            ETradingType tradingType,
             int limitOfDataToLearn = 120);
 
         Task<List<GetDecisionsOutputDto>> GetDecisionsAsync(FormulaDto formula);

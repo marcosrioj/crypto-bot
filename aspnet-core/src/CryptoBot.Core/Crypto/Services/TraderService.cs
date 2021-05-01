@@ -80,6 +80,7 @@ namespace CryptoBot.Crypto.Services
         public async Task<WhatToDoOutput> WhatToDo(
             EStrategy strategy,
             EInvestorProfile eInvestorProfile,
+            EProfitWay profitWay,
             RegressionDataOutput data)
         {
             switch (strategy)
@@ -89,23 +90,23 @@ namespace CryptoBot.Crypto.Services
                     {
                         throw new Exception("NormalMlStrategy must to have the actual stock");
                     }
-                    return await WhatToDoByNormalMlStrategy1(data, eInvestorProfile);
+                    return await WhatToDoByNormalMlStrategy1(data, profitWay, eInvestorProfile);
 
                 case EStrategy.NormalMlStrategy2:
                     if (data.StockRightNow == null)
                     {
                         throw new Exception("NormalMlStrategy2 must to have the actual stock");
                     }
-                    return await WhatToDoByNormalMlStrategy2(data, eInvestorProfile);
+                    return await WhatToDoByNormalMlStrategy2(data, profitWay, eInvestorProfile);
 
                 case EStrategy.SimpleMlStrategy1:
-                    return await WhatToDoBySimpleMlStrategy1(data, eInvestorProfile);
+                    return await WhatToDoBySimpleMlStrategy1(data, profitWay, eInvestorProfile);
 
                 case EStrategy.SimpleMeanReversionStrategy:
-                    return await WhatToDoBySimpleMeanReversionStrategy(data, eInvestorProfile);
+                    return await WhatToDoBySimpleMeanReversionStrategy(data, profitWay, eInvestorProfile);
 
                 case EStrategy.SimpleMicrotrendStrategy:
-                    return await WhatToDoBySimpleMicrotrendStrategy(data, eInvestorProfile);
+                    return await WhatToDoBySimpleMicrotrendStrategy(data, profitWay, eInvestorProfile);
 
                 default:
                     throw new Exception("Strategy not found");
@@ -183,30 +184,32 @@ namespace CryptoBot.Crypto.Services
                         IntervalToSell = formula.IntervalToSell,
                         Score = whatToDo.Score.ToString(),
                         DataLearned = formula.LimitOfDataToLearn,
-                        TryToSellByMinute = formula.TryToSellByMinute,
-                        TryToSellByMinutePercentageOfLoss = formula.TryToSellByMinutePercentageOfLoss,
-                        TryToSellByMinutePercentageOfProfit = formula.TryToSellByMinutePercentageOfProfit
+                        TradingType = formula.TradingType,
+                        ProfitWay = formula.ProfitWay,
+                        StopLimit = formula.StopLimit,
+                        StopLimitPercentageOfLoss = formula.StopLimitPercentageOfLoss,
+                        StopLimitPercentageOfProfit = formula.StopLimitPercentageOfProfit
                     });
             }
         }
 
         public async Task<WhatToDoOutput> GetDecisionAsync(FormulaDto formula, ECurrency currency)
         {
-            var data = GetRegressionData(currency, formula.IntervalToBuy, formula.LimitOfDataToLearn);
+            var data = GetRegressionData(currency, formula.IntervalToBuy, formula.TradingType, formula.LimitOfDataToLearn);
 
-            var whatToDo = await WhatToDo(formula.Strategy1, formula.InvestorProfile1, data);
+            var whatToDo = await WhatToDo(formula.Strategy1, formula.InvestorProfile1, formula.ProfitWay, data);
 
             if (whatToDo.WhatToDo == EWhatToDo.Buy)
             {
                 if (formula.Strategy2.HasValue && formula.InvestorProfile2.HasValue)
                 {
-                    whatToDo = await WhatToDo(formula.Strategy2.Value, formula.InvestorProfile2.Value, data);
+                    whatToDo = await WhatToDo(formula.Strategy2.Value, formula.InvestorProfile2.Value, formula.ProfitWay, data);
 
                     if (whatToDo.WhatToDo == EWhatToDo.Buy
                         && formula.Strategy3.HasValue
                         && formula.InvestorProfile3.HasValue)
                     {
-                        whatToDo = await WhatToDo(formula.Strategy3.Value, formula.InvestorProfile3.Value, data);
+                        whatToDo = await WhatToDo(formula.Strategy3.Value, formula.InvestorProfile3.Value, formula.ProfitWay, data);
                     }
                 }
 
@@ -219,10 +222,11 @@ namespace CryptoBot.Crypto.Services
         public RegressionDataOutput GetRegressionData(
             ECurrency currency,
             KlineInterval interval,
+            ETradingType tradingType,
             int limitOfDataToLearn = 120)
         {
-            var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}");
-            var dataToLearn = _binanceService.GetData(currency, interval, null, null, limitOfDataToLearn);
+            var sampleStock = _binanceService.GetKline($"{currency}{CryptoBotConsts.BaseCoinName}", tradingType);
+            var dataToLearn = _binanceService.GetData(currency, interval, tradingType, null, null, limitOfDataToLearn);
 
             return new RegressionDataOutput
             {
@@ -272,10 +276,10 @@ namespace CryptoBot.Crypto.Services
             foreach (var prediction in predictions)
             {
                 var pair = $"{prediction.Currency}{CryptoBotConsts.BaseCoinName}";
-                var bookPrice = _binanceService.GetBookPrice(userId, pair);
-                var bookOrder = _binanceService.GetBookOrders(userId, pair, formula.LimitOfBookOrders);
+                var bookPrice = _binanceService.GetBookPrice(userId, pair, formula.TradingType);
+                var bookOrder = _binanceService.GetBookOrders(userId, pair, formula.TradingType, formula.LimitOfBookOrders);
 
-                if (bookPrice.Data != null
+                if (bookPrice != null
                     && bookOrder.Data != null
                     && bookOrder.Data.Asks.Any()
                     && bookOrder.Data.Asks.Any())
@@ -303,12 +307,12 @@ namespace CryptoBot.Crypto.Services
 
                     if (bookOrdersVerified)
                     {
-                        if (mainWallet.Balance < bidQuantity * bookPrice.Data.BestAskPrice)
+                        if (mainWallet.Balance < bidQuantity * bookPrice.BestAskPrice)
                         {
                             predictionsFiltered.Add(new PredictionFilteredDto
                             {
                                 Prediction = prediction,
-                                BookPrice = bookPrice.Data,
+                                BookPrice = bookPrice,
                                 AsksData = bookOrder.Data.Asks,
                                 BidsData = bookOrder.Data.Bids
                             });
@@ -392,9 +396,9 @@ namespace CryptoBot.Crypto.Services
             foreach (var predictionOrder in predictionOrders)
             {
                 var pair = $"{predictionOrder.Order.To}{CryptoBotConsts.BaseCoinName}";
-                var bookPrice = _binanceService.GetBookPrice(CryptoBotConsts.DefaultUserId, pair);
+                var bookPrice = _binanceService.GetBookPrice(CryptoBotConsts.DefaultUserId, pair, predictionOrder.Prediction.TradingType);
 
-                var amount = bookPrice.Data.BestBidPrice * predictionOrder.Order.Amount;
+                var amount = bookPrice.BestBidPrice * predictionOrder.Order.Amount;
 
                 if (predictionOrder.Prediction.IntervalToSell != KlineInterval.OneMinute
                     &&
@@ -408,12 +412,12 @@ namespace CryptoBot.Crypto.Services
                         ))
                 {
                     // TODO It just used in Virtual traders. IN real life should be a SpotLimit
-                    if (predictionOrder.Prediction.TryToSellByMinute != ETryToSellByMinute.None)
+                    if (predictionOrder.Prediction.StopLimit != EStopLimit.None)
                     {
-                        if (predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.Profit
-                            || predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.ProfitAndLoss)
+                        if (predictionOrder.Prediction.StopLimit == EStopLimit.Profit
+                            || predictionOrder.Prediction.StopLimit == EStopLimit.ProfitAndLoss)
                         {
-                            var isProfitable = bookPrice.Data.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfProfit / 100);
+                            var isProfitable = bookPrice.BestBidPrice > (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.StopLimitPercentageOfProfit / 100);
 
                             if (!isProfitable)
                             {
@@ -421,10 +425,10 @@ namespace CryptoBot.Crypto.Services
                             }
                         }
 
-                        if (predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.Loss
-                            || predictionOrder.Prediction.TryToSellByMinute == ETryToSellByMinute.ProfitAndLoss)
+                        if (predictionOrder.Prediction.StopLimit == EStopLimit.Loss
+                            || predictionOrder.Prediction.StopLimit == EStopLimit.ProfitAndLoss)
                         {
-                            var isLoss = bookPrice.Data.BestAskQuantity < (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.TryToSellByMinutePercentageOfLoss / 100);
+                            var isLoss = bookPrice.BestAskQuantity < (predictionOrder.Order.UsdtPriceTo + predictionOrder.Order.UsdtPriceTo * predictionOrder.Prediction.StopLimitPercentageOfLoss / 100);
 
                             if (!isLoss)
                             {
@@ -444,7 +448,7 @@ namespace CryptoBot.Crypto.Services
                         From = predictionOrder.Order.To,
                         To = ECurrency.USDT,
                         Status = EOrderStatus.Selled,
-                        UsdtPriceFrom = bookPrice.Data.BestBidPrice,
+                        UsdtPriceFrom = bookPrice.BestBidPrice,
                         UsdtPriceTo = 1,
                         CreatorUserId = predictionOrder.CreatorUserId,
                         Amount = amount,
@@ -543,11 +547,13 @@ namespace CryptoBot.Crypto.Services
                             .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                             .UsingJobData("Description", formula.Description)
                             .UsingJobData("Currencies", formula.Currencies)
+                            .UsingJobData("TradingType", (int)formula.TradingType)
+                            .UsingJobData("ProfitWay", (int)formula.ProfitWay)
                             .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                             .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
-                            .UsingJobData("TryToSellByMinute", (int)formula.TryToSellByMinute)
-                            .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
-                            .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
+                            .UsingJobData("StopLimit", (int)formula.StopLimit)
+                            .UsingJobData("StopLimitPercentageOfLoss", (float)formula.StopLimitPercentageOfLoss)
+                            .UsingJobData("StopLimitPercentageOfProfit", (float)formula.StopLimitPercentageOfProfit);
                     },
                     trigger =>
                     {
@@ -586,11 +592,13 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                         .UsingJobData("Description", formula.Description)
                         .UsingJobData("Currencies", formula.Currencies)
+                        .UsingJobData("TradingType", (int)formula.TradingType)
+                        .UsingJobData("ProfitWay", (int)formula.ProfitWay)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
-                        .UsingJobData("TryToSellByMinute", (int)formula.TryToSellByMinute)
-                        .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
-                        .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
+                        .UsingJobData("StopLimit", (int)formula.StopLimit)
+                        .UsingJobData("StopLimitPercentageOfLoss", (float)formula.StopLimitPercentageOfLoss)
+                        .UsingJobData("StopLimitPercentageOfProfit", (float)formula.StopLimitPercentageOfProfit);
                 },
                 trigger =>
                 {
@@ -623,12 +631,14 @@ namespace CryptoBot.Crypto.Services
                         .UsingJobData("LimitOfBookOrders", formula.LimitOfBookOrders)
                         .UsingJobData("Description", formula.Description)
                         .UsingJobData("Currencies", formula.Currencies)
+                        .UsingJobData("TradingType", (int)formula.TradingType)
+                        .UsingJobData("ProfitWay", (int)formula.ProfitWay)
                         .UsingJobData("BookOrdersAction", (int)formula.BookOrdersAction)
                         .UsingJobData("BookOrdersFactor", (float)formula.BookOrdersFactor)
                         .UsingJobData("Currency", (int)currency)
-                        .UsingJobData("TryToSellByMinute", (int)formula.TryToSellByMinute)
-                        .UsingJobData("TryToSellByMinutePercentageOfLoss", (float)formula.TryToSellByMinutePercentageOfLoss)
-                        .UsingJobData("TryToSellByMinutePercentageOfProfit", (float)formula.TryToSellByMinutePercentageOfProfit);
+                        .UsingJobData("StopLimit", (int)formula.StopLimit)
+                        .UsingJobData("StopLimitPercentageOfLoss", (float)formula.StopLimitPercentageOfLoss)
+                        .UsingJobData("StopLimitPercentageOfProfit", (float)formula.StopLimitPercentageOfProfit);
                 },
                 trigger =>
                 {
@@ -636,9 +646,9 @@ namespace CryptoBot.Crypto.Services
                 });
         }
 
-        private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMeanReversionStrategy(RegressionDataOutput data, EProfitWay profitWay, EInvestorProfile eInvestorProfile)
         {
-            var result = await _simpleMeanReversionStrategy.ShouldBuyStock(data.DataToLearn, eInvestorProfile);
+            var result = await _simpleMeanReversionStrategy.ShouldBuyStock(data.DataToLearn, eInvestorProfile, profitWay);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -656,9 +666,9 @@ namespace CryptoBot.Crypto.Services
             });
         }
 
-        private async Task<WhatToDoOutput> WhatToDoBySimpleMicrotrendStrategy(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMicrotrendStrategy(RegressionDataOutput data, EProfitWay profitWay, EInvestorProfile eInvestorProfile)
         {
-            var result = await _simpleMicrotrendStrategy.ShouldBuyStock(data.DataToLearn, eInvestorProfile);
+            var result = await _simpleMicrotrendStrategy.ShouldBuyStock(data.DataToLearn, eInvestorProfile, profitWay);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -676,9 +686,9 @@ namespace CryptoBot.Crypto.Services
             });
         }
 
-        private async Task<WhatToDoOutput> WhatToDoBySimpleMlStrategy1(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
+        private async Task<WhatToDoOutput> WhatToDoBySimpleMlStrategy1(RegressionDataOutput data, EProfitWay profitWay, EInvestorProfile eInvestorProfile)
         {
-            var result = await _simpleMlStrategy1.ShouldBuyStock(data.DataToLearn, eInvestorProfile);
+            var result = await _simpleMlStrategy1.ShouldBuyStock(data.DataToLearn, eInvestorProfile, profitWay);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -696,9 +706,9 @@ namespace CryptoBot.Crypto.Services
             });
         }
 
-        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy1(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
+        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy1(RegressionDataOutput data, EProfitWay profitWay, EInvestorProfile eInvestorProfile)
         {
-            var result = await _normalMlStrategy1.ShouldBuyStock(data.DataToLearn, eInvestorProfile, data.StockRightNow);
+            var result = await _normalMlStrategy1.ShouldBuyStock(data.DataToLearn, eInvestorProfile, profitWay, data.StockRightNow);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
@@ -716,9 +726,9 @@ namespace CryptoBot.Crypto.Services
             });
         }
 
-        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy2(RegressionDataOutput data, EInvestorProfile eInvestorProfile)
+        private async Task<WhatToDoOutput> WhatToDoByNormalMlStrategy2(RegressionDataOutput data, EProfitWay profitWay, EInvestorProfile eInvestorProfile)
         {
-            var result = await _normalMlStrategy2.ShouldBuyStock(data.DataToLearn, eInvestorProfile, data.StockRightNow);
+            var result = await _normalMlStrategy2.ShouldBuyStock(data.DataToLearn, eInvestorProfile, profitWay, data.StockRightNow);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {
