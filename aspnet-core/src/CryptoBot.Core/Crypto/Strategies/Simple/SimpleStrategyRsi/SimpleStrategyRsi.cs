@@ -88,7 +88,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
 
             var lastRsi = lastRsiValues.Last().Value;
 
-            var buy = lastRsi < 40;
+            var buy = lastRsi < 40 && lastRsi > 30;
 
             if (buy)
             {
@@ -97,7 +97,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
 
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = lastRsi < 40,
+                Buy = buy,
                 Score = lastRsi
             });
         }
