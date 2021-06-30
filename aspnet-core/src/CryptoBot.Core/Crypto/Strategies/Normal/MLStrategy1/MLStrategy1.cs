@@ -6,6 +6,7 @@ using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
+using Skender.Stock.Indicators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,140 +27,33 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy1
 
         public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay, IBinanceKline sampleStock)
         {
-            // Cria o contexto que trabalhará com aprendizado de máquina.
-            MLContext context = new MLContext();
-
-            // Lê o arquivo e o transforma em um dataset.
-            var splitData = Sanitize(context, historicalData);
-
-            ITransformer model = Train(context, splitData.TrainSet);
-
-            //RegressionMetrics metrics = Evaluate(context, model, splitData.TestSet);
-
-            //SaveModel(context, model, splitData.TrainSet.Schema);
-
-            //PrintMetrics(metrics);
-
-            return await Task.FromResult(PredictPrice(context, model, sampleStock, eInvestorProfile, profitWay));
-        }
-
-        private static TrainTestData Sanitize(MLContext context, IList<IBinanceKline> historicalData)
-        {
-            var input = historicalData.Select(x => new StockInfo
+            IEnumerable<Quote> history = historicalData.Select(x => new Quote
             {
-                Close = (float)x.Close,
+                Close = x.Close,
                 Date = x.CloseTime,
-                High = (float)x.High,
-                Low = (float)x.Low
-
+                High = x.High,
+                Low = x.Low,
+                Open = x.Open,
+                Volume = x.BaseVolume
             }).ToList();
 
-            // Lê o arquivo e o transforma em um dataset.
-            IDataView dataview = context.Data.LoadFromEnumerable(input);
+            IEnumerable<SmaResult> results = await Task.FromResult(Indicator.GetSma(history, history.Count()));
 
-            // Remove as linhas que contiverem algum valor nulo.
-            dataview = context.Data.FilterRowsByMissingValues(dataview, "High", "Low", "Close");
+            SmaResult result = results.LastOrDefault();
+            var price = result.Sma;
 
-            // Divide o dataset em uma base de treino (70%) e uma de teste (20%).
-            TrainTestData trainTestData = context.Data.TrainTestSplit(dataview, 0.2);
+            var percFactor = (decimal)_settingsService.GetInvestorProfileFactor(EStrategy.NormalMlStrategy1, profitWay, eInvestorProfile);
 
-            return trainTestData;
-        }
-
-        private static ITransformer Train(MLContext context, IDataView trainData)
-        {
-            var trainer = context.Regression.Trainers.Sdca();
-
-            string[] featureColumns = { "High", "Low" };
-
-            // Constroi o fluxo de transformação de dados e processamento do modelo.
-            IEstimator<ITransformer> pipeline = context.Transforms
-            .CopyColumns("Label", "Close")
-            .Append(context.Transforms.Concatenate("Features", featureColumns))
-            .Append(context.Transforms.NormalizeMinMax("Features"))
-            .AppendCacheCheckpoint(context)
-            .Append(trainer);
-
-            ITransformer model = pipeline.Fit(trainData);
-
-            return model;
-        }
-
-        private static RegressionMetrics Evaluate(MLContext context, ITransformer model,
-        IDataView testSet)
-        {
-            IDataView predictions = model.Transform(testSet);
-
-            RegressionMetrics metrics = context.Regression.Evaluate(predictions);
-
-            return metrics;
-        }
-
-        //private static void SaveModel(MLContext context, ITransformer model,
-        //DataViewSchema schema)
-        //{
-        //    if (!Directory.Exists(BasePath))
-        //    {
-        //        Directory.CreateDirectory(BasePath);
-        //    }
-        //    else
-        //    {
-        //        foreach (String file in Directory.EnumerateFiles(BasePath))
-        //        {
-        //            File.Delete(file);
-        //        }
-        //    }
-
-        //    context.Model.Save(model, schema, ModelPath);
-        //}
-
-        //private static void PrintMetrics(RegressionMetrics metrics)
-        //{
-        //    Console.WriteLine("-------------------- MÉTRICAS --------------------");
-        //    Console.WriteLine($"Mean Absolute Error: {metrics.MeanAbsoluteError}");
-        //    Console.WriteLine($"Mean Squared Error: {metrics.MeanSquaredError}");
-        //    Console.WriteLine($"Root Mean Squared Error: {metrics.RootMeanSquaredError}");
-        //    Console.WriteLine($"R Squared: {metrics.RSquared}");
-        //    Console.WriteLine("--------------------------------------------------");
-        //}
-
-        private ShouldBuyStockOutput PredictPrice(MLContext context, ITransformer model, IBinanceKline sampleStock, EInvestorProfile eInvestorProfile, EProfitWay profitWay)
-        {
-            PredictionEngine<StockInfo, StockInfoPrediction> predictor = context.Model
-            .CreatePredictionEngine<StockInfo, StockInfoPrediction>(model);
-
-            var actualInput = new StockInfo
-            {
-                Date = sampleStock.CloseTime,
-                High = (float)sampleStock.High,
-                Low = (float)sampleStock.Low
-            };
-
-            StockInfoPrediction prediction = predictor.Predict(actualInput);
-
-            var percFactor = _settingsService.GetInvestorProfileFactor(EStrategy.NormalMlStrategy1, profitWay, eInvestorProfile);
-
-            var realTimeClosePrice = (float)sampleStock.Close;
+            var realTimeClosePrice = price;
             realTimeClosePrice = realTimeClosePrice * (1 + percFactor);
 
-            var buy = profitWay == EProfitWay.ProfitFromGain ? prediction.Close > realTimeClosePrice : prediction.Close <= realTimeClosePrice;
+            var buy = profitWay == EProfitWay.ProfitFromGain ? price > realTimeClosePrice : price <= realTimeClosePrice;
 
             return new ShouldBuyStockOutput
             {
-                Buy = buy,  // Really coin price
-                Score = (decimal)prediction.Close
+                Buy = buy,
+                Score = price.Value // Really coin price
             };
-
-            //foreach (StockInfo stock in stocks)
-            //{
-            //    StockInfoPrediction prediction = predictor.Predict(stock);
-
-            //    Console.WriteLine("---------------- PREVISÃO ----------------");
-            //    Console.WriteLine($"O preço previsto para a ação é de R$ {prediction.Close:0.#0}");
-            //    Console.WriteLine($"O preço atual é de R$ {stock.Close:0.#0}");
-            //    Console.WriteLine($"Diferença de R$ {prediction.Close - stock.Close:0.#0}");
-            //    Console.WriteLine("------------------------------------------");
-            //}
         }
     }
 }

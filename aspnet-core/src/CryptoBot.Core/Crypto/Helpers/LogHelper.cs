@@ -31,6 +31,8 @@ namespace CryptoBot.Crypto.Helpers
 
             var score = $"{item.WhatToDo.Score.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
 
+            var priceFuture = $"{item.FutureStock.Close.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
+
             var i = index.ToString().PadLeft(3, ' ');
 
             var newWalletPriceStr = $"{item.Wallet:C2}".PadLeft(9, ' ');
@@ -42,7 +44,7 @@ namespace CryptoBot.Crypto.Helpers
 
             var dateStr = item.ActualStock.CloseTime.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Hours).ToString("yyyy-MM-dd HH:mm:ss").PadLeft(19, ' ');
 
-            return $"{i} - {dateStr} - OpenHighDiff: {percOpenHighDiffStr}, OpenLowDiff: {percOpenLowDiffStr}, CloseDiff: {percFuturuCloseValueDiffStr}, {action} {score}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
+            return $"{i} - {dateStr} - OpenHighD: {percOpenHighDiffStr}, OpenLowD: {percOpenLowDiffStr}, CloseD: {percFuturuCloseValueDiffStr}, PriceF: {priceFuture}, {action} {score}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
         }
 
         public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, IEnumerable<EStrategy> strategies, EInvestorProfile investorProfile, ETradingType tradingType, EProfitWay profitWay, IEnumerable<BetterCoinsToTestTradeRightNowOutputDto> result)

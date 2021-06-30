@@ -5,6 +5,7 @@ using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
+using Skender.Stock.Indicators;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,7 +44,19 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
             var model = pipeline.Fit(trainingData);
 
             // 4. Make a prediction
-            var size = new Input() { Size = houseData.Last().Size };
+            IEnumerable<Quote> history = historicalData.Select(x => new Quote
+            {
+                Close = x.Close,
+                Date = x.CloseTime,
+                High = x.High,
+                Low = x.Low,
+                Open = x.Open,
+                Volume = x.BaseVolume
+            }).ToList();
+            var results = await Task.FromResult(Indicator.GetVolSma(history, 20));
+            var result = results.LastOrDefault();
+
+            var size = new Input() { Size = (float)result.VolSma };
             var price = mlContext.Model.CreatePredictionEngine<Input, PredictionMl2>(model).Predict(size);
 
             var finalPrice = (float)sampleStock.Close * (1 + percFactor);

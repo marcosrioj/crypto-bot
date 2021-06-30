@@ -49,13 +49,13 @@ namespace CryptoBot.Crypto.Services
                         case EInvestorProfile.UltraAggressive:
                             return 0;
                         case EInvestorProfile.Aggressive:
-                            return profitWay == EProfitWay.ProfitFromGain ? 0.0025f : -0.0025f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.0025f : -0.005f;
                         case EInvestorProfile.Moderate:
-                            return profitWay == EProfitWay.ProfitFromGain ? 0.005f : -0.005f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.005f : -0.01f;
                         case EInvestorProfile.Conservative:
-                            return profitWay == EProfitWay.ProfitFromGain ? 0.0075f : -0.0075f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.0075f : -0.015f;
                         case EInvestorProfile.UltraConservative:
-                            return profitWay == EProfitWay.ProfitFromGain ? 0.01f : -0.01f;
+                            return profitWay == EProfitWay.ProfitFromGain ? 0.01f : -0.02f;
                         default:
                             throw new ArgumentException("Invalid investor profile");
                     }

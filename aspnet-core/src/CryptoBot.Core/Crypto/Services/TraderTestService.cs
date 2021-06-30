@@ -345,6 +345,9 @@ namespace CryptoBot.Crypto.Services
                 {
                     whatToDo = await _traderService.WhatToDo(strategy, eInvestorProfile, profitWay, data);
                 }
+
+                //whatToDo = await _traderService.WhatToDo(strategy, eInvestorProfile, profitWay, data);
+                //whatToDo.WhatToDo = whatToDo.Score > futureStock.Close ? EWhatToDo.Buy : EWhatToDo.DontBuy;
             }
 
             var actualStock = data.DataToLearn.Last();
