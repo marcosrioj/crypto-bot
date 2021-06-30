@@ -38,6 +38,7 @@ namespace CryptoBot.Crypto.Services
         private readonly IMLStrategy2 _normalMlStrategy2;
         private readonly IMeanReversionStrategy _simpleMeanReversionStrategy;
         private readonly IMicrotrendStrategy _simpleMicrotrendStrategy;
+        private readonly ISimpleRsiStrategy _simpleStrategyRsi;
         private readonly Strategies.Simple.MLStrategy1.IMLStrategy1 _simpleMlStrategy1;
 
         private readonly IQuartzScheduleJobManager _jobManager;
@@ -55,6 +56,7 @@ namespace CryptoBot.Crypto.Services
             IMLStrategy2 normalMlStrategy2,
             IMeanReversionStrategy simpleMeanReversionStrategy,
             IMicrotrendStrategy simpleMicrotrendStrategy,
+            ISimpleRsiStrategy simpleStrategyRsi,
             Strategies.Simple.MLStrategy1.IMLStrategy1 simpleMlStrategy1,
             IQuartzScheduleJobManager jobManager,
             IObjectMapper objectMapper)
@@ -72,6 +74,7 @@ namespace CryptoBot.Crypto.Services
             _simpleMeanReversionStrategy = simpleMeanReversionStrategy;
             _simpleMicrotrendStrategy = simpleMicrotrendStrategy;
             _simpleMlStrategy1 = simpleMlStrategy1;
+            _simpleStrategyRsi = simpleStrategyRsi;
 
             _jobManager = jobManager;
             _objectMapper = objectMapper;
@@ -107,6 +110,9 @@ namespace CryptoBot.Crypto.Services
 
                 case EStrategy.SimpleMicrotrendStrategy:
                     return await WhatToDoBySimpleMicrotrendStrategy(data, profitWay, eInvestorProfile);
+
+                case EStrategy.SimpleRsiStrategy:
+                    return await WhatToDoBySimpleRsiStrategy(data, profitWay, eInvestorProfile);
 
                 default:
                     throw new Exception("Strategy not found");
@@ -690,6 +696,26 @@ namespace CryptoBot.Crypto.Services
         private async Task<WhatToDoOutput> WhatToDoBySimpleMicrotrendStrategy(RegressionDataOutput data, EProfitWay profitWay, EInvestorProfile eInvestorProfile)
         {
             var result = await _simpleMicrotrendStrategy.ShouldBuyStock(data.DataToLearn, eInvestorProfile, profitWay);
+
+            if (result.Buy.HasValue && result.Buy.Value)
+            {
+                return await Task.FromResult(new WhatToDoOutput
+                {
+                    WhatToDo = EWhatToDo.Buy,
+                    Score = result.Score
+                });
+            }
+
+            return await Task.FromResult(new WhatToDoOutput
+            {
+                WhatToDo = EWhatToDo.DontBuy,
+                Score = result.Score
+            });
+        }
+
+        private async Task<WhatToDoOutput> WhatToDoBySimpleRsiStrategy(RegressionDataOutput data, EProfitWay profitWay, EInvestorProfile eInvestorProfile)
+        {
+            var result = await _simpleStrategyRsi.ShouldBuyStock(data.DataToLearn, eInvestorProfile, profitWay);
 
             if (result.Buy.HasValue && result.Buy.Value)
             {

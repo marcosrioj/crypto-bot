@@ -13,5 +13,7 @@
         public const long DefaultUserId = 2;
 
         public const int BinanceApiItemLimit = 1000;
+
+        public static int IterationNumberToBuyAgain = 0;
     }
 }

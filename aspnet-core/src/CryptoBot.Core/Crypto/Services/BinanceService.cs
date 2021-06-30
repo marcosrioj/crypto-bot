@@ -46,8 +46,8 @@ namespace CryptoBot.Crypto.Services
             } 
             else
             {
-                var bookPrice = _binanceClient.FuturesUsdt.Market.GetBookPrices(pair);
-                return bookPrice.Data.FirstOrDefault();
+                var bookPrice = _binanceClient.Spot.Market.GetBookPrice(pair);
+                return bookPrice.Data;
             }
         }
 
@@ -60,7 +60,7 @@ namespace CryptoBot.Crypto.Services
                 return _binanceClient.Spot.Market.GetKlines(pair, interval, startTime, endTime, limit);
             }
 
-            return _binanceClient.FuturesUsdt.Market.GetKlines(pair, interval, startTime, endTime, limit);
+            return _binanceClient.Spot.Market.GetKlines(pair, interval, startTime, endTime, limit);
         }
 
         public IBinanceKline GetKline(string pair, ETradingType tradingType, long? userId = null)
@@ -77,7 +77,7 @@ namespace CryptoBot.Crypto.Services
                 }
                 else
                 {
-                    result = _binanceClient.FuturesUsdt.Market.GetKlines(pair, KlineInterval.OneMinute, limit: 1);
+                    result = _binanceClient.Spot.Market.GetKlines(pair, KlineInterval.OneMinute, limit: 1);
                 }
 
                 return result.Data.FirstOrDefault();

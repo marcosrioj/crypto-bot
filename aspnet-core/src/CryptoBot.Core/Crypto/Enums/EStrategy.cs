@@ -13,6 +13,8 @@
 
         NormalMlStrategy1 = 7,
 
-        NormalMlStrategy2 = 9
+        NormalMlStrategy2 = 9,
+
+        SimpleRsiStrategy = 11
     }
 }

@@ -43,7 +43,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                 }
 
                 if ((profitWay == EProfitWay.ProfitFromGain && value > previousValue)
-                    || value < previousValue)
+                    || (profitWay == EProfitWay.ProfitFromLoss && value < previousValue))
                 {
                     return await Task.FromResult(new ShouldBuyStockOutput
                     {
