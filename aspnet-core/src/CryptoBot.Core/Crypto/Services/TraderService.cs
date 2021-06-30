@@ -199,6 +199,8 @@ namespace CryptoBot.Crypto.Services
                         IntervalToBuy = formula.IntervalToBuy,
                         IntervalToSell = formula.IntervalToSell,
                         Score = whatToDo.Score.ToString(),
+                        Ema12 = whatToDo.Ema12.ToString(),
+                        Ema26 = whatToDo.Ema26.ToString(),
                         DataLearned = formula.LimitOfDataToLearn,
                         TradingType = formula.TradingType,
                         ProfitWay = formula.ProfitWay,
@@ -682,14 +684,18 @@ namespace CryptoBot.Crypto.Services
                 return await Task.FromResult(new WhatToDoOutput
                 {
                     WhatToDo = EWhatToDo.Buy,
-                    Score = result.Score
+                    Score = result.Score,
+                    Ema12 = result.Ema12,
+                    Ema26 = result.Ema26
                 });
             }
 
             return await Task.FromResult(new WhatToDoOutput
             {
                 WhatToDo = EWhatToDo.DontBuy,
-                Score = result.Score
+                Score = result.Score,
+                Ema12 = result.Ema12,
+                Ema26 = result.Ema26
             });
         }
 
@@ -702,14 +708,18 @@ namespace CryptoBot.Crypto.Services
                 return await Task.FromResult(new WhatToDoOutput
                 {
                     WhatToDo = EWhatToDo.Buy,
-                    Score = result.Score
+                    Score = result.Score,
+                    Ema12 = result.Ema12,
+                    Ema26 = result.Ema26
                 });
             }
 
             return await Task.FromResult(new WhatToDoOutput
             {
                 WhatToDo = EWhatToDo.DontBuy,
-                Score = result.Score
+                Score = result.Score,
+                Ema12 = result.Ema12,
+                Ema26 = result.Ema26
             });
         }
 
@@ -722,14 +732,18 @@ namespace CryptoBot.Crypto.Services
                 return await Task.FromResult(new WhatToDoOutput
                 {
                     WhatToDo = EWhatToDo.Buy,
-                    Score = result.Score
+                    Score = result.Score,
+                    Ema12 = result.Ema12,
+                    Ema26 = result.Ema26
                 });
             }
 
             return await Task.FromResult(new WhatToDoOutput
             {
                 WhatToDo = EWhatToDo.DontBuy,
-                Score = result.Score
+                Score = result.Score,
+                Ema12 = result.Ema12,
+                Ema26 = result.Ema26
             });
         }
 
@@ -742,14 +756,18 @@ namespace CryptoBot.Crypto.Services
                 return await Task.FromResult(new WhatToDoOutput
                 {
                     WhatToDo = EWhatToDo.Buy,
-                    Score = result.Score
+                    Score = result.Score,
+                    Ema12 = result.Ema12,
+                    Ema26 = result.Ema26
                 });
             }
 
             return await Task.FromResult(new WhatToDoOutput
             {
                 WhatToDo = EWhatToDo.DontBuy,
-                Score = result.Score
+                Score = result.Score,
+                Ema12 = result.Ema12,
+                Ema26 = result.Ema26
             });
         }
 
@@ -762,14 +780,18 @@ namespace CryptoBot.Crypto.Services
                 return await Task.FromResult(new WhatToDoOutput
                 {
                     WhatToDo = EWhatToDo.Buy,
-                    Score = result.Score
+                    Score = result.Score,
+                    Ema12 = result.Ema12,
+                    Ema26 = result.Ema26
                 });
             }
 
             return await Task.FromResult(new WhatToDoOutput
             {
                 WhatToDo = EWhatToDo.DontBuy,
-                Score = result.Score
+                Score = result.Score,
+                Ema12 = result.Ema12,
+                Ema26 = result.Ema26
             });
         }
 
@@ -782,14 +804,18 @@ namespace CryptoBot.Crypto.Services
                 return await Task.FromResult(new WhatToDoOutput
                 {
                     WhatToDo = EWhatToDo.Buy,
-                    Score = result.Score
+                    Score = result.Score,
+                    Ema12 = result.Ema12,
+                    Ema26 = result.Ema26
                 });
             }
 
             return await Task.FromResult(new WhatToDoOutput
             {
                 WhatToDo = EWhatToDo.DontBuy,
-                Score = result.Score
+                Score = result.Score,
+                Ema12 = result.Ema12,
+                Ema26 = result.Ema26
             });
         }
     }

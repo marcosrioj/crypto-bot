@@ -27,6 +27,12 @@ namespace CryptoBot.Crypto.Entities
         [Column(TypeName = "varchar(100)")]
         public string Score { get; set; }
 
+        [Column(TypeName = "varchar(100)")]
+        public string Ema12 { get; set; }
+
+        [Column(TypeName = "varchar(100)")]
+        public string Ema26 { get; set; }
+
         public int DataLearned { get; set; }
 
         public EStopLimit StopLimit { get; set; }

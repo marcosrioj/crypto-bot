@@ -52,13 +52,18 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                 .Select(x => x.Rsi)
                 .ToList();
 
+            var ema12 = Indicator.GetEma(history, 12).Last().Ema.Value;
+            var ema26 = Indicator.GetEma(history, 26).Last().Ema.Value;
+
             if (CryptoBotConsts.IterationNumberToBuyAgain > 0)
             {
                 CryptoBotConsts.IterationNumberToBuyAgain = CryptoBotConsts.IterationNumberToBuyAgain - 1;
                 return await Task.FromResult(new ShouldBuyStockOutput
                 {
                     Buy = false,
-                    Score = lastRsiValues.Last().Value
+                    Score = lastRsiValues.Last().Value,
+                    Ema12 = ema12,
+                    Ema26 = ema26
                 });
             }
 
@@ -78,7 +83,9 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                     return await Task.FromResult(new ShouldBuyStockOutput
                     {
                         Buy = false,
-                        Score = lastRsiValues.Last().Value
+                        Score = lastRsiValues.Last().Value,
+                        Ema12 = ema12,
+                        Ema26 = ema26
                     });
                 }
 
@@ -98,7 +105,9 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
             return await Task.FromResult(new ShouldBuyStockOutput
             {
                 Buy = buy,
-                Score = lastRsi
+                Score = lastRsi,
+                Ema12 = ema12,
+                Ema26 = ema26
             });
         }
     }
