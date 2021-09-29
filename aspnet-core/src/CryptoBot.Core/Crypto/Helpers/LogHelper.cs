@@ -36,6 +36,7 @@ namespace CryptoBot.Crypto.Helpers
             var volumeActual = $"{item.ActualStock.BaseVolume.ToString().PadLeft(8, ' ')}";
             var ema12Actual = $"{item.WhatToDo.Ema12.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
             var ema26Actual = $"{item.WhatToDo.Ema26.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
+            var predictPrice = $"{item.WhatToDo.PredictPrice.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
 
             var i = index.ToString().PadLeft(3, ' ');
 
@@ -48,7 +49,7 @@ namespace CryptoBot.Crypto.Helpers
 
             var dateStr = item.ActualStock.CloseTime.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Hours).ToString("yyyy-MM-dd HH:mm:ss").PadLeft(19, ' ');
 
-            return $"{i} - {dateStr} - OpenHighD: {percOpenHighDiffStr}, OpenLowD: {percOpenLowDiffStr}, CloseD: {percFuturuCloseValueDiffStr}, {action} {score}, PriceA: {priceActual}, Ema12A: {ema12Actual}, Ema26A: {ema26Actual}, VolumeA: {volumeActual}, PriceF: {priceFuture}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
+            return $"{i} - {dateStr} - OpenHighD: {percOpenHighDiffStr}, OpenLowD: {percOpenLowDiffStr}, CloseD: {percFuturuCloseValueDiffStr}, {action} {score}, PriceA: {priceActual}, Ema12A: {ema12Actual}, Ema26A: {ema26Actual}, VolumeA: {volumeActual}, PriceF: {priceFuture}, PriceP: {predictPrice}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
         }
 
         public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, IEnumerable<EStrategy> strategies, EInvestorProfile investorProfile, ETradingType tradingType, EProfitWay profitWay, IEnumerable<BetterCoinsToTestTradeRightNowOutputDto> result)

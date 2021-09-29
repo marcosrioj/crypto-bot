@@ -201,6 +201,7 @@ namespace CryptoBot.Crypto.Services
                         Score = whatToDo.Score.ToString(),
                         Ema12 = whatToDo.Ema12.ToString(),
                         Ema26 = whatToDo.Ema26.ToString(),
+                        PredictPrice = whatToDo.PredictPrice.ToString(),
                         DataLearned = formula.LimitOfDataToLearn,
                         TradingType = formula.TradingType,
                         ProfitWay = formula.ProfitWay,
@@ -686,7 +687,8 @@ namespace CryptoBot.Crypto.Services
                     WhatToDo = EWhatToDo.Buy,
                     Score = result.Score,
                     Ema12 = result.Ema12,
-                    Ema26 = result.Ema26
+                    Ema26 = result.Ema26,
+                    PredictPrice = result.PredictPrice
                 });
             }
 
@@ -695,7 +697,8 @@ namespace CryptoBot.Crypto.Services
                 WhatToDo = EWhatToDo.DontBuy,
                 Score = result.Score,
                 Ema12 = result.Ema12,
-                Ema26 = result.Ema26
+                Ema26 = result.Ema26,
+                PredictPrice = result.PredictPrice
             });
         }
 
@@ -710,7 +713,8 @@ namespace CryptoBot.Crypto.Services
                     WhatToDo = EWhatToDo.Buy,
                     Score = result.Score,
                     Ema12 = result.Ema12,
-                    Ema26 = result.Ema26
+                    Ema26 = result.Ema26,
+                    PredictPrice = result.PredictPrice
                 });
             }
 
@@ -719,7 +723,8 @@ namespace CryptoBot.Crypto.Services
                 WhatToDo = EWhatToDo.DontBuy,
                 Score = result.Score,
                 Ema12 = result.Ema12,
-                Ema26 = result.Ema26
+                Ema26 = result.Ema26,
+                PredictPrice = result.PredictPrice
             });
         }
 
@@ -734,7 +739,8 @@ namespace CryptoBot.Crypto.Services
                     WhatToDo = EWhatToDo.Buy,
                     Score = result.Score,
                     Ema12 = result.Ema12,
-                    Ema26 = result.Ema26
+                    Ema26 = result.Ema26,
+                    PredictPrice = result.PredictPrice
                 });
             }
 
@@ -743,7 +749,8 @@ namespace CryptoBot.Crypto.Services
                 WhatToDo = EWhatToDo.DontBuy,
                 Score = result.Score,
                 Ema12 = result.Ema12,
-                Ema26 = result.Ema26
+                Ema26 = result.Ema26,
+                PredictPrice = result.PredictPrice
             });
         }
 
@@ -758,7 +765,8 @@ namespace CryptoBot.Crypto.Services
                     WhatToDo = EWhatToDo.Buy,
                     Score = result.Score,
                     Ema12 = result.Ema12,
-                    Ema26 = result.Ema26
+                    Ema26 = result.Ema26,
+                    PredictPrice = result.PredictPrice
                 });
             }
 
@@ -767,7 +775,8 @@ namespace CryptoBot.Crypto.Services
                 WhatToDo = EWhatToDo.DontBuy,
                 Score = result.Score,
                 Ema12 = result.Ema12,
-                Ema26 = result.Ema26
+                Ema26 = result.Ema26,
+                PredictPrice = result.PredictPrice
             });
         }
 
@@ -782,7 +791,8 @@ namespace CryptoBot.Crypto.Services
                     WhatToDo = EWhatToDo.Buy,
                     Score = result.Score,
                     Ema12 = result.Ema12,
-                    Ema26 = result.Ema26
+                    Ema26 = result.Ema26,
+                    PredictPrice = result.PredictPrice
                 });
             }
 
@@ -791,7 +801,8 @@ namespace CryptoBot.Crypto.Services
                 WhatToDo = EWhatToDo.DontBuy,
                 Score = result.Score,
                 Ema12 = result.Ema12,
-                Ema26 = result.Ema26
+                Ema26 = result.Ema26,
+                PredictPrice = result.PredictPrice
             });
         }
 
@@ -806,7 +817,8 @@ namespace CryptoBot.Crypto.Services
                     WhatToDo = EWhatToDo.Buy,
                     Score = result.Score,
                     Ema12 = result.Ema12,
-                    Ema26 = result.Ema26
+                    Ema26 = result.Ema26,
+                    PredictPrice = result.PredictPrice
                 });
             }
 
@@ -815,7 +827,8 @@ namespace CryptoBot.Crypto.Services
                 WhatToDo = EWhatToDo.DontBuy,
                 Score = result.Score,
                 Ema12 = result.Ema12,
-                Ema26 = result.Ema26
+                Ema26 = result.Ema26,
+                PredictPrice = result.PredictPrice
             });
         }
     }

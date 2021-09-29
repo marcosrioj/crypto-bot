@@ -152,11 +152,11 @@ namespace CryptoBot.Crypto.BackgroundWorker.Worker
             try
             {
                 var initialWallet = 1000;
-                var interval = KlineInterval.FiveMinutes;
+                var interval = KlineInterval.FourHour;
                 var tradingType = ETradingType.Futures;
                 var profitWay = EProfitWay.ProfitFromGain;
                 var limitOfDataToLearnAndTest = 5000;
-                var limitOfDataToTest = 288 * 7;
+                var limitOfDataToTest = 20;
                 var investorProfile = EInvestorProfile.Aggressive;
                 var strategies = new List<EStrategy>() { EStrategy.SimpleRsiStrategy };
 

@@ -33,6 +33,9 @@ namespace CryptoBot.Crypto.Entities
         [Column(TypeName = "varchar(100)")]
         public string Ema26 { get; set; }
 
+        [Column(TypeName = "varchar(100)")]
+        public string PredictPrice { get; set; }
+
         public int DataLearned { get; set; }
 
         public EStopLimit StopLimit { get; set; }

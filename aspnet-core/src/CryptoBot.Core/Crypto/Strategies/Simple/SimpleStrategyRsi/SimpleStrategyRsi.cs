@@ -3,6 +3,8 @@ using Binance.Net.Interfaces;
 using CryptoBot.Crypto.Enums;
 using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 using Skender.Stock.Indicators;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,6 +56,9 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
 
             var ema12 = Indicator.GetEma(history, 12).Last().Ema.Value;
             var ema26 = Indicator.GetEma(history, 26).Last().Ema.Value;
+            var macdHistogram = Indicator.GetMacd(history, 12, 26, 9).Last().Histogram;
+
+            PredictOutput price = await Predict(history);
 
             if (CryptoBotConsts.IterationNumberToBuyAgain > 0)
             {
@@ -63,7 +68,8 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                     Buy = false,
                     Score = lastRsiValues.Last().Value,
                     Ema12 = ema12,
-                    Ema26 = ema26
+                    Ema26 = ema26,
+                    PredictPrice = (decimal)price.Price
                 });
             }
 
@@ -85,7 +91,8 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                         Buy = false,
                         Score = lastRsiValues.Last().Value,
                         Ema12 = ema12,
-                        Ema26 = ema26
+                        Ema26 = ema26,
+                        PredictPrice = (decimal)price.Price
                     });
                 }
 
@@ -95,7 +102,7 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
 
             var lastRsi = lastRsiValues.Last().Value;
 
-            var buy = lastRsi < 40 && lastRsi > 30;
+            var buy = lastRsi < 75 && lastRsi > 60;
 
             if (buy)
             {
@@ -107,8 +114,53 @@ namespace CryptoBot.Crypto.Strategies.Simple.MicrotrendStrategy
                 Buy = buy,
                 Score = lastRsi,
                 Ema12 = ema12,
-                Ema26 = ema26
+                Ema26 = ema26,
+                PredictPrice = (decimal)price.Price
             });
         }
+
+        private static async Task<PredictOutput> Predict(List<Quote> history)
+        {
+            MLContext mlContext = new MLContext();
+            // 1. Import or create training data
+            var houseData = history.Select(x => new PredictInput
+            {
+                Price = (float)x.Close,
+                Size = (float)x.Volume
+            });
+            IDataView trainingData = mlContext.Data.LoadFromEnumerable(houseData);
+            // 2. Specify data preparation and model training pipeline
+            var pipeline = mlContext.Transforms.Concatenate("Features", new[] { "Size" })
+                .Append(mlContext.Regression.Trainers.Sdca(labelColumnName: "Price", maximumNumberOfIterations: 100));
+            // 3. Train model
+            var model = pipeline.Fit(trainingData);
+            // 4. Make a prediction
+            IEnumerable<Quote> historyPrec = history.Select(x => new Quote
+            {
+                Close = x.Close,
+                Date = x.Date,
+                High = x.High,
+                Low = x.Low,
+                Open = x.Open,
+                Volume = x.Volume
+            }).ToList();
+            var results = await Task.FromResult(Indicator.GetVolSma(historyPrec, 20));
+            var result = results.LastOrDefault();
+            var size = new PredictInput() { Size = (float)result.Volume };
+            var price = mlContext.Model.CreatePredictionEngine<PredictInput, PredictOutput>(model).Predict(size);
+            return price;
+        }
+    }
+
+    public class PredictInput
+    {
+        public float Size { get; set; }
+        public float Price { get; set; }
+    }
+
+    public class PredictOutput
+    {
+        [ColumnName("Score")]
+        public float Price { get; set; }
     }
 }
