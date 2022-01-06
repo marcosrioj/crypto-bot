@@ -5,7 +5,7 @@ using CryptoBot.Crypto.Services;
 using CryptoBot.Crypto.Strategies.Dtos;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using Skender.Stock.Indicators;
+using Microsoft.ML.Transforms.TimeSeries;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,63 +23,77 @@ namespace CryptoBot.Crypto.Strategies.Normal.MLStrategy2
 
         public async Task<ShouldBuyStockOutput> ShouldBuyStock(IList<IBinanceKline> historicalData, EInvestorProfile eInvestorProfile, EProfitWay profitWay, IBinanceKline sampleStock)
         {
-            var percFactor = _settingsService.GetInvestorProfileFactor(Enums.EStrategy.NormalMlStrategy2, profitWay, eInvestorProfile);
 
-            MLContext mlContext = new MLContext();
+            var predictor = GetPredictionEngine(out var mlContext);
+            var prediction = predictor.Predict();
 
-            // 1. Import or create training data
-            var houseData = historicalData.Select(x => new Input
+            string confidence = $"{prediction.ConfidenceLowerBound[0]} - {prediction.ConfidenceUpperBound[0]}";
+
+
+            //predictor.CheckPoint(mlContext, "TrainedModel");
+
+            var lastPrediction = prediction.Score[0];
+
+            TimeSeriesPredictionEngine<CoinPrice, CoinPricePrediction> GetPredictionEngine(out MLContext mlContext)
             {
-                Price = (float)x.Close,
-                Size = (float)x.BaseVolume
-            });
+                mlContext = new MLContext(seed: 0);
 
-            IDataView trainingData = mlContext.Data.LoadFromEnumerable(houseData);
+                var houseData = historicalData.Select(x => new CoinPrice
+                {
+                    Price = (float)x.BaseVolume
+                });
 
-            // 2. Specify data preparation and model training pipeline
-            var pipeline = mlContext.Transforms.Concatenate("Features", new[] { "Size" })
-                .Append(mlContext.Regression.Trainers.Sdca(labelColumnName: "Price", maximumNumberOfIterations: 100));
+                // STEP 1: Common data loading configuration
+                IDataView baseTrainingDataView = mlContext.Data.LoadFromEnumerable(houseData);
 
-            // 3. Train model
-            var model = pipeline.Fit(trainingData);
+                var trainer = mlContext.Forecasting.ForecastBySsa(  
+                    outputColumnName: nameof(CoinPricePrediction.Score),
+                    inputColumnName: nameof(CoinPrice.Price),
+                    windowSize: 12,
+                    seriesLength: historicalData.Count,
+                    trainSize: historicalData.Count,
+                    horizon: 6,
+                    confidenceLevel: 0.75f,
+                    confidenceLowerBoundColumn: "ConfidenceLowerBound",
+                    confidenceUpperBoundColumn: "ConfidenceUpperBound");
 
-            // 4. Make a prediction
-            IEnumerable<Quote> history = historicalData.Select(x => new Quote
-            {
-                Close = x.Close,
-                Date = x.CloseTime,
-                High = x.High,
-                Low = x.Low,
-                Open = x.Open,
-                Volume = x.BaseVolume
-            }).ToList();
-            var results = await Task.FromResult(Indicator.GetVolSma(history, 20));
-            var result = results.LastOrDefault();
+                //var model = mlContext.Forecasting.ForecastBySsa(
+                //    nameof(CoinPricePrediction.Score),
+                //    nameof(CoinPrice.Price),
+                //    5,
+                //    11, 
+                //    historicalData.Count,
+                //    5,
+                //    confidenceLevel: 0.95f,
+                //    confidenceLowerBoundColumn: "ConfidenceLowerBound",
+                //    confidenceUpperBoundColumn: "ConfidenceUpperBound");
 
-            var size = new Input() { Size = (float)result.VolSma };
-            var price = mlContext.Model.CreatePredictionEngine<Input, PredictionMl2>(model).Predict(size);
+                //var trainingPipeline = dataProcessPipeline.Append(trainer);
 
-            var finalPrice = (float)sampleStock.Close * (1 + percFactor);
+                ITransformer trainedModel = trainer.Fit(baseTrainingDataView);
 
-            var buy = profitWay == EProfitWay.ProfitFromGain ? price.Price > (float)sampleStock.Close : price.Price <= (float)sampleStock.Close;
+                return trainedModel.CreateTimeSeriesEngine<CoinPrice, CoinPricePrediction>(mlContext);
+            }
 
             return await Task.FromResult(new ShouldBuyStockOutput
             {
-                Buy = buy,
-                Score = (decimal)price.Price // Really coin price
-            });
+                Buy = lastPrediction > (float)historicalData.Last().Close,
+                ScoreText = string.Join(' ', prediction.Score),
+                Score = (decimal)lastPrediction // Really coin price
+            }); ;
         }
     }
-
-    public class Input
-    {
-        public float Size { get; set; }
-        public float Price { get; set; }
-    }
-
-    public class PredictionMl2
+    public class CoinPricePrediction
     {
         [ColumnName("Score")]
+        public float[] Score;
+        public float[] ConfidenceLowerBound { get; set; }
+        public float[] ConfidenceUpperBound { get; set; }
+    }
+
+    public class CoinPrice
+    {
+        [LoadColumn(0)]
         public float Price { get; set; }
     }
 }

@@ -816,6 +816,7 @@ namespace CryptoBot.Crypto.Services
                 {
                     WhatToDo = EWhatToDo.Buy,
                     Score = result.Score,
+                    ScoreText = result.ScoreText,
                     Ema12 = result.Ema12,
                     Ema26 = result.Ema26,
                     PredictPrice = result.PredictPrice
@@ -826,6 +827,7 @@ namespace CryptoBot.Crypto.Services
             {
                 WhatToDo = EWhatToDo.DontBuy,
                 Score = result.Score,
+                ScoreText = result.ScoreText,
                 Ema12 = result.Ema12,
                 Ema26 = result.Ema26,
                 PredictPrice = result.PredictPrice

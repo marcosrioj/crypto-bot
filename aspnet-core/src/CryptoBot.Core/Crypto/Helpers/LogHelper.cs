@@ -32,6 +32,8 @@ namespace CryptoBot.Crypto.Helpers
             var score = $"{item.WhatToDo.Score.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
 
             var priceFuture = $"{item.FutureStock.Close.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
+            var priceFutureHigh = $"{item.FutureStock.High.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
+            var priceFutureLow = $"{item.FutureStock.Low.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
             var priceActual = $"{item.ActualStock.Close.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
             var volumeActual = $"{item.ActualStock.BaseVolume.ToString().PadLeft(8, ' ')}";
             var ema12Actual = $"{item.WhatToDo.Ema12.ToString("N", new NumberFormatInfo() { NumberDecimalDigits = 5 })}".PadLeft(8, ' ');
@@ -47,9 +49,12 @@ namespace CryptoBot.Crypto.Helpers
             var percOpenHighDiffStr = $"{item.OpenHighFuturePercDiff:P2}".PadLeft(7, ' ');
             var percOpenLowDiffStr = $"{item.OpenLowFuturePercDiff:P2}".PadLeft(7, ' ');
 
+
             var dateStr = item.ActualStock.CloseTime.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now).Hours).ToString("yyyy-MM-dd HH:mm:ss").PadLeft(19, ' ');
 
-            return $"{i} - {dateStr} - OpenHighD: {percOpenHighDiffStr}, OpenLowD: {percOpenLowDiffStr}, CloseD: {percFuturuCloseValueDiffStr}, {action} {score}, PriceA: {priceActual}, Ema12A: {ema12Actual}, Ema26A: {ema26Actual}, VolumeA: {volumeActual}, PriceF: {priceFuture}, PriceP: {predictPrice}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
+            //return $"{i} - {dateStr} - OpenHighD: {percOpenHighDiffStr}, OpenLowD: {percOpenLowDiffStr}, CloseD: {percFuturuCloseValueDiffStr}, {action} {score}, PriceA: {priceActual}, Ema12A: {ema12Actual}, Ema26A: {ema26Actual}, VolumeA: {volumeActual}, PriceF: {priceFuture}, PriceP: {predictPrice}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
+            //return $"{i} - {dateStr} - {action} - Actual: {priceActual}, Future: LOW-{priceFutureLow} CLOSE-{priceFuture} HIGH-{priceFutureHigh}, Score: {score}, Confidence: {item.WhatToDo.ScoreText}, {resultTrade}, FWallet: {newWalletPriceStr}, FTWallet: {newWalletInvestingPriceStr}";
+            return $"{i} - {dateStr} - Future: Volume: {item.FutureStock.BaseVolume}, Volume Predicted: {item.WhatToDo.Score}, Confidence: {item.WhatToDo.ScoreText}";
         }
 
         public static StringBuilder CreateBetterCoinsToTraderRightNowMessage(decimal initialWallet, KlineInterval interval, int limitOfDataToLearnAndTest, IEnumerable<EStrategy> strategies, EInvestorProfile investorProfile, ETradingType tradingType, EProfitWay profitWay, IEnumerable<BetterCoinsToTestTradeRightNowOutputDto> result)
